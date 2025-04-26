@@ -7,9 +7,74 @@
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+  @apply bg-white;
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+}
+
+header {
+  @apply bg-[#a50e25] text-white;
+}
+
+th {
+  @apply text-sm p-2;
+}
+
+tbody tr {
+  @apply border-b border-gray-200 bg-gray-100 hover:bg-amber-200 odd:bg-gray-200;
+}
+
+tbody tr td {
+  @apply text-sm p-2
+}
+
+.participants-table {
+  @apply shadow-md rounded-lg;
+}
+
+.control-panel-button {
+  @apply bg-[#a50e25] hover:bg-red-700 text-white py-2 px-4;
+}
+
+.tabs>ul {
+  @apply bg-orange-200 rounded-3xl flex items-center h-[40px] overflow-hidden;
+}
+
+.tabs li {
+  @apply h-full flex;
+}
+
+.tabs li>a::before {
+  @apply content-[''] w-[2px] h-1/2 bg-orange-300 absolute left-0 top-1/2 -translate-y-1/2;
+}
+
+.tabs li a {
+  @apply hover:bg-orange-300 px-4 h-full flex justify-center items-center relative;
+}
+
+.view-option {
+  @apply bg-[#a50e25] text-white rounded-lg overflow-hidden;
+}
+
+.view-option a {
+  @apply w-full h-1/2 bg-linear-to-b from-[transparent] to-[black] text-white flex justify-center items-end text-sm pb-2;
+}
+
+.pagination .pages {
+  @apply flex items-center justify-center h-full;
+}
+
+.pagination .pages span {
+  @apply text-xs text-gray-500 cursor-pointer rounded-lg min-w-[30px] flex justify-center items-center h-full px-2;
+}
+
+.pagination .pages span.active {
+  @apply text-[#a50e25] font-bold;
+}
+
+.pagination .pages span:hover {
+  @apply text-[#a50e25] bg-amber-700 text-white;
+}
+
+.control-panel-nav button {
+  @apply bg-gray-700 text-white py-2 px-4 h-full cursor-pointer w-full hover:bg-gray-600;
 }
