@@ -1,3 +1,10 @@
+export interface SampleDataEntry {
+  number: number;
+  fullName: string;
+  code: string;
+  region: string;
+}
+
 export const sampleData = [
   {
     number: 1,

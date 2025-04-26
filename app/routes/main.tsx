@@ -1,5 +1,5 @@
 import type { Route } from "./+types/home";
-import { sampleData } from "../data/sampledata";
+import { sampleData } from "../data/sampleData";
 import { use, useState } from "react";
 
 export function meta({}: Route.MetaArgs) {
