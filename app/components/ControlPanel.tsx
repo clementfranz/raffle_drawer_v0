@@ -12,7 +12,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ controlPanelOpen }) => {
       }`}
     >
       <div className="control-panel-nav text-sm flex justify-between items-center ">
-        <button>
+        <button className="active">
           <div className="button-icon">O</div>
           <div className="button-label">Overview</div>{" "}
         </button>
@@ -29,7 +29,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ controlPanelOpen }) => {
           <div className="button-label">Configure</div>{" "}
         </button>
       </div>
-      <div className="top-part grow  p-4 overflow-y-scroll">
+      <div className="top-part grow p-4 overflow-y-scroll bg-gradient-to-b from-gray-900 to-gray-800">
         <div className="sub-panel mb-3">
           <h2 className="mb-2">Choose Views</h2>
           <div className="view-options grid grid-cols-2 gap-2">

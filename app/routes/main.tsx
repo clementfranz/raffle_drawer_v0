@@ -3,6 +3,13 @@ import { sampleData } from "../data/sampleData";
 import { use, useState } from "react";
 import ControlPanel from "../components/ControlPanel";
 import SettingsButton from "~/components/SettingsButton";
+import PaginationSettings from "../components/PaginationSettings";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faChevronLeft,
+  faChevronRight
+} from "@fortawesome/free-solid-svg-icons";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -85,44 +92,33 @@ export default function Main() {
           <div className="status-bar flex justify-between items-center text-sm">
             <div className="week-selector flex gap-1 bg-orange-200 h-[40px]  items-center justify-center rounded-full overflow-hidden">
               <div className="prev-week hover:bg-orange-300 h-full  px-4 content-center cursor-pointer">
-                &lt;
+                <FontAwesomeIcon icon={faChevronLeft} />
               </div>
               <div className="week-list hover:bg-orange-300 p-1 px-3 cursor-pointer rounded-full">
                 Week of November 23 to 30
               </div>
               <div className="next-week hover:bg-orange-300 h-full  px-4 content-center cursor-pointer">
-                &gt;
+                <FontAwesomeIcon icon={faChevronRight} />
               </div>
             </div>
-            <div className="pagination bg-orange-200 rounded-full text-xs flex flex-row  items-center overflow-hidden h-[30px]">
-              <button className=" hover:bg-orange-300 px-2 ps-3 h-[30px] rounded-lg cursor-pointer text-sm">
-                Prev
+            <div className="pagination bg-orange-200 rounded-full text-xs flex flex-row  items-center  h-[40px]">
+              <button className=" hover:bg-orange-300 px-2 ps-3 h-[40px] rounded-r-lg cursor-pointer text-sm aspect-square overflow-hidden rounded-l-full">
+                <FontAwesomeIcon icon={faChevronLeft} />
               </button>
               <div className="pages">
                 <span className=" active">1</span>
                 <span className="">2</span>
                 <span className="">3</span>
-                <div className="pagination-settings">
-                  <span className="pagination-settings-button">...</span>
-                  <div className="bg-orange-100 h-[30px]  items-center justify-center px-2 hidden">
-                    Go to page{" "}
-                    <input
-                      className="ml-2 bg-white w-[30px] h-[20px] rounded-lg text-black text-center"
-                      type="text"
-                      aria-label="Page Number"
-                      defaultValue="1"
-                    />
-                  </div>
-                </div>
+                <PaginationSettings />
                 <span className="">198</span>
                 <span className="">199</span>
                 <span className="">200</span>
               </div>
               <button
                 type="button"
-                className=" hover:bg-orange-300 px-2 pe-3 h-[30px] rounded-lg cursor-pointer text-sm"
+                className=" hover:bg-orange-300 px-2 pe-3 h-[40px] rounded-l-lg cursor-pointer text-sm aspect-square overflow-hidden rounded-r-full"
               >
-                Next
+                <FontAwesomeIcon icon={faChevronRight} />
               </button>
             </div>
             <button
