@@ -8,8 +8,24 @@ export function Welcome() {
       <br />
       <p>This project is a work in progress.</p>
       <br />
-      <p>Try the following working pages for now:</p>
-      <a href="/main">Dashboard</a>
+      <p className="mb-4">Try the following working pages for now:</p>
+      <div className="links flex gap-5">
+        <a
+          href="/main"
+          className="bg-amber-950 text-white font-bold p-4 rounded-2xl hover:bg-amber-800"
+        >
+          Dashboard
+        </a>
+        <a
+          href="/present"
+          className="bg-amber-950 text-white font-bold p-4 rounded-2xl hover:bg-amber-800"
+        >
+          Present Mode
+        </a>
+      </div>
+      <div className="last-update italic text-sm mt-5">
+        Last System Update: April 25, 2025 at 9:00 AM
+      </div>
     </main>
   );
 }
