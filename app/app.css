@@ -35,7 +35,7 @@ tbody tr td {
   @apply bg-[#a50e25] hover:bg-red-700 text-white py-2 px-4;
 }
 
-.tabs>ul {
+.tabs .table-tabs {
   @apply bg-orange-200 rounded-3xl flex items-center h-[40px] overflow-hidden;
 }
 
@@ -76,5 +76,13 @@ tbody tr td {
 }
 
 .control-panel-nav button {
-  @apply bg-gray-700 text-white py-2 px-4 h-full cursor-pointer w-full hover:bg-gray-600;
+  @apply bg-gray-700 text-white py-2 px-4 h-full cursor-pointer w-full hover:bg-gray-600 flex items-center justify-center flex-col pt-3;
+}
+
+.button-icon {
+  @apply text-white text-sm font-bold h-[30px] bg-white rounded-full aspect-square;
+}
+
+.button-label {
+  @apply text-xs mt-1;
 }
