@@ -146,11 +146,11 @@ tbody tr td {
 
 
 .slot-reel-shell::before {
-  @apply content-[''] w-[80px] h-[80px] absolute top-0 left-0 bg-gradient-to-b from-[black] via-50% to-[transparent] z-10;
+  @apply content-[''] w-[80px] h-[80px] absolute top-0 left-0 bg-gradient-to-b from-[black] from-10% via-[#000000c7] via-55% to-[transparent] z-10;
 }
 
 .slot-reel-shell::after {
-  @apply content-[''] w-[80px] h-[80px] absolute bottom-0 left-0 bg-gradient-to-t from-[black] via-50% to-[transparent] z-10;
+  @apply content-[''] w-[80px] h-[80px] absolute bottom-0 left-0 bg-gradient-to-t from-[black] from-10% via-[#000000c7] via-55% to-[transparent] z-10;
 }
 
 @keyframes roll {

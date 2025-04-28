@@ -13,7 +13,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Present() {
-  const ANCode = "WONWONWON9";
+  const ANCode = "KOPIKOBLANCA";
 
   const [isPresenting, setIsPresenting] = useState(false);
 
