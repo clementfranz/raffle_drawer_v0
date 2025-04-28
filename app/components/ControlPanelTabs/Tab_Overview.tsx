@@ -82,6 +82,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
                     id="fileInput"
                     accept=".csv"
                     className="hidden"
+                    aria-label="Upload CSV file"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {

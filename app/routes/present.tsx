@@ -3,11 +3,12 @@ import { useState } from "react";
 import type { Route } from "./+types/home";
 
 import SlotMachineItem from "~/components/SlotMachineItem";
+import KopikoBlancaLogo from "~/assets/images/KopikoBlancaLogoTrimmed.png"; // Ensure your build setup supports importing images
 
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Kopiko Blanca Raffle" },
-    { name: "description", content: "Welcome to React Router!" }
+    { name: "description", content: "Welcome to Kopiko Blanca Raffle!" }
   ];
 }
 
@@ -46,11 +47,18 @@ export default function Present() {
             <SlotMachineItem targetChar={ANCode[7]} delayReveal={8} />
             <SlotMachineItem targetChar={ANCode[8]} delayReveal={9} />
             <SlotMachineItem targetChar={ANCode[9]} delayReveal={10} />
+            <SlotMachineItem targetChar={ANCode[10]} delayReveal={11} />
+            <SlotMachineItem targetChar={ANCode[11]} delayReveal={12} />
           </div>
         </div>
       </div>
       <div className="default-screensaver w-full h-screen bg-gray-800 overflow-hidden absolute top-0 left-0 items-center justify-center grid place-items-center">
         <div className="default-screensaver-inner flex flex-col items-center justify-center gap-4">
+          <img
+            src={KopikoBlancaLogo}
+            alt="Kopiko Blanca Logo"
+            className="h-[250px]"
+          />
           <h1 className="text-3xl font-bold text-white">
             Kopiko Blanca Raffle
           </h1>

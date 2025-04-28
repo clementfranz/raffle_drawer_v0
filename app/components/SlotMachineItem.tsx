@@ -67,7 +67,7 @@ const preCharacters = [
 import InfinityRollReel from "./InfinityRollReel";
 
 const SlotMachineItem = ({ targetChar, delayReveal }: SlotMachineItemProps) => {
-  const [nthChar, setNthChar] = useState("0px");
+  const [nthChar, setNthChar] = useState("-300px");
 
   const [isRolling, setIsRolling] = useState(false);
   const [isRollingEnd, setIsRollingEnd] = useState(false);
@@ -77,8 +77,23 @@ const SlotMachineItem = ({ targetChar, delayReveal }: SlotMachineItemProps) => {
   const [isRevealedEnd, setIsRevealedEnd] = useState(false);
   const [isRevealedStart, setIsRevealedStart] = useState(false);
 
+  const revealCode = () => {
+    setIsRevealed(true);
+    setIsRevealedStart(true);
+  };
+
   useEffect(() => {
-    setNthChar((characters.indexOf(targetChar) + 35) * 100 + "px");
+    setIsRollingStart(true);
+    const timeoutId = setTimeout(() => {
+      setIsRollingStart(false);
+      setIsRollingEnd(true);
+      revealCode();
+    }, 5000);
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  useEffect(() => {
+    setNthChar((characters.indexOf(targetChar) + 38) * 80 + "px");
     console.log("NTH: ", nthChar);
     console.log("Target: ", targetChar);
   }, [targetChar]);
@@ -100,14 +115,22 @@ const SlotMachineItem = ({ targetChar, delayReveal }: SlotMachineItemProps) => {
             </div>
           ))}
         </div>
-        <InfinityRollReel characters={characters} />
+        <InfinityRollReel
+          characters={characters}
+          isRollingStart={isRollingStart}
+          delayReveal={delayReveal}
+        />
         <div
-          className={`slot-reel flex flex-col w-full align-center justify-center absolute top-0 left-0 transition-transform duration-1000 ease-in-out opacity-0`}
+          className={`slot-reel flex flex-col w-full align-center justify-center absolute top-[240px] left-0 transition-transform duration-1000 ease-in-out ${
+            isRevealedStart ? "opacity-100" : "opacity-0"
+          }`}
           onTransitionEnd={() => {
             setIsRevealed(true);
           }}
           style={{
-            transform: `translateY(-${nthChar})`,
+            transform: `translateY(-${isRevealedStart ? nthChar : "-300px"})`,
+            transitionTimingFunction: "cubic-bezier(0.5, 0, 0.5, 1)",
+            transitionDuration: `${isRevealedStart ? 0.5 : 0}s`,
             transitionDelay: `${delayReveal * 0.5}s`
           }}
         >
