@@ -16,7 +16,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
     window.open(
       "/present",
       "_blank",
-      "width=800,height=600,noopener,noreferrer"
+      "width=1300,height=600,noopener,noreferrer"
     );
   };
 
