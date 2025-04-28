@@ -9,6 +9,17 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   setIsPresenting,
   isPresenting
 }) => {
+  const startPresentation = () => {
+    if (setIsPresenting) {
+      setIsPresenting(true);
+    }
+    window.open(
+      "/present",
+      "_blank",
+      "width=800,height=600,noopener,noreferrer"
+    );
+  };
+
   return (
     <>
       <div className="top-part grow p-4 overflow-y-scroll bg-gradient-to-b from-gray-900 to-gray-800">
@@ -46,7 +57,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
               <div className="bottom">
                 <button
                   className="bg-[#a50e25] text-white p-2 px-4 rounded-2xl cursor-pointer hover:bg-[#7d0b1c]"
-                  onClick={() => setIsPresenting && setIsPresenting(true)}
+                  onClick={startPresentation}
                 >
                   Start Presentation
                 </button>
