@@ -10,7 +10,7 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Present() {
-  const ANCode = "JOHN0CNRDO";
+  const ANCode = "WONWONWON9";
 
   return (
     <main className="flex items-center justify-center pt-16 pb-4 flex-col gap-4">
