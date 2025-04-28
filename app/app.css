@@ -91,7 +91,7 @@ tbody tr td {
 }
 
 .button-icon {
-  @apply text-white text-sm font-bold h-[30px] bg-white rounded-full aspect-square;
+  @apply text-white text-sm font-bold h-[30px] rounded-full aspect-square;
 }
 
 .button-label {
@@ -116,7 +116,7 @@ tbody tr td {
 }
 
 .slot-reel-column {
-  @apply h-full bg-orange-200 odd:bg-orange-300 px-2 flex items-center justify-center relative;
+  @apply h-full bg-[#039645] odd:bg-[#f3eb58] px-2 flex items-center justify-center relative;
 }
 
 .slot-reel-upper-lights {
@@ -128,11 +128,19 @@ tbody tr td {
 }
 
 .slot-reel-light-blinker {
-  @apply w-1/2 aspect-square rounded-full bg-gradient-to-b bg-amber-200 border-solid border-black z-10 drop-shadow-stone-700 drop-shadow-lg animate-pulse;
+  @apply w-1/3 aspect-square rounded-full bg-gradient-to-b bg-amber-200 border-solid border-black z-10 drop-shadow-stone-700 drop-shadow-lg animate-pulse overflow-hidden relative drop-shadow-amber-200 drop-shadow-lg;
+}
+
+.slot-reel-light-blinker::before {
+  @apply content-[''] w-2/3 aspect-square rounded-full bg-radial from-[#ffffff] via-[#fffdd2c7] to-transparent absolute top-0 left-0 z-[-1];
+}
+
+.slot-reel-light-blinker::after {
+  @apply content-[''] w-2/3 aspect-square rounded-full bg-gradient-to-tl from-[#00000056] via-[#00000062] to-transparent absolute bottom-0 translate-y-1/4 translate-x-1/4 right-0 z-[-1] opacity-40;
 }
 
 .slot-reel-shell {
-  @apply aspect-1/3 bg-gradient-to-b from-cyan-200 via-white to-cyan-100 w-[100px] items-center justify-center text-5xl text-red-800 overflow-hidden rounded-lg flex border-gray-600 border-solid relative box-content border-5;
+  @apply aspect-1/3 bg-gradient-to-b from-cyan-200 via-white to-cyan-100 w-[100px] items-center justify-center text-5xl text-[#ed1c3c] overflow-hidden rounded-lg flex border-gray-600 border-solid relative box-content border-5;
 }
 
 

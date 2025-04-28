@@ -1,8 +1,10 @@
 import type { Route } from "./+types/home";
 import { sampleData } from "../data/sampleData";
-import { use, useState } from "react";
+import { useState } from "react";
+
+import HeaderNav from "~/components/HeaderNav/HeaderNav";
+
 import ControlPanel from "../components/ControlPanel";
-import SettingsButton from "~/components/SettingsButton";
 import PaginationSettings from "../components/PaginationSettings";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,27 +23,15 @@ export function meta({}: Route.MetaArgs) {
 export default function Main() {
   const [controlPanelOpen, setControlPanelOpen] = useState(false);
 
+  const [isPresenting, setIsPresenting] = useState(false);
+
   const toggleControlPanel = () => {
     setControlPanelOpen((prev) => !prev);
   };
 
   return (
     <>
-      <header className=" h-[50px]">
-        <div className="flex items-center justify-between px-4 py-2 h-full">
-          <h1 className="text-2xl font-bold">Kopiko Blanca</h1>
-          <nav>
-            <ul className="flex space-x-4">
-              <li>
-                <SettingsButton />
-              </li>
-              <li>
-                <a href="/logout">Logout</a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </header>
+      <HeaderNav isPresenting={isPresenting} />
       <div className="dashboard flex w-full h-[calc(100vh-50px)]">
         <main className=" main-panel  grow p-4 gap-4 flex flex-col">
           <div className="tabs flex justify-between items-center">
@@ -102,7 +92,10 @@ export default function Main() {
               </div>
             </div>
             <div className="pagination bg-orange-200 rounded-full text-xs flex flex-row  items-center  h-[40px]">
-              <button className=" hover:bg-orange-300 px-2 ps-3 h-[40px] rounded-r-lg cursor-pointer text-sm aspect-square overflow-hidden rounded-l-full">
+              <button
+                className=" hover:bg-orange-300 px-2 ps-3 h-[40px] rounded-r-lg cursor-pointer text-sm aspect-square overflow-hidden rounded-l-full"
+                aria-label="Previous Page"
+              >
                 <FontAwesomeIcon icon={faChevronLeft} />
               </button>
               <div className="pages">
@@ -117,6 +110,7 @@ export default function Main() {
               <button
                 type="button"
                 className=" hover:bg-orange-300 px-2 pe-3 h-[40px] rounded-l-lg cursor-pointer text-sm aspect-square overflow-hidden rounded-r-full"
+                aria-label="Next Page"
               >
                 <FontAwesomeIcon icon={faChevronRight} />
               </button>
@@ -132,7 +126,11 @@ export default function Main() {
             </button>
           </div>
         </main>
-        <ControlPanel controlPanelOpen={controlPanelOpen} />
+        <ControlPanel
+          controlPanelOpen={controlPanelOpen}
+          setIsPresenting={setIsPresenting}
+          isPresenting={isPresenting}
+        />
       </div>
     </>
   );
