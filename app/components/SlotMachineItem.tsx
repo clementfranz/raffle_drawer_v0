@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 interface SlotMachineItemProps {
   targetChar: string;
   delayReveal: number;
+  triggerRolling?: boolean;
 }
 
 const characters = [
@@ -66,7 +67,11 @@ const preCharacters = [
 
 import InfinityRollReel from "./InfinityRollReel";
 
-const SlotMachineItem = ({ targetChar, delayReveal }: SlotMachineItemProps) => {
+const SlotMachineItem = ({
+  targetChar,
+  delayReveal,
+  triggerRolling
+}: SlotMachineItemProps) => {
   const [nthChar, setNthChar] = useState("-300px");
 
   const [isRolling, setIsRolling] = useState(false);
@@ -82,7 +87,7 @@ const SlotMachineItem = ({ targetChar, delayReveal }: SlotMachineItemProps) => {
     setIsRevealedStart(true);
   };
 
-  useEffect(() => {
+  const startRolling = () => {
     setIsRollingStart(true);
     const timeoutId = setTimeout(() => {
       setIsRollingStart(false);
@@ -90,7 +95,13 @@ const SlotMachineItem = ({ targetChar, delayReveal }: SlotMachineItemProps) => {
       revealCode();
     }, 5000);
     return () => clearTimeout(timeoutId);
-  }, []);
+  };
+
+  useEffect(() => {
+    if (triggerRolling) {
+      startRolling();
+    }
+  }, [triggerRolling]);
 
   useEffect(() => {
     setNthChar((characters.indexOf(targetChar) + 38) * 80 + "px");
