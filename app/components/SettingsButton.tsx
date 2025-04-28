@@ -3,6 +3,8 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 
+import { latestUpdateData } from "~/data/latestUpdateData";
+
 const SettingsButton = () => {
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
@@ -38,7 +40,7 @@ const SettingsButton = () => {
           </div>
           <div className="modal-body grow"></div>
           <div className="modal-footer text-right text-sm italic">
-            Last System Update: April 25, 2025 at 9:00 AM
+            Last System Update: {latestUpdateData}
           </div>
         </div>
       </div>

@@ -1,6 +1,8 @@
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
 
+import { latestUpdateData } from "~/data/latestUpdateData";
+
 export function Welcome() {
   return (
     <main className="flex flex-col items-center justify-center pt-16 pb-4">
@@ -24,7 +26,7 @@ export function Welcome() {
         </a>
       </div>
       <div className="last-update italic text-sm mt-5">
-        Last System Update: April 25, 2025 at 9:00 AM
+        Last System Update: {latestUpdateData}
       </div>
     </main>
   );
