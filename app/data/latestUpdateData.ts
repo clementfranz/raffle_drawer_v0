@@ -1,3 +1,3 @@
 export type LatestUpdateDataProps = string | null;
 export const latestUpdateData: LatestUpdateDataProps =
-  "April 28, 2025 at 5:50 PM UTC+8";
+  "April 29, 2025 at 11:31 PM UTC+8";
