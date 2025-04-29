@@ -16,7 +16,9 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@react-router/node": "^7.5.1",
     "@react-router/serve": "^7.5.1",
+    "idb": "^8.0.2",
     "isbot": "^5.1.17",
+    "papaparse": "^5.5.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.5.1"
@@ -25,6 +27,7 @@
     "@react-router/dev": "^7.5.1",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "^20",
+    "@types/papaparse": "^5.3.15",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
     "react-router-devtools": "^1.1.0",

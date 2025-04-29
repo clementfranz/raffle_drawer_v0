@@ -108,6 +108,25 @@ const SlotMachineItem = ({
     console.log("NTH: ", nthChar);
     console.log("Target: ", targetChar);
   }, [targetChar]);
+
+  useEffect(() => {
+    const handleStorageChange = (event: any) => {
+      if (event.key === "raffleAction") {
+        const data = JSON.parse(event.newValue);
+        if (data.action === "start") {
+          // Trigger slot machine animation here!
+          console.log("Start Slot Machine!");
+          startRolling();
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
   return (
     <div className="slot-reel-column flex flex-col">
       <div className="slot-reel-upper-lights">

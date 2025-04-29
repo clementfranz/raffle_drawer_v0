@@ -29,6 +29,14 @@ export default function Main() {
     setControlPanelOpen((prev) => !prev);
   };
 
+  // Controller tab: on button click
+  const startDraw = () => {
+    localStorage.setItem(
+      "raffleAction",
+      JSON.stringify({ action: "start", time: Date.now() })
+    );
+  };
+
   return (
     <>
       <HeaderNav isPresenting={isPresenting} />
@@ -42,10 +50,10 @@ export default function Main() {
                 </a>
               </li>
               <li>
-                <a href="/main/characters">Winners</a>
+                <a href="/main?filter=winners">Winners</a>
               </li>
               <li>
-                <a href="/main/locations">Backup Winners</a>
+                <a href="/main?filter=backupwinners">Backup Winners</a>
               </li>
             </ul>
             <ul className="flex space-x-4 text-sm">
@@ -123,6 +131,9 @@ export default function Main() {
               type="button"
             >
               {controlPanelOpen ? "Close Control Panel" : "Open Control Panel"}
+            </button>
+            <button className="bg-pink cursor-pointer" onClick={startDraw}>
+              Start Draw
             </button>
           </div>
         </main>
