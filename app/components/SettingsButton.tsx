@@ -6,7 +6,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { latestUpdateData } from "~/data/latestUpdateData";
 
 const SettingsButton = () => {
-  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(true);
 
   const toggleSettingsModal = () => {
     setSettingsModalOpen((prev) => !prev);
@@ -38,7 +38,17 @@ const SettingsButton = () => {
               <FontAwesomeIcon icon={faXmark} className="text-2xl" />
             </button>
           </div>
-          <div className="modal-body grow"></div>
+          <div className="modal-body grow">
+            <h1>Work In Progress</h1>
+            <ul>
+              <li>🟢 Integration of Participants Data to Table</li>
+              <li>⏹️ Raffle Draw Randomizer Algorythm</li>
+              <li>⏹️ Presentation View Switching</li>
+              <li>⏹️ Picking and Cancelling for Final Winner</li>
+              <li>⏹️ Raffle Draw View Polishing</li>
+              <li>⏹️ Participants Summary View Polishing</li>
+            </ul>
+          </div>
           <div className="modal-footer text-right text-sm italic">
             Last System Update: {latestUpdateData}
           </div>
