@@ -6,10 +6,11 @@ interface ControlPanelProps {
   isPresenting?: boolean;
 }
 
+import PresenterControls from "./PresenterControls/PresenterControls";
 import ControlPanelNav from "./ControlPanelNav/ControlPanelNav";
 
-import Tab_Overview from "./ControlPanelTabs/Tab_Overview";
-import Tab_Raffle from "./ControlPanelTabs/Tab_Raffle";
+import Tab_Overview from "./ControlPanelTabs/Tab_Overview/_main/Tab_Overview";
+import Tab_Raffle from "./ControlPanelTabs/Tab_Raffle/_main/Tab_Raffle";
 import Tab_Presentation from "./ControlPanelTabs/Tab_Presentation";
 import Tab_Configure from "./ControlPanelTabs/Tab_Configure";
 
@@ -26,6 +27,10 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         controlPanelOpen ? "display-block" : "hidden"
       }`}
     >
+      <PresenterControls
+        isPresenting={isPresenting}
+        setIsPresenting={setIsPresenting}
+      />
       <ControlPanelNav setActiveTab={setActiveTab} activeTab={activeTab} />
       {activeTab === "overview" && (
         <Tab_Overview

@@ -48,66 +48,14 @@ export default function Present() {
             >
               Start
             </button>
-            <SlotMachineItem
-              targetChar={ANCode[0]}
-              delayReveal={1}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[1]}
-              delayReveal={2}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[2]}
-              delayReveal={3}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[3]}
-              delayReveal={4}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[4]}
-              delayReveal={5}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[5]}
-              delayReveal={6}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[6]}
-              delayReveal={7}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[7]}
-              delayReveal={8}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[8]}
-              delayReveal={9}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[9]}
-              delayReveal={10}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[10]}
-              delayReveal={11}
-              triggerRolling={triggerRolling}
-            />
-            <SlotMachineItem
-              targetChar={ANCode[11]}
-              delayReveal={12}
-              triggerRolling={triggerRolling}
-            />
+            {ANCode.split("").map((char, index) => (
+              <SlotMachineItem
+                key={index}
+                targetChar={char}
+                delayReveal={index + 1}
+                triggerRolling={triggerRolling}
+              />
+            ))}
           </div>
         </div>
       </div>

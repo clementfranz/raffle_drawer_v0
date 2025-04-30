@@ -1,6 +1,6 @@
 import type { Route } from "./+types/home";
 import { sampleData } from "../data/sampleData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import HeaderNav from "~/components/HeaderNav/HeaderNav";
 
@@ -13,6 +13,8 @@ import {
   faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 
+import { isPresentingStatus } from "~/utils/presentingMode";
+
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
@@ -24,18 +26,21 @@ export default function Main() {
   const [controlPanelOpen, setControlPanelOpen] = useState(false);
 
   const [isPresenting, setIsPresenting] = useState(false);
+  const [participantsData, setParticipantsData] = useState<any[]>([]);
 
   const toggleControlPanel = () => {
     setControlPanelOpen((prev) => !prev);
   };
 
-  // Controller tab: on button click
-  const startDraw = () => {
-    localStorage.setItem(
-      "raffleAction",
-      JSON.stringify({ action: "start", time: Date.now() })
-    );
-  };
+  useEffect(() => {
+    if (localStorage.length > 0) {
+      const presenting = isPresentingStatus();
+      setIsPresenting(presenting);
+      console.log("isPresenting: ", presenting);
+
+      const storedData = "";
+    }
+  }, []);
 
   return (
     <>
@@ -131,9 +136,6 @@ export default function Main() {
               type="button"
             >
               {controlPanelOpen ? "Close Control Panel" : "Open Control Panel"}
-            </button>
-            <button className="bg-pink cursor-pointer" onClick={startDraw}>
-              Start Draw
             </button>
           </div>
         </main>
