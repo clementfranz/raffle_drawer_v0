@@ -2,6 +2,7 @@ import React from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPause } from "@fortawesome/free-solid-svg-icons";
+import useLocalStorageState from "use-local-storage-state";
 
 interface PresenterControlsProps {
   setIsPresenting?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -12,15 +13,22 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
   isPresenting,
   setIsPresenting
 }) => {
-  const startPresentation = () => {
-    if (setIsPresenting) {
-      setIsPresenting(true);
+  type PresentingStatus = "presenting" | "not-presenting";
+
+  const [presentingStatus, setIsPresentingStatus] =
+    useLocalStorageState<PresentingStatus>("presentingStatus");
+
+  const togglePresentation = () => {
+    if (presentingStatus === "presenting") {
+      setIsPresentingStatus("not-presenting");
+    } else {
+      setIsPresentingStatus("presenting");
+      window.open(
+        "/present",
+        "_blank",
+        "width=1300,height=600,noopener,noreferrer"
+      );
     }
-    window.open(
-      "/present",
-      "_blank",
-      "width=1300,height=600,noopener,noreferrer"
-    );
   };
   return (
     <>
@@ -31,7 +39,7 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
               ? " bg-red-800 hover:bg-red-700"
               : "bg-blue-800 hover:bg-blue-700"
           }`}
-          onClick={startPresentation}
+          onClick={togglePresentation}
           type="button"
           aria-label="Start Presentation"
         >

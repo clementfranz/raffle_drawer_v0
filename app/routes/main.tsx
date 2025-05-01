@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 
 import HeaderNav from "~/components/HeaderNav/HeaderNav";
 
-import ControlPanel from "../components/ControlPanel";
-import PaginationSettings from "../components/PaginationSettings";
+import ControlPanel from "../components/ControlPanel/_main/ControlPanel";
+import PaginationSettings from "../components/DashboardComponents/PaginationBar/PaginationSettings/PaginationSettings";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,6 +14,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import { isPresentingStatus } from "~/utils/presentingMode";
+import { getWeek } from "~/utils/dateTime";
+import ParticipantsTable from "~/components/DashboardComponents/ParticipantsTable/_main/ParticipantsTable";
+
+import useLocalStorageState from "use-local-storage-state";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,24 +26,51 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+const presentWeek = getWeek();
+
+const getBatchViaWeek = () => {};
+
 export default function Main() {
   const [controlPanelOpen, setControlPanelOpen] = useState(false);
 
   const [isPresenting, setIsPresenting] = useState(false);
   const [participantsData, setParticipantsData] = useState<any[]>([]);
+  const [loadingParticipantsData, setLoadingParticipantsData] =
+    useState<boolean>(false);
+
+  interface Week {
+    weekName: string;
+    [key: string]: any; // Add other properties if needed
+  }
+
+  const [selectedWeek, setSelectedWeek] = useLocalStorageState<Week>(
+    "selectedWeek",
+    {
+      defaultValue: presentWeek as Week
+    }
+  );
+
+  type PresentingStatus = "presenting" | "not-presenting";
+
+  const [presentingStatus, setPresentingStatus] =
+    useLocalStorageState<PresentingStatus>("presentingStatus", {
+      defaultValue: "not-presenting"
+    });
 
   const toggleControlPanel = () => {
     setControlPanelOpen((prev) => !prev);
   };
 
   useEffect(() => {
-    if (localStorage.length > 0) {
-      const presenting = isPresentingStatus();
-      setIsPresenting(presenting);
-      console.log("isPresenting: ", presenting);
-
-      const storedData = "";
+    if (presentingStatus === "presenting") {
+      setIsPresenting(true);
+    } else {
+      setIsPresenting(false);
     }
+  }, [presentingStatus]);
+
+  useEffect(() => {
+    setSelectedWeek(presentWeek);
   }, []);
 
   return (
@@ -70,35 +101,17 @@ export default function Main() {
               </li>
             </ul>
           </div>
-          <div className="participants-table grow overflow-y-auto h-[500px]">
-            <table className="min-w-full table-fixed border-separate border-spacing-0">
-              <thead className="bg-[#bf4759] text-white sticky top-0 z-10">
-                <tr>
-                  <th className="p-2 text-left border-b">No.:</th>
-                  <th className="p-2 text-left border-b">Participant's Name</th>
-                  <th className="p-2 text-left border-b">Code</th>
-                  <th className="p-2 text-left border-b">Location</th>
-                </tr>
-              </thead>
-              <tbody className="">
-                {sampleData.map((entry) => (
-                  <tr key={entry.number} className="">
-                    <td className="">{entry.number}</td>
-                    <td className="">{entry.fullName}</td>
-                    <td className="text-base font-bold">{entry.code}</td>
-                    <td className="">{entry.region}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ParticipantsTable
+            tableData={participantsData}
+            loadingTable={loadingParticipantsData}
+          />
           <div className="status-bar flex justify-between items-center text-sm">
             <div className="week-selector flex gap-1 bg-orange-200 h-[40px]  items-center justify-center rounded-full overflow-hidden">
               <div className="prev-week hover:bg-orange-300 h-full  px-4 content-center cursor-pointer">
                 <FontAwesomeIcon icon={faChevronLeft} />
               </div>
               <div className="week-list hover:bg-orange-300 p-1 px-3 cursor-pointer rounded-full">
-                Week of November 23 to 30
+                Week of {selectedWeek.weekName}
               </div>
               <div className="next-week hover:bg-orange-300 h-full  px-4 content-center cursor-pointer">
                 <FontAwesomeIcon icon={faChevronRight} />

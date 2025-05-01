@@ -41,13 +41,20 @@ const SettingsButton = () => {
           <div className="modal-body grow">
             <h1>Work In Progress</h1>
             <ul>
-              <li>🟢 Integration of Participants Data to Table</li>
-              <li>⏹️ Raffle Draw Randomizer Algorythm</li>
+              <li>🔴 Integration of Participants Data to Table</li>
+              <li>🟢 Raffle Draw Randomizer Algorithm</li>
               <li>⏹️ Presentation View Switching</li>
-              <li>⏹️ Picking and Cancelling for Final Winner</li>
+              <li>🟢 Picking and Cancelling for Final Winner</li>
               <li>⏹️ Raffle Draw View Polishing</li>
               <li>⏹️ Participants Summary View Polishing</li>
             </ul>
+            <p className="mt-4 text-sm">Legends:</p>
+            <p className="text-sm w-full  gap-4 flex">
+              <span>⏹️ Not Startet Yet</span>
+              <span>🟢 Work In Progress</span>
+              <span>🔴 Fixing Problem</span>
+              <span>⭐ Feature Done</span>
+            </p>
           </div>
           <div className="modal-footer text-right text-sm italic">
             Last System Update: {latestUpdateData}

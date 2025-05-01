@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { Route } from "./+types/home";
 
 import SlotMachineItem from "~/components/SlotMachineItem";
 import KopikoBlancaLogo from "~/assets/images/KopikoBlancaLogoTrimmed.png"; // Ensure your build setup supports importing images
+import useLocalStorageState from "use-local-storage-state";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -14,6 +15,11 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Present() {
   const ANCode = "KOPIKOBLANCA";
+
+  type PresentingStatus = "presenting" | "not-presenting";
+
+  const [presentingStatus, setPresentingStatus] =
+    useLocalStorageState<PresentingStatus>("presentingStatus");
 
   const [isPresenting, setIsPresenting] = useState(false);
   const [triggerRolling, setTriggerRolling] = useState(false);
@@ -32,6 +38,24 @@ export default function Present() {
   const startRolling = () => {
     setTriggerRolling(true);
   };
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      setPresentingStatus("not-presenting");
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (presentingStatus === "not-presenting") {
+      window.close();
+    }
+  }, [presentingStatus]);
 
   return (
     <main className="flex items-center justify-center pt-16 pb-4 flex-col gap-4">

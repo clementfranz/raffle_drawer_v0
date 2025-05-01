@@ -1,8 +1,16 @@
 import React from "react";
 
-const Tab_Presentation = () => {
+interface Tab_PresentationProps {
+  isActiveTab?: boolean;
+}
+
+const Tab_Presentation: React.FC<Tab_PresentationProps> = ({ isActiveTab }) => {
   return (
-    <>
+    <div
+      className={` bg-gray-pink w-full flex flex-col text-white relative ${
+        isActiveTab ? "flex" : "hidden"
+      }`}
+    >
       <div className="top-part grow p-4 overflow-y-scroll bg-gradient-to-b from-gray-900 to-gray-800">
         <div className="sub-panel mb-3">
           <h2 className="mb-2">Choose Views</h2>
@@ -42,7 +50,7 @@ const Tab_Presentation = () => {
           Draw Raffle
         </button>
       </div>
-    </>
+    </div>
   );
 };
 

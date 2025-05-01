@@ -163,6 +163,10 @@ tbody tr td {
   }
 }
 
+.sub-panel {
+  @apply w-full
+}
+
 .slot-reel-infiroll .reel-part-a {
   width: 100%;
   position: absolute;
