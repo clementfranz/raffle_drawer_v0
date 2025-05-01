@@ -59,11 +59,16 @@ tbody tr td {
 }
 
 .view-option {
-  @apply bg-[#a50e25] text-white rounded-lg overflow-hidden;
+  @apply bg-[#a50e25] text-white rounded-lg overflow-hidden cursor-pointer select-none transition-all hover:bg-red-900;
 }
 
-.view-option a {
-  @apply w-full h-1/2 bg-linear-to-b from-[transparent] to-[black] text-white flex justify-center items-end text-sm pb-2;
+.view-preview {
+  @apply bg-amber-300 rounded-lg overflow-hidden select-none transition-all;
+}
+
+.view-option .label,
+.view-preview .label {
+  @apply w-full h-1/2 bg-linear-to-b from-[transparent] to-[black] text-white flex justify-center items-end text-sm pb-2 text-center;
 }
 
 .pagination .pages {
@@ -185,4 +190,20 @@ tbody tr td {
   animation: roll 0.8s linear infinite;
   animation-direction: normal;
   animation-fill-mode: forwards;
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.flowing-gradient {
+  background: linear-gradient(270deg, #15d86c, #f3eb58, #15d86c, #f3eb58, #15d86c);
+  background-size: 800% 800%;
+  animation: gradientFlow 10s ease infinite;
 }

@@ -16,9 +16,12 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
       <TabShell position="top">
         <TabSubPanel title={"Regional Picking Parameter"}>
           <p className="text-sm">Choose Region to choose winner from</p>
+          <label htmlFor="region-select" className="block text-sm font-medium">
+            Select Region
+          </label>
           <select
             name="region-select"
-            id=""
+            id="region-select"
             className="w-full bg-gray-600 p-2 mt-2 rounded-2xl"
           >
             <option value="">All Regions</option>

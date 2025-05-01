@@ -2,8 +2,8 @@ import React, { useRef } from "react";
 
 import UploadButton from "../../UploadButton/_main/UploadButton";
 
-const Phase01_Idle = () => {
-  return <div>Phase01_Idle</div>;
+const Phase02_Attached = () => {
+  return <div>Phase02_Attached</div>;
 };
 
 const Header = () => {
@@ -14,13 +14,12 @@ const Header = () => {
   );
 };
 
-const Body = () => {
-  return (
-    <>
-      Upload a CSV file with the participants data. The file should contain the
-      following columns: Entry ID, Full Name, Raffle Code, Region/Location.
-    </>
-  );
+type BodyProps = {
+  attachedFile?: File | null;
+};
+
+const Body = ({ attachedFile }: BodyProps) => {
+  return <>FileName: {attachedFile?.name}</>;
 };
 
 type FooterProps = {
@@ -29,21 +28,19 @@ type FooterProps = {
       "idle" | "attached" | "processing" | "error" | "completed"
     >
   >;
-  setAttachedFile: React.Dispatch<React.SetStateAction<File | null>>;
+  setAttachedFile?: React.Dispatch<React.SetStateAction<File | null>>;
 };
 
 const Footer = ({ setAttachedFile, setUploadStatus }: FooterProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null!);
 
-  const handleAttachFile = () => {
-    fileInputRef.current.click();
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       e.target.value = ""; // Reset the input value
-      setAttachedFile(null); // Clear the last attached file
-      setAttachedFile(e.target.files[0]);
+      if (setAttachedFile) {
+        setAttachedFile(null); // Clear the last attached file
+        setAttachedFile(e.target.files[0]);
+      }
       if (setUploadStatus) {
         setUploadStatus("attached");
       }
@@ -52,9 +49,7 @@ const Footer = ({ setAttachedFile, setUploadStatus }: FooterProps) => {
 
   return (
     <>
-      <UploadButton onClick={handleAttachFile}>
-        Select & Attach File
-      </UploadButton>
+      <UploadButton>Submit File</UploadButton>
 
       <input
         ref={fileInputRef}
@@ -69,8 +64,8 @@ const Footer = ({ setAttachedFile, setUploadStatus }: FooterProps) => {
   );
 };
 
-Phase01_Idle.Header = Header;
-Phase01_Idle.Body = Body;
-Phase01_Idle.Footer = Footer;
+Phase02_Attached.Header = Header;
+Phase02_Attached.Body = Body;
+Phase02_Attached.Footer = Footer;
 
-export default Phase01_Idle;
+export default Phase02_Attached;

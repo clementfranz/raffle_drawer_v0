@@ -21,6 +21,10 @@ export default function Present() {
   const [presentingStatus, setPresentingStatus] =
     useLocalStorageState<PresentingStatus>("presentingStatus");
 
+  const [startDraw, setStartDraw] = useLocalStorageState("startDraw", {
+    defaultValue: false
+  });
+
   const [isPresenting, setIsPresenting] = useState(false);
   const [triggerRolling, setTriggerRolling] = useState(false);
 
@@ -35,10 +39,6 @@ export default function Present() {
     }
   };
 
-  const startRolling = () => {
-    setTriggerRolling(true);
-  };
-
   useEffect(() => {
     const handleBeforeUnload = () => {
       setPresentingStatus("not-presenting");
@@ -48,30 +48,26 @@ export default function Present() {
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      setStartDraw(false);
     };
   }, []);
 
   useEffect(() => {
     if (presentingStatus === "not-presenting") {
+      setStartDraw(false);
       window.close();
     }
   }, [presentingStatus]);
 
   return (
-    <main className="flex items-center justify-center pt-16 pb-4 flex-col gap-4">
+    <main className="flex items-center justify-center pt-16 pb-4 flex-col gap-4 h-screen overflow-hidden relative">
       <div
-        className={`slot-machine-shell transition-all duration-500 ${
+        className={`slot-machine-shell transition-all duration-500 h-screen overflow-hidden ${
           !isPresenting ? "-translate-y-full" : "translate-y-0 flex z-50"
         }`}
       >
         <div className="slot-machine select-none">
           <div className="slot-machine-inner flex">
-            <button
-              className="aspect-square p-4 bg-white rounded-full mr-4 cursor-pointer hover:bg-gray-200 transition-all duration-200"
-              onClick={startRolling}
-            >
-              Start
-            </button>
             {ANCode.split("").map((char, index) => (
               <SlotMachineItem
                 key={index}
@@ -101,6 +97,53 @@ export default function Present() {
           >
             Activate Presentation
           </button>
+        </div>
+      </div>
+      {/* BELOW IS FOR NAME OF PARTICIPANT */}
+      <div
+        className={`participant-details absolute z-60 flowing-gradient min-w-[1000px] p-8 rounded-2xl flex flex-col justify-center items-center transition-all duration-500 delay-[12s] ${
+          startDraw
+            ? "top-1/2 translate-y-[150px] opacity-100 "
+            : "bottom-0 translate-y-full opacity-0"
+        } `}
+      >
+        <div className="participant-name text-7xl font-bold w-full text-center">
+          John Kevin Dela Cruz - Conrado
+        </div>
+        <div className="participant-region text-center text-5xl bg-white mt-8 uppercase p-4 px-6 rounded-2xl">
+          Central Luzon
+        </div>
+      </div>
+      {/* CONGRATULATIONS TEXT */}
+
+      {/* BELOW IS FOR NAME OF PARTICIPANT */}
+      <div
+        className={`participant-details absolute z-60 min-w-[1000px] p-8 rounded-2xl flex flex-col justify-center items-center transition-all duration-500 delay-[12s] tracking-widest ${
+          startDraw
+            ? "top-1/2 -translate-y-[300px] opacity-100 "
+            : "top-0 -translate-y-full opacity-0"
+        } `}
+      >
+        <div className="participant-name text-7xl tracking-[20px] w-full text-center font-[Ultra] text-red-800  animate-bounce text-shadow-black text-shadow-2xs bg-[#fef3c6bd] p-4 rounded-4xl">
+          CONGRATULATIONS!
+        </div>
+      </div>
+
+      {/* BELOW IS FOR KOPIKO BLANCA RAFFLE LOGO */}
+      <div
+        className={`absolute z-100  flex justify-center items-center flex-col gap-10 transition-all duration-500 ${
+          startDraw || !isPresenting
+            ? "top-0 -translate-y-full"
+            : "top-1/2 -translate-y-1/2"
+        }`}
+      >
+        <img
+          src={KopikoBlancaLogo}
+          alt="Kopiko Blanca Logo"
+          className="h-[500px]"
+        />
+        <div className="logo-text text-6xl font-[Ultra] text-[black] bg-[#f3eb589f] p-8 rounded-4xl">
+          Kopiko Blanca Raffle Draw
         </div>
       </div>
     </main>

@@ -11,7 +11,7 @@ import ControlPanelNav from "../../ControlPanelNav/ControlPanelNav";
 
 import Tab_Overview from "../../ControlPanelTabs/Tab_Overview/_main/Tab_Overview";
 import Tab_Raffle from "../../ControlPanelTabs/Tab_Raffle/_main/Tab_Raffle";
-import Tab_Presentation from "../../ControlPanelTabs/Tab_Presentation";
+import Tab_Presentation from "../../ControlPanelTabs/Tab_Presentation/_main/Tab_Presentation";
 import Tab_Configure from "../../ControlPanelTabs/Tab_Configure/_main/Tab_Configure";
 
 const ControlPanel: React.FC<ControlPanelProps> = ({

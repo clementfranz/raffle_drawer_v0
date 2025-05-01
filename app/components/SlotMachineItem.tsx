@@ -66,6 +66,7 @@ const preCharacters = [
 ];
 
 import InfinityRollReel from "./InfinityRollReel";
+import useLocalStorageState from "use-local-storage-state";
 
 const SlotMachineItem = ({
   targetChar,
@@ -81,6 +82,8 @@ const SlotMachineItem = ({
   const [isRevealed, setIsRevealed] = useState(false);
   const [isRevealedEnd, setIsRevealedEnd] = useState(false);
   const [isRevealedStart, setIsRevealedStart] = useState(false);
+
+  const [startDraw, setStartDraw] = useLocalStorageState("startDraw");
 
   const revealCode = () => {
     setIsRevealed(true);
@@ -108,6 +111,12 @@ const SlotMachineItem = ({
     console.log("NTH: ", nthChar);
     console.log("Target: ", targetChar);
   }, [targetChar]);
+
+  useEffect(() => {
+    if (startDraw) {
+      startRolling();
+    }
+  }, [startDraw]);
 
   useEffect(() => {
     const handleStorageChange = (event: any) => {

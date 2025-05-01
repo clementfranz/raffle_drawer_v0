@@ -45,7 +45,7 @@ const SettingsButton = () => {
               <li>🟢 Raffle Draw Randomizer Algorithm</li>
               <li>⏹️ Presentation View Switching</li>
               <li>🟢 Picking and Cancelling for Final Winner</li>
-              <li>⏹️ Raffle Draw View Polishing</li>
+              <li>⭐ Raffle Draw View Polishing</li>
               <li>⏹️ Participants Summary View Polishing</li>
             </ul>
             <p className="mt-4 text-sm">Legends:</p>

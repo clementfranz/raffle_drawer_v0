@@ -7,8 +7,21 @@ import UploadBoxFooter from "../components/UploadBoxFooter/_main/UploadBoxFooter
 
 type UploadBoxProps = {
   children: ReactNode;
-  uploadState: "idle" | "attached" | "processing" | "error" | "completed";
+  uploadState?: "idle" | "attached" | "processing" | "error" | "completed";
+  setUploadState?: React.Dispatch<
+    React.SetStateAction<
+      "idle" | "attached" | "processing" | "error" | "completed"
+    >
+  >;
+  fileStates: {
+    fileName: string;
+    setFileName: React.Dispatch<React.SetStateAction<string>>;
+    attachedFile: File | null;
+    setAttachedFile: React.Dispatch<React.SetStateAction<File | null>>;
+  }; // Updated type for fileStates
 };
+
+type formStateProps = "default" | "catcher" | "undroppable";
 
 const defaultStyling =
   "w-full p-4 border-dashed rounded-lg border-2 text-center transition-all duration-200 aspect-[5/4] flex flex-col justify-center items-center relative";
@@ -28,37 +41,26 @@ const uploadStateStyling = (uploadState: UploadBoxProps["uploadState"]) => {
   }
 };
 
-const formStateStyling = (formState: UploadBoxProps["formState"]) => {
+const formStateStyling = (formState: formStateProps) => {
   switch (formState) {
     case "catcher":
       return "bg-pink-700 border-gray-300 animate-pulse";
 
     default:
-      break;
+      return ""; // Return an empty string or a default style
   }
 };
 
-const UploadBox = ({ children, uploadState }: UploadBoxProps) => {
+const UploadBox = ({ children, uploadState, fileStates }: UploadBoxProps) => {
   // FILE STATES
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [fileName, setFileName] = useState("");
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const { setAttachedFile } = fileStates;
 
   // DRAG STATES
   const [isDragging, setIsDragging] = useState(false);
 
-  // UPLOAD STATES
-  const [isProcessing, setIsProcessing] = useState(false);
-
   // FORM STATES
   type FormStateType = "default" | "undroppable" | "catcher";
   const [formState, setFormState] = useState<FormStateType>("default");
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    setAttachedFile(file || null);
-    setIsProcessing(true);
-  };
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -74,12 +76,11 @@ const UploadBox = ({ children, uploadState }: UploadBoxProps) => {
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
+    setFormState("default");
     const files = event.dataTransfer.files;
     if (files.length > 0) {
       const file = files[0];
       if (file.type === "text/csv") {
-        console.log("CSV file dropped:", file.name);
-        setFileName(file.name);
         setAttachedFile(file);
       } else {
         alert("Please upload a valid CSV file.");
@@ -99,15 +100,6 @@ const UploadBox = ({ children, uploadState }: UploadBoxProps) => {
       onDrop={handleDrop}
     >
       {isDragging ? "Drop CSV File Here" : children}
-      <input
-        ref={fileInputRef}
-        type="file"
-        id="fileInput"
-        accept=".csv"
-        className="hidden"
-        onChange={handleFileChange}
-        aria-label="File Upload"
-      />
     </div>
   );
 };

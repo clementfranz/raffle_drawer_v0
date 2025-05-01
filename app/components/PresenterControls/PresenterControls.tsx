@@ -18,6 +18,10 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
   const [presentingStatus, setIsPresentingStatus] =
     useLocalStorageState<PresentingStatus>("presentingStatus");
 
+  const [startDraw, setStartDraw] = useLocalStorageState("startDraw", {
+    defaultValue: false
+  });
+
   const togglePresentation = () => {
     if (presentingStatus === "presenting") {
       setIsPresentingStatus("not-presenting");
@@ -28,6 +32,7 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
         "_blank",
         "width=1300,height=600,noopener,noreferrer"
       );
+      setStartDraw(false);
     }
   };
   return (

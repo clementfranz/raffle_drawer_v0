@@ -11,7 +11,9 @@ const defaultStyling =
 
 const UploadButton = ({ className, children, onClick }: UploadButtonProps) => {
   return (
-    <button className={`${defaultStyling} ${className}`}>{children}</button>
+    <button className={`${defaultStyling} ${className}`} onClick={onClick}>
+      {children}
+    </button>
   );
 };
 
