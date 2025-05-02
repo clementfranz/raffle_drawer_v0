@@ -56,6 +56,7 @@ export const importCsvToIndexedDB = async (
   setEntriesProcessed: Dispatch<SetStateAction<number>>,
   setUploadProgress: Dispatch<SetStateAction<number>>
 ) => {
+  setUploadProgress(1);
   const dbName = "ParticipantsDB";
 
   // First, get current version

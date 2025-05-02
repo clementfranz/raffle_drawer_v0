@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 // Other Packages
 import Papa from "papaparse";
@@ -22,12 +22,20 @@ const Phase01_Idle = ({
   setUploadStatus,
   uploadStatus
 }: IdleProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleButtonClick = () => {
+    inputRef.current?.click(); // Trigger the hidden file input click
+  };
+
   // DRAG STATES
   const [isDragging, setIsDragging] = useState(false);
 
   // FORM STATES
   type FormStateType = "default" | "undroppable" | "catcher";
   const [formState, setFormState] = useState<FormStateType>("default");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -40,22 +48,39 @@ const Phase01_Idle = ({
     setFormState("default");
   };
 
+  const handleFileProcess = async (file: File) => {
+    if (file.type === "text/csv") {
+      setFileAttached(file);
+      setUploadStatus("attached");
+      const rows = await countCsvRows(file);
+      setFileDetails({ entries: rows });
+    } else {
+      alert("Please upload a valid CSV file.");
+    }
+  };
+
   const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
     setFormState("default");
+
     const files = event.dataTransfer.files;
     if (files.length > 0) {
-      const file = files[0];
-      if (file.type === "text/csv") {
-        setFileAttached(file);
-        setUploadStatus("attached");
-        const rows = await countCsvRows(file);
-        setFileDetails({ entries: rows });
-      } else {
-        alert("Please upload a valid CSV file.");
-      }
+      await handleFileProcess(files[0]);
     }
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      await handleFileProcess(files[0]);
+    }
+  };
+
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
   };
 
   const countCsvRows = (file: File): Promise<number> => {
@@ -102,7 +127,22 @@ const Phase01_Idle = ({
               </p>
             </UploadBox.Body>
             <UploadBox.Footer>
-              <UploadButton>Select & Attach File</UploadButton>
+              <UploadButton onClick={handleFileUpload}>
+                Select & Attach File
+              </UploadButton>
+              <label htmlFor="file-upload" className="sr-only hidden">
+                Upload File
+              </label>
+              <input
+                type="file"
+                name="file-upload"
+                id="file-upload"
+                title="Upload a CSV file"
+                className="hidden"
+                ref={fileInputRef}
+                accept=".csv"
+                onChange={handleFileChange}
+              />
             </UploadBox.Footer>
           </>
         )}

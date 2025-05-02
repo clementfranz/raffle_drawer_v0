@@ -48,6 +48,12 @@ const Phase03_Processing = ({
   };
 
   useEffect(() => {
+    if (uploadProgress === 100) {
+      setUploadStatus("completed");
+    }
+  }, [uploadProgress]);
+
+  useEffect(() => {
     if (triggerImport && fileAttached) {
       handleImport(fileAttached);
     }
