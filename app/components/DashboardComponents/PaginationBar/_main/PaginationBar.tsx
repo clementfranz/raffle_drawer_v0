@@ -34,7 +34,7 @@ const PaginationBar = () => {
 
   useEffect(() => {
     const page = parseInt(params.get("page") || "1", 10);
-    const size = parseInt(params.get("pageSize") || "10", 10);
+    const size = parseInt(params.get("pageSize") || "250", 10);
     setCurrentPage(page);
     setPageSize(size);
 
