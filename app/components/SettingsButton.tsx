@@ -41,7 +41,7 @@ const SettingsButton = () => {
           <div className="modal-body grow">
             <h1>Work In Progress</h1>
             <ul>
-              <li>🔴 Integration of Participants Data to Table</li>
+              <li>🟢 Integration of Participants Data to Table</li>
               <li>🟢 Raffle Draw Randomizer Algorithm</li>
               <li>⏹️ Presentation View Switching</li>
               <li>🟢 Picking and Cancelling for Final Winner</li>

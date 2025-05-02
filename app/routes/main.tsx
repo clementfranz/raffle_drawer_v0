@@ -13,22 +13,23 @@ import {
   faChevronRight
 } from "@fortawesome/free-solid-svg-icons";
 
-import { isPresentingStatus } from "~/utils/presentingMode";
 import { getWeek } from "~/utils/dateTime";
 import ParticipantsTable from "~/components/DashboardComponents/ParticipantsTable/_main/ParticipantsTable";
 
 import useLocalStorageState from "use-local-storage-state";
+import { NavLink, useLocation } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" }
+    { title: "KBRDS | Dashboard" },
+    {
+      name: "description",
+      content: "Welcome to Kopiko Blanca Raffle Draw System"
+    }
   ];
 }
 
 const presentWeek = getWeek();
-
-const getBatchViaWeek = () => {};
 
 export default function Main() {
   const [controlPanelOpen, setControlPanelOpen] = useState(false);
@@ -37,6 +38,8 @@ export default function Main() {
   const [participantsData, setParticipantsData] = useState<any[]>([]);
   const [loadingParticipantsData, setLoadingParticipantsData] =
     useState<boolean>(false);
+
+  const location = useLocation();
 
   interface Week {
     weekName: string;
@@ -61,6 +64,10 @@ export default function Main() {
     setControlPanelOpen((prev) => !prev);
   };
 
+  const isFilterActive = (filterValue: string) => {
+    return new URLSearchParams(location.search).get("filter") === filterValue;
+  };
+
   useEffect(() => {
     if (presentingStatus === "presenting") {
       setIsPresenting(true);
@@ -81,15 +88,41 @@ export default function Main() {
           <div className="tabs flex justify-between items-center">
             <ul className="flex table-tabs">
               <li>
-                <a href="/main" className="active bg-orange-300">
+                <NavLink
+                  to="/main"
+                  className={({ isActive }) =>
+                    isActive && location.search === ""
+                      ? "active bg-orange-300"
+                      : undefined
+                  }
+                  end
+                >
                   All Participants
-                </a>
+                </NavLink>
               </li>
               <li>
-                <a href="/main?filter=winners">Winners</a>
+                <NavLink
+                  to="/main?filter=winners"
+                  className={() =>
+                    isFilterActive("winners")
+                      ? "active bg-orange-300"
+                      : undefined
+                  }
+                >
+                  Winners
+                </NavLink>
               </li>
               <li>
-                <a href="/main?filter=backupwinners">Backup Winners</a>
+                <NavLink
+                  to="/main?filter=backupwinners"
+                  className={() =>
+                    isFilterActive("backupwinners")
+                      ? "active bg-orange-300"
+                      : undefined
+                  }
+                >
+                  Backup Winners
+                </NavLink>
               </li>
             </ul>
             <ul className="flex space-x-4 text-sm">

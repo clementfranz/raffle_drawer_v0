@@ -28,7 +28,7 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ isPresenting }) => {
               {" "}
               Kopiko Blanca
             </span>
-            Raffle System
+            Raffle Draw System
           </h1>
           <nav>
             <ul className="flex space-x-1 justify-center items-center">

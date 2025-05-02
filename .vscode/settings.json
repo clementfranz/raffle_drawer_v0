@@ -18,5 +18,8 @@
     "titleBar.inactiveBackground": "#32fad599",
     "titleBar.inactiveForeground": "#15202b99"
   },
-  "peacock.color": "#32fad5"
+  "peacock.color": "#32fad5",
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "less.lint.unknownAtRules": "ignore"
 }

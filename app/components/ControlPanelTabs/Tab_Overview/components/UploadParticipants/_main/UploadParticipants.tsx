@@ -1,19 +1,13 @@
-import React, { useState, useRef, useEffect } from "react";
-import Papa from "papaparse";
-import type { IDBPDatabase } from "idb";
-import { openDB } from "idb";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClose, faFileCsv } from "@fortawesome/free-solid-svg-icons";
+import React, { useState, useEffect } from "react";
 
 // Components
-import UploadBox from "../components/UploadBox/_main/UploadBox";
 
 import useLocalStorageState from "use-local-storage-state";
-import UploadBoxFooter from "../components/UploadBox/components/UploadBoxFooter/_main/UploadBoxFooter";
-import UploadButton from "../components/UploadButton/_main/UploadButton";
 
-// UploadBox Phases
-import { UploadBoxPhases } from "../data/UploadBoxPhases";
+import Phase01_Idle from "../components/UploadBoxPhases/Phase01_Idle/Phase01_Idle";
+import Phase02_Attached from "../components/UploadBoxPhases/Phase02_Attached/Phase02_Attached";
+import Phase03_Processing from "../components/UploadBoxPhases/Phase03_Processing/Phase03_Processing";
+import Phase04_Completed from "../components/UploadBoxPhases/Phase04_Completed/Phase04_Completed";
 
 interface UploadParticipantsProps {
   uploadComplete: React.Dispatch<React.SetStateAction<boolean>>;
@@ -23,19 +17,9 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
   uploadComplete
 }) => {
   // FILE STATES
-  const [fileName, setFileName] = useState("");
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
-
-  type UploadStatus = keyof typeof UploadBoxPhases;
-
-  type FormStatus = "default" | "droppable" | "catcher";
-
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>("idle");
-  const [formStatus, setFormStatus] = useState<FormStatus>("default");
-
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const [status, setStatus] = useState("Upload");
+  const [fileAttached, setFileAttached] = useState<File | null>(null);
+  const [fileDetails, setFileDetails] = useState<Object | null>(null);
+  const [triggerImport, setTriggerImport] = useState<boolean>(false);
 
   interface SelectedWeek {
     weekName: string;
@@ -43,7 +27,9 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
   }
 
   const [selectedWeek, setSelectedWeek] =
-    useLocalStorageState<SelectedWeek | null>("selectedWeek");
+    useLocalStorageState<SelectedWeek | null>("selectedWeek", {
+      defaultValue: null
+    });
 
   const handleUploadComplete = () => {
     uploadComplete(true);
@@ -52,26 +38,17 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
   const handleFileUpload = async () => {};
 
   const handleAttachedFile = () => {
-    setIsProcessing(true);
-    if (attachedFile) {
-      console.log(attachedFile.name);
+    // setIsProcessing(true);
+    if (fileAttached) {
+      console.log(fileAttached.name);
     }
-  };
-
-  const resetFileAttachement = () => {};
-
-  const fileStates = {
-    fileName,
-    setFileName,
-    attachedFile,
-    setAttachedFile
   };
 
   useEffect(() => {
-    if (attachedFile) {
+    if (fileAttached) {
       handleAttachedFile();
     }
-  }, [attachedFile]);
+  }, [fileAttached]);
 
   return (
     <>
@@ -83,7 +60,31 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
           <p className="text-gray-300 text-sm my-2 text-center italic">
             No participants data found.
           </p>
-          <UploadBox
+
+          {/* PHASE 01 */}
+          <Phase01_Idle
+            setFileAttached={setFileAttached}
+            setFileDetails={setFileDetails}
+          />
+
+          {/* PHASE 02 */}
+          <Phase02_Attached
+            fileAttached={fileAttached}
+            fileDetails={fileDetails}
+            setTriggerImport={setTriggerImport}
+          />
+
+          {/* PHASE 03 */}
+          <Phase03_Processing
+            fileAttached={fileAttached}
+            fileDetails={fileDetails}
+            triggerImport={triggerImport}
+          />
+
+          {/* PHASE 04 */}
+          <Phase04_Completed selectedWeek={selectedWeek} />
+
+          {/* <UploadBox
             uploadState={uploadStatus}
             setUploadState={setUploadStatus}
             fileStates={fileStates}
@@ -100,7 +101,7 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
                 setUploadStatus
               })}
             </UploadBoxFooter>
-          </UploadBox>
+          </UploadBox> */}
         </div>
       </div>
     </>
