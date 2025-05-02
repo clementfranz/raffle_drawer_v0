@@ -40,26 +40,27 @@ const SettingsButton = () => {
           </div>
           <div className="modal-body grow">
             <div className="progress-bar my-4 w-full bg-gray-700 h-[50px] rounded-full p-2">
-              <div className="progress-fill bg-emerald-500 w-[85%] h-full rounded-full flex justify-center items-center animate-pulse">
-                85%
+              <div className="progress-fill bg-emerald-500 w-[90%] h-full rounded-full flex justify-center items-center animate-pulse">
+                90%
               </div>
             </div>
             <h1>Work In Progress (Remaining Issues Only)</h1>
 
             <ul>
-              <li>⭐ Integration of Participants Data to Table</li>
-              <li>🟢 Raffle Draw Randomizer Algorithm</li>
+              <li>✅ Integration of Participants Data to Table</li>
+              <li>✅ Raffle Draw Randomizer Algorithm</li>
+              <li>✅ Raffle Draw View Polishing</li>
+              <li>✅ Picking for Final Winner</li>
+              <li>⏳ Cancelling for Final Winner</li>
+              <li>⏳ Participants Summary View Polishing</li>
               <li>⏹️ Presentation View Switching</li>
-              <li>🟢 Picking and Cancelling for Final Winner</li>
-              <li>⭐ Raffle Draw View Polishing</li>
-              <li>⏹️ Participants Summary View Polishing</li>
             </ul>
             <p className="mt-4 text-sm">Legend:</p>
             <p className="text-sm w-full  gap-4 flex">
               <span>⏹️ Not Startet Yet</span>
-              <span>🟢 Work In Progress</span>
+              <span>⏳ Work In Progress</span>
               <span>🔴 Fixing Problem</span>
-              <span>⭐ Feature Done</span>
+              <span>✅ Feature Done</span>
             </p>
           </div>
           <div className="modal-footer text-right text-sm italic">

@@ -10,9 +10,18 @@ import UploadButton from "../../UploadButton/_main/UploadButton";
 type IdleProps = {
   setFileAttached: React.Dispatch<React.SetStateAction<File | null>>;
   setFileDetails: React.Dispatch<React.SetStateAction<Object | null>>;
+  setUploadStatus: React.Dispatch<
+    React.SetStateAction<"idle" | "attached" | "processing" | "completed">
+  >;
+  uploadStatus: string;
 };
 
-const Phase01_Idle = ({ setFileAttached, setFileDetails }: IdleProps) => {
+const Phase01_Idle = ({
+  setFileAttached,
+  setFileDetails,
+  setUploadStatus,
+  uploadStatus
+}: IdleProps) => {
   // DRAG STATES
   const [isDragging, setIsDragging] = useState(false);
 
@@ -40,6 +49,7 @@ const Phase01_Idle = ({ setFileAttached, setFileDetails }: IdleProps) => {
       const file = files[0];
       if (file.type === "text/csv") {
         setFileAttached(file);
+        setUploadStatus("attached");
         const rows = await countCsvRows(file);
         setFileDetails({ entries: rows });
       } else {
@@ -69,7 +79,7 @@ const Phase01_Idle = ({ setFileAttached, setFileDetails }: IdleProps) => {
   };
 
   return (
-    <div className="upload-phase ">
+    <div className={`upload-phase ${uploadStatus !== "idle" && "hidden"}`}>
       <UploadBox
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

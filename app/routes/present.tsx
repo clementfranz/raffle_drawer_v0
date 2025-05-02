@@ -14,6 +14,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Present() {
+  const [winners, setWinners] = useLocalStorageState<
+    | { raffle_code: string; full_name: string; regional_location: string }[]
+    | null
+  >("winners");
+
   const ANCode = "KOPIKOBLANCA";
 
   type PresentingStatus = "presenting" | "not-presenting";
@@ -68,14 +73,25 @@ export default function Present() {
       >
         <div className="slot-machine select-none">
           <div className="slot-machine-inner flex">
-            {ANCode.split("").map((char, index) => (
-              <SlotMachineItem
-                key={index}
-                targetChar={char}
-                delayReveal={index + 1}
-                triggerRolling={triggerRolling}
-              />
-            ))}
+            {winners && winners.length > 0
+              ? winners[0]?.raffle_code
+                  .split("")
+                  .map((char, index) => (
+                    <SlotMachineItem
+                      key={index}
+                      targetChar={char}
+                      delayReveal={index + 1}
+                      triggerRolling={triggerRolling}
+                    />
+                  ))
+              : ANCode.split("").map((char, index) => (
+                  <SlotMachineItem
+                    key={index}
+                    targetChar={char}
+                    delayReveal={index + 1}
+                    triggerRolling={triggerRolling}
+                  />
+                ))}
           </div>
         </div>
       </div>
@@ -108,10 +124,18 @@ export default function Present() {
         } `}
       >
         <div className="participant-name text-7xl font-bold w-full text-center">
-          John Kevin Dela Cruz - Conrado
+          {winners &&
+            winners.length > 0 &&
+            winners[0].full_name
+              .split(" ")
+              .map(
+                (word) =>
+                  word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+              )
+              .join(" ")}
         </div>
         <div className="participant-region text-center text-5xl bg-white mt-8 uppercase p-4 px-6 rounded-2xl">
-          Central Luzon
+          {winners && winners.length > 0 && winners[0].regional_location}
         </div>
       </div>
       {/* CONGRATULATIONS TEXT */}

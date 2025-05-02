@@ -14,11 +14,12 @@ type SelectedWeek = {
 
 type CompletedProps = {
   selectedWeek: SelectedWeek | null;
+  uploadStatus: string;
 };
 
-const Phase04_Completed = ({ selectedWeek }: CompletedProps) => {
+const Phase04_Completed = ({ selectedWeek, uploadStatus }: CompletedProps) => {
   return (
-    <div className="upload-phase ">
+    <div className={`upload-phase ${uploadStatus !== "completed" && "hidden"}`}>
       <UploadBox className="bg-yellow-800 relative overflow-hidden">
         <UploadBox.Header>Processing Complete!</UploadBox.Header>
         <UploadBox.Body className="flex flex-col justify-around z-10">

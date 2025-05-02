@@ -24,6 +24,10 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
   );
   const [triggerImport, setTriggerImport] = useState<boolean>(false);
 
+  // UPLOAD STATES
+  type UploadStatusTypes = "idle" | "attached" | "processing" | "completed";
+  const [uploadStatus, setUploadStatus] = useState<UploadStatusTypes>("idle");
+
   interface SelectedWeek {
     weekName: string;
     weekCode: string;
@@ -33,12 +37,6 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
     useLocalStorageState<SelectedWeek | null>("selectedWeek", {
       defaultValue: null
     });
-
-  const handleUploadComplete = () => {
-    uploadComplete(true);
-  };
-
-  const handleFileUpload = async () => {};
 
   const handleAttachedFile = () => {
     // setIsProcessing(true);
@@ -68,6 +66,8 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
           <Phase01_Idle
             setFileAttached={setFileAttached}
             setFileDetails={setFileDetails}
+            setUploadStatus={setUploadStatus}
+            uploadStatus={uploadStatus}
           />
 
           {/* PHASE 02 */}
@@ -75,6 +75,8 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
             fileAttached={fileAttached}
             fileDetails={fileDetails}
             setTriggerImport={setTriggerImport}
+            setUploadStatus={setUploadStatus}
+            uploadStatus={uploadStatus}
           />
 
           {/* PHASE 03 */}
@@ -82,10 +84,15 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
             fileAttached={fileAttached}
             fileDetails={fileDetails}
             triggerImport={triggerImport}
+            setUploadStatus={setUploadStatus}
+            uploadStatus={uploadStatus}
           />
 
           {/* PHASE 04 */}
-          <Phase04_Completed selectedWeek={selectedWeek} />
+          <Phase04_Completed
+            selectedWeek={selectedWeek}
+            uploadStatus={uploadStatus}
+          />
 
           {/* <UploadBox
             uploadState={uploadStatus}

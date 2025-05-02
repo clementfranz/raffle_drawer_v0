@@ -14,22 +14,25 @@ import TabMainBody from "~/ui/ControlPanelUI/TabMainBody/_main/TabMainBody";
 import TabShell from "~/ui/ControlPanelUI/TabShell/_main/TabShell";
 import TabSubPanel from "~/ui/ControlPanelUI/TabSubPanel/_main/TabSubPanel";
 import TabActionButton from "~/ui/ControlPanelUI/TabActionButton/_main/TabActionButton";
+import useLocalStorageState from "use-local-storage-state";
 
 const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   setIsPresenting,
   isPresenting,
   isActiveTab
 }) => {
-  const [withParticipants, setWithParticipants] = useState(false);
+  const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
+    "withParticipantsData"
+  );
 
   return (
     <TabMainBody isActive={isActiveTab}>
       <TabShell position="top">
         <TabSubPanel title={"Participants Overview"}>
-          {withParticipants ? (
+          {withParticipantsData ? (
             <ParticipantsListSummary />
           ) : (
-            <UploadParticipants uploadComplete={setWithParticipants} />
+            <UploadParticipants uploadComplete={setWithParticipantsData} />
           )}
         </TabSubPanel>
       </TabShell>

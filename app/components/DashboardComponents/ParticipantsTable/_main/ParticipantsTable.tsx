@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { openDB } from "idb";
+import useLocalStorageState from "use-local-storage-state";
 
 interface Participant {
   id_entry: number;
@@ -20,9 +21,16 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
 }) => {
   const location = useLocation();
 
+  const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
+    "withParticipantsData",
+    {
+      defaultValue: false
+    }
+  );
   const [tableLocalData, setTableLocalData] = useState<Participant[] | null>(
     null
   );
+
   const [tableIsLoading, setTableIsLoading] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(250);
@@ -81,9 +89,11 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
         );
         console.log("Page 1:", page1);
         setTableLocalData(page1);
+        setWithParticipantsData(true);
       } catch (error) {
         console.error("Error fetching data:", error);
         setTableLocalData([]);
+        setWithParticipantsData(false);
       } finally {
         setTableIsLoading(false);
       }

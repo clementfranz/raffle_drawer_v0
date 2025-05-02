@@ -16,12 +16,18 @@ type ProcessingProps = {
   fileAttached: File | null;
   fileDetails: FileDetails | null;
   triggerImport: boolean;
+  setUploadStatus: React.Dispatch<
+    React.SetStateAction<"idle" | "attached" | "processing" | "completed">
+  >;
+  uploadStatus: string;
 };
 
 const Phase03_Processing = ({
   fileAttached,
   fileDetails,
-  triggerImport
+  triggerImport,
+  setUploadStatus,
+  uploadStatus
 }: ProcessingProps) => {
   const [entriesProcessed, setEntriesProcessed] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -48,7 +54,9 @@ const Phase03_Processing = ({
   }, [triggerImport]);
 
   return (
-    <div className="upload-phase ">
+    <div
+      className={`upload-phase ${uploadStatus !== "processing" && "hidden"}`}
+    >
       <UploadBox className="bg-green-800 relative overflow-hidden">
         <UploadBox.Header className="text-left z-10">
           Uploading File...
@@ -92,9 +100,9 @@ const Phase03_Processing = ({
               </div>
             </div>
           </div>
-          <div className="time-remaining">
+          {/* <div className="time-remaining">
             Estimated Time Remaining: 59 seconds
-          </div>
+          </div> */}
         </UploadBox.Body>
         <UploadBox.Footer className=" z-10">
           <UploadButton clickable={false} className="bg-[#0000008c]! ">
