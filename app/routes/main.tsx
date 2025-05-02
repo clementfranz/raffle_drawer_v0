@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import HeaderNav from "~/components/HeaderNav/HeaderNav";
 
 import ControlPanel from "../components/ControlPanel/_main/ControlPanel";
-import PaginationSettings from "../components/DashboardComponents/PaginationBar/PaginationSettings/PaginationSettings";
+import PaginationBar from "~/components/DashboardComponents/PaginationBar/_main/PaginationBar";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -150,30 +150,7 @@ export default function Main() {
                 <FontAwesomeIcon icon={faChevronRight} />
               </div>
             </div>
-            <div className="pagination bg-orange-200 rounded-full text-xs flex flex-row  items-center  h-[40px]">
-              <button
-                className=" hover:bg-orange-300 px-2 ps-3 h-[40px] rounded-r-lg cursor-pointer text-sm aspect-square overflow-hidden rounded-l-full"
-                aria-label="Previous Page"
-              >
-                <FontAwesomeIcon icon={faChevronLeft} />
-              </button>
-              <div className="pages">
-                <span className=" active">1</span>
-                <span className="">2</span>
-                <span className="">3</span>
-                <PaginationSettings />
-                <span className="">198</span>
-                <span className="">199</span>
-                <span className="">200</span>
-              </div>
-              <button
-                type="button"
-                className=" hover:bg-orange-300 px-2 pe-3 h-[40px] rounded-l-lg cursor-pointer text-sm aspect-square overflow-hidden rounded-r-full"
-                aria-label="Next Page"
-              >
-                <FontAwesomeIcon icon={faChevronRight} />
-              </button>
-            </div>
+            <PaginationBar />
             <button
               className={`control-panel-button flex gap-4 rounded-s-full cursor-pointer ${
                 controlPanelOpen ? "-mr-4" : "rounded-e-full"
