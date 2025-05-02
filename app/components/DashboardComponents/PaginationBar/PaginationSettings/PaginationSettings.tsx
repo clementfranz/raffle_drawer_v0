@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
+import { faGear } from "@fortawesome/free-solid-svg-icons";
 
 const PaginationSettings = () => {
   const [paginationSettingsOpen, setPaginationSettingsOpen] = useState(false);
@@ -19,7 +19,7 @@ const PaginationSettings = () => {
           aria-label="Pagination Settings"
           onClick={togglePaginationSettings}
         >
-          <FontAwesomeIcon icon={faEllipsis} />
+          <FontAwesomeIcon icon={faGear} className="text-gray-600" />
         </button>
         <div
           className={`bg-orange-800 text-white h-[80px] w-[150px] items-center justify-center px-2  absolute top-0 left-1/2 z-40 -translate-y-[calc(100%_-_10px)] -translate-x-1/2 rounded-lg ${

@@ -34,7 +34,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
     size: number
   ): Promise<any[]> => {
     setTableIsLoading(true);
-    const db = await openDB(dbName, 1);
+    const db = await openDB(dbName);
     const tx = db.transaction(storeName, "readonly");
     const store = tx.objectStore(storeName);
 
