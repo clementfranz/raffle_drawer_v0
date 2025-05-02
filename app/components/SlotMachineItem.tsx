@@ -110,6 +110,13 @@ const SlotMachineItem = ({
   };
 
   useEffect(() => {
+    if (!isRevealed) {
+      setNthChar("-300px");
+      setIsRevealedStart(false);
+    }
+  }, [isRevealed]);
+
+  useEffect(() => {
     if (triggerRolling) {
       startRolling();
     }
@@ -191,6 +198,14 @@ const SlotMachineItem = ({
             transitionDelay: `${delayReveal * 0.5}s`
           }}
         >
+          {characters.map((char, index) => (
+            <div
+              key={index}
+              className="slot-reel-item w-full aspect-square  flex justify-center items-center"
+            >
+              {char}
+            </div>
+          ))}
           {characters.map((char, index) => (
             <div
               key={index}
