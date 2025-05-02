@@ -181,6 +181,9 @@ const SlotMachineItem = ({
           className={`slot-reel flex flex-col w-full align-center justify-center absolute top-[240px] left-0 transition-transform duration-1000 ease-in-out ${
             isRevealedStart ? "opacity-100" : "opacity-0"
           }`}
+          // onTransitionEnd={() => {
+          //   setIsRevealed(true);
+          // }}
           style={{
             transform: `translateY(-${isRevealedStart ? nthChar : "-300px"})`,
             transitionTimingFunction: "cubic-bezier(0.5, 0, 0.5, 1)",

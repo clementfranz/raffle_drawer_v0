@@ -30,6 +30,9 @@ export default function Present() {
     defaultValue: false
   });
 
+  const [isRevealedStart, setIsRevealedStart] =
+    useLocalStorageState("isRevealedStart");
+
   const [isPresenting, setIsPresenting] = useState(false);
   const [triggerRolling, setTriggerRolling] = useState(false);
 
@@ -53,6 +56,7 @@ export default function Present() {
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
+      setIsRevealedStart(false);
       setStartDraw(false);
     };
   }, []);
