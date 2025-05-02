@@ -16,6 +16,8 @@ interface Tab_RaffleProps {
 
 const Tab_Raffle: React.FC<Tab_RaffleProps> = ({ isActiveTab }) => {
   const [winners, setWinners] = useLocalStorageState<any[] | null>("winners");
+  const [isRevealed, setIsRevealed] =
+    useLocalStorageState<boolean>("isRevealed");
 
   return (
     <>
@@ -26,7 +28,7 @@ const Tab_Raffle: React.FC<Tab_RaffleProps> = ({ isActiveTab }) => {
               Not Started Yet
             </div>
           </TabSubPanel>
-          {winners && winners.length > 0 && (
+          {winners && winners.length > 0 && isRevealed && (
             <TabSubPanel title={"Winner"} className="gap-3 flex flex-col">
               <div className="grid w-full">
                 <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
@@ -45,7 +47,7 @@ const Tab_Raffle: React.FC<Tab_RaffleProps> = ({ isActiveTab }) => {
               </div>
             </TabSubPanel>
           )}
-          {winners && winners.length > 0 && (
+          {winners && winners.length > 0 && isRevealed && (
             <TabSubPanel
               title={"Backup Winners"}
               className="gap-3 flex flex-col"

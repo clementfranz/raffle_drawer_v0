@@ -79,25 +79,34 @@ const SlotMachineItem = ({
   const [isRollingEnd, setIsRollingEnd] = useState(false);
   const [isRollingStart, setIsRollingStart] = useState(false);
 
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [isRevealed, setIsRevealed] = useLocalStorageState("isRevealed", {
+    defaultValue: false
+  });
   const [isRevealedEnd, setIsRevealedEnd] = useState(false);
   const [isRevealedStart, setIsRevealedStart] = useState(false);
 
   const [startDraw, setStartDraw] = useLocalStorageState("startDraw");
 
   const revealCode = () => {
-    setIsRevealed(true);
     setIsRevealedStart(true);
   };
 
   const startRolling = () => {
     setIsRollingStart(true);
-    const timeoutId = setTimeout(() => {
+
+    // 1. Stop rolling after 5 seconds
+    const rollingTimeoutId = setTimeout(() => {
       setIsRollingStart(false);
       setIsRollingEnd(true);
       revealCode();
+
+      // 2. Then after 12 seconds, reveal
+      setTimeout(() => {
+        setIsRevealed(true);
+      }, 7000);
     }, 5000);
-    return () => clearTimeout(timeoutId);
+
+    return rollingTimeoutId;
   };
 
   useEffect(() => {
@@ -139,9 +148,18 @@ const SlotMachineItem = ({
   return (
     <div className="slot-reel-column flex flex-col">
       <div className="slot-reel-upper-lights">
-        <div className="slot-reel-light-blinker"></div>
-        <div className="slot-reel-light-blinker"></div>
-        <div className="slot-reel-light-blinker"></div>
+        <div
+          className="slot-reel-light-blinker"
+          style={{ animationDelay: `${delayReveal * 1}s` }}
+        ></div>
+        <div
+          className="slot-reel-light-blinker"
+          style={{ animationDelay: `${delayReveal * 1 + 1}s` }}
+        ></div>
+        <div
+          className="slot-reel-light-blinker"
+          style={{ animationDelay: `${delayReveal * 1}s` }}
+        ></div>
       </div>
       <div className="slot-reel-shell">
         <div className="slot-reel-preroll text-pink-500 flex flex-col w-full align-center justify-center absolute top-0 left-0 opacity-0">
@@ -163,9 +181,6 @@ const SlotMachineItem = ({
           className={`slot-reel flex flex-col w-full align-center justify-center absolute top-[240px] left-0 transition-transform duration-1000 ease-in-out ${
             isRevealedStart ? "opacity-100" : "opacity-0"
           }`}
-          onTransitionEnd={() => {
-            setIsRevealed(true);
-          }}
           style={{
             transform: `translateY(-${isRevealedStart ? nthChar : "-300px"})`,
             transitionTimingFunction: "cubic-bezier(0.5, 0, 0.5, 1)",
@@ -193,9 +208,18 @@ const SlotMachineItem = ({
       </div>
 
       <div className="slot-reel-lower-lights">
-        <div className="slot-reel-light-blinker"></div>
-        <div className="slot-reel-light-blinker"></div>
-        <div className="slot-reel-light-blinker"></div>
+        <div
+          className="slot-reel-light-blinker"
+          style={{ animationDelay: `${delayReveal * 1}s` }}
+        ></div>
+        <div
+          className="slot-reel-light-blinker"
+          style={{ animationDelay: `${delayReveal * 1 + 1}s` }}
+        ></div>
+        <div
+          className="slot-reel-light-blinker"
+          style={{ animationDelay: `${delayReveal * 1}s` }}
+        ></div>
       </div>
     </div>
   );

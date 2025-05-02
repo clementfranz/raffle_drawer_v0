@@ -62,6 +62,8 @@ const StartDrawButton = () => {
     defaultValue: []
   });
 
+  const [isRevealed, setIsRevealed] = useLocalStorageState("isRevealed");
+
   const [fileDetails, setFileDetails] = useLocalStorageState<{
     entries: number;
   }>("fileDetails"); // Default to a large value if not set
@@ -91,6 +93,7 @@ const StartDrawButton = () => {
 
   // Trigger draw start and winner generation
   const triggerStartDraw = () => {
+    setIsRevealed(false);
     generateWinners();
     setStartDraw(true);
   };
