@@ -72,15 +72,21 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      const page1 = await getDataPerPage(
-        "ParticipantsDB",
-        "participantsData_raffle2025",
-        pageNumber,
-        pageSize
-      );
-      console.log("Page 1:", page1);
-      setTableLocalData(page1);
-      setTableIsLoading(false);
+      try {
+        const page1 = await getDataPerPage(
+          "ParticipantsDB",
+          "participantsData_raffle2025",
+          pageNumber,
+          pageSize
+        );
+        console.log("Page 1:", page1);
+        setTableLocalData(page1);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setTableLocalData([]);
+      } finally {
+        setTableIsLoading(false);
+      }
     };
 
     setTableIsLoading(true);

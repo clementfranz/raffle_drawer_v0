@@ -58,17 +58,19 @@ export const importCsvToIndexedDB = async (
 ) => {
   const dbName = "ParticipantsDB";
 
-  const db = await openDB(dbName, 1, {
+  // First, get current version
+  const dbTemp = await openDB(dbName);
+  const newVersion = dbTemp.version + 1;
+  dbTemp.close();
+
+  const db = await openDB(dbName, newVersion, {
     upgrade(db) {
       const storeName = `participantsData_${specialCode}`;
-
       if (!db.objectStoreNames.contains(storeName)) {
         const store = db.createObjectStore(storeName, {
-          keyPath: "id", // Internal unique ID field (auto)
-          autoIncrement: true // Automatically creates unique IDs
+          keyPath: "id",
+          autoIncrement: true
         });
-
-        // Make searchable by id_entry
         store.createIndex("id_entry", "id_entry", { unique: true });
       }
     }

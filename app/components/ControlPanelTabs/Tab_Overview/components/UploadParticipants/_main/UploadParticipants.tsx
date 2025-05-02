@@ -17,10 +17,7 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
   uploadComplete
 }) => {
   // FILE STATES
-  const [fileAttached, setFileAttached] = useLocalStorageState<File | null>(
-    "fileAttached",
-    { defaultValue: null }
-  );
+  const [fileAttached, setFileAttached] = useState<File | null>(null);
   const [fileDetails, setFileDetails] = useLocalStorageState<Object | null>(
     "fileDetails",
     { defaultValue: null }
