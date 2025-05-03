@@ -25,7 +25,7 @@ export function Welcome() {
           Present Mode
         </a>
         <a
-          href="/present"
+          href="/presenter"
           className="bg-red-800 text-white font-bold p-4 rounded-2xl hover:bg-red-700"
         >
           Presenter Mode (newer version)
@@ -37,7 +37,7 @@ export function Welcome() {
       <div className="last-update  text-sm mt-5">
         <b>Note:</b>
         <br />
-        <p>
+        <p className="text-red-700">
           Presenter Mode can be controlled under Presentation Tab inside Control
           Panel
         </p>
