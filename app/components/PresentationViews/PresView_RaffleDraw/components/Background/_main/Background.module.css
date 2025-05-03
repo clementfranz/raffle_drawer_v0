@@ -1,0 +1,33 @@
+.slotMachineColumns {
+  /* Lifted shadow (big, spread, but no distance) */
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  /* optional for smooth corners */
+}
+
+.backgroundShell {
+  /* Slanted repeating stripes */
+  background: repeating-linear-gradient(45deg,
+      /* 45 degrees = slanted */
+      #114e2d 0px,
+      #504d1e 30px,
+      rgb(46, 46, 46) 30px,
+      rgb(46, 46, 46) 80px);
+  background-size: 400% 400%;
+  animation: gradientAnimation 80s ease infinite forwards;
+  /* Slower animation */
+}
+
+/* Slow-moving keyframes */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 0%;
+  }
+
+  50% {
+    background-position: 100% 100%;
+  }
+
+  100% {
+    background-position: 0% 0%;
+  }
+}

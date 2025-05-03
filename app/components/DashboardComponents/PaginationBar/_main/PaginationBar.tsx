@@ -8,7 +8,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 import useLocalStorageState from "use-local-storage-state";
-import PaginationSettings from "../PaginationSettings/PaginationSettings";
+import PaginationSettings from "../components/PaginationSettings/PaginationSettings";
+import PaginateButton from "../components/PaginateButton/_main/PaginateButton";
 
 const PaginationBar = () => {
   const navigate = useNavigate();
@@ -96,23 +97,14 @@ const PaginationBar = () => {
       </button>
 
       <div className="pages flex flex-row items-center px-2">
-        {generatePageNumbers().map((page, index) =>
-          page === "..." ? (
-            <span key={index} className="px-2 select-none">
-              ...
-            </span>
-          ) : (
-            <span
-              key={index}
-              className={`cursor-pointer px-2 ${
-                currentPage === page ? "active font-bold" : ""
-              }`}
-              onClick={() => goToPage(Number(page))}
-            >
-              {page}
-            </span>
-          )
-        )}
+        {generatePageNumbers().map((page, index) => (
+          <PaginateButton
+            key={index}
+            page={page}
+            isActive={currentPage === page}
+            onClick={goToPage}
+          />
+        ))}
         <PaginationSettings />
       </div>
 

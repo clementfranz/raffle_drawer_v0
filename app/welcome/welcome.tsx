@@ -24,9 +24,23 @@ export function Welcome() {
         >
           Present Mode
         </a>
+        <a
+          href="/present"
+          className="bg-red-800 text-white font-bold p-4 rounded-2xl hover:bg-red-700"
+        >
+          Presenter Mode (newer version)
+        </a>
       </div>
       <div className="last-update italic text-sm mt-5">
         Last System Update: {latestUpdateData}
+      </div>
+      <div className="last-update  text-sm mt-5">
+        <b>Note:</b>
+        <br />
+        <p>
+          Presenter Mode can be controlled under Presentation Tab inside Control
+          Panel
+        </p>
       </div>
     </main>
   );

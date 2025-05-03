@@ -1,9 +1,13 @@
+/* index.css or App.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+
+
 
 @font-face {
   font-family: 'Ultra';
@@ -60,6 +64,18 @@ tbody tr td {
 
 .view-option {
   @apply bg-[#a50e25] text-white rounded-lg overflow-hidden cursor-pointer select-none transition-all hover:bg-red-900;
+
+  transition: all;
+  transition-duration: 500ms;
+  background-size: 100%;
+}
+
+.view-option:hover {
+  background-size: 120%;
+}
+
+.view-option:hover .label {
+  font-size: medium
 }
 
 .view-preview {
@@ -69,6 +85,8 @@ tbody tr td {
 .view-option .label,
 .view-preview .label {
   @apply w-full h-1/2 bg-linear-to-b from-[transparent] to-[black] text-white flex justify-center items-end text-sm pb-2 text-center;
+
+  font-size: inherit
 }
 
 .pagination .pages {
@@ -117,7 +135,7 @@ tbody tr td {
 }
 
 .slot-machine-inner {
-  @apply w-full h-full flex items-center justify-center relative;
+  @apply w-full h-full flex items-center justify-center;
 }
 
 .slot-reel-column {
@@ -206,4 +224,9 @@ tbody tr td {
   background: linear-gradient(270deg, #15d86c, #f3eb58, #15d86c, #f3eb58, #15d86c);
   background-size: 800% 800%;
   animation: gradientFlow 10s ease infinite;
+}
+
+.slot-machine-inner {
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.6), inset 0 0 40px rgba(0, 0, 0, 0.4)
 }

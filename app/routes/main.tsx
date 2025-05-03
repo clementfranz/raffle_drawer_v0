@@ -34,6 +34,17 @@ const presentWeek = getWeek();
 export default function Main() {
   const [controlPanelOpen, setControlPanelOpen] = useState(false);
 
+  interface FileDetails {
+    entries: number;
+  }
+
+  const [fileDetails, setFileDetails] = useLocalStorageState<FileDetails>(
+    "fileDetails",
+    {
+      defaultValue: { entries: 0 }
+    }
+  );
+
   const [isPresenting, setIsPresenting] = useState(false);
   const [participantsData, setParticipantsData] = useState<any[]>([]);
   const [loadingParticipantsData, setLoadingParticipantsData] =
@@ -125,13 +136,27 @@ export default function Main() {
                 </NavLink>
               </li>
             </ul>
+            <li className="text-sm flex items-center gap-2">
+              Showing Entries:&nbsp;
+              <b className="flex gap-2 items-baseline justify-center">
+                From{" "}
+                <span className="bg-gray-700 w-[40px] flex  text-white p-2 py-1 rounded-md justify-center">
+                  1
+                </span>{" "}
+                to{" "}
+                <span className="bg-gray-700 w-[40px] flex  text-white p-2 py-1 rounded-md justify-center">
+                  250
+                </span>{" "}
+              </b>
+            </li>
             <ul className="flex space-x-4 text-sm">
-              <li>
-                Total Participants for this week:&nbsp;<b>194,509</b>
+              <li className="flex items-center justify-center h-full">
+                Total Participants for this week:&nbsp;
+                <b>{fileDetails?.entries.toLocaleString()}</b>
               </li>
-              <li>
+              {/* <li>
                 Weekly Increase:&nbsp;<b>10% </b>
-              </li>
+              </li> */}
             </ul>
           </div>
           <ParticipantsTable

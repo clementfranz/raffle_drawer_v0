@@ -1,0 +1,78 @@
+@keyframes animateBackground {
+  0% {
+    background-position: 0% 50%;
+    transform: scale(1);
+  }
+
+  50% {
+    background-position: 100% 50%;
+    transform: scale(0.888);
+  }
+
+  100% {
+    background-position: 0% 50%;
+    transform: scale(1);
+  }
+}
+
+.imageLogoShell {
+  background: linear-gradient(270deg, #fdf2bad5, #f8e7c3ad, #fdf2bad5);
+  background-size: 600% 600%;
+  animation: animateBackground 4s ease-in-out infinite alternate;
+}
+
+.imageLogoShell img {
+  padding-right: 1.25rem;
+  /* pr-5 = 20px */
+}
+
+
+
+@keyframes animateTopPart {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+.topPart {
+  background: repeating-linear-gradient(-45deg,
+      #039645,
+      #039645 100px,
+      #33c977 100px,
+      #33c977 200px);
+  background-size: 800% 800%;
+  animation: animateTopPart 80s linear infinite;
+}
+
+
+@keyframes animateBottomPart {
+  0% {
+    transform: rotate(8deg) scale(1.4);
+  }
+
+  25% {
+    transform: rotate(-2deg) scale(1.2);
+  }
+
+  50% {
+    transform: rotate(2deg) scale(1.1);
+  }
+
+  75% {
+    transform: rotate(-2deg) scale(1.2);
+  }
+
+  100% {
+    transform: rotate(8deg) scale(1.4);
+  }
+}
+
+
+.bottomPart {
+  animation: animateBottomPart 10s ease-in-out infinite;
+  transform-origin: center center;
+}

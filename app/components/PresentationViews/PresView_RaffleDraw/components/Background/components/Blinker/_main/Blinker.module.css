@@ -1,0 +1,23 @@
+.bulbOn {
+  box-shadow: 0 0 14px 9px rgb(255, 248, 146);
+  background-color: rgb(255, 255, 168);
+}
+
+.bulbOff {
+  background-color: #464605;
+  box-shadow: 0 0 10px 3px rgba(0, 0, 0, 0.5);
+}
+
+.bulbOff::before {
+  content: "";
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-40%, -45%);
+  opacity: 0.4;
+  border-radius: 50%;
+  aspect-ratio: 1/1;
+  background: white;
+  box-shadow: 0 0 15px 3px white;
+}
