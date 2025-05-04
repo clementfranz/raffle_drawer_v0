@@ -2,19 +2,25 @@ import React from "react";
 
 import SlotColumn from "../components/SlotColumn/SlotColumn";
 import styles from "./Background.module.css";
+import useLocalStorageState from "use-local-storage-state";
 
 type BackgroundProps = {
   boxUnit: number;
 };
 
 const Background = ({ boxUnit }: BackgroundProps) => {
+  const [enableSlotMachineAnimation] = useLocalStorageState(
+    "enableSlotMachineAnimation"
+  );
   const slotMachineWidth = boxUnit * 12 + 4 * 12;
   const slotColumnSize = 12;
 
   return (
     <div className="absolute top-0 left-0 w-full z-[10] ">
       <div
-        className={`background-shell w-full flex justify-center relative ${styles.backgroundShell}`}
+        className={`background-shell w-full flex justify-center relative ${
+          styles.backgroundShell
+        } ${enableSlotMachineAnimation && "raffle-bg-animation"}`}
       >
         <div
           className={`slot-machine-columns h-screen flex z-[20] ${styles.slotMachineColumns} `}

@@ -2,43 +2,70 @@ import React, { useState, useEffect } from "react";
 
 import Background from "../components/Background/_main/Background";
 import SlotMachine from "../components/SlotMachine/_main/SlotMachine";
+import UpperDiv from "../components/UpperDiv/_main/UpperDiv";
+import LowerDiv from "../components/LowerDiv/_main/LowerDiv";
+import useLocalStorageState from "use-local-storage-state";
 
 const PresView_RaffleDraw = () => {
   const [boxUnit, setBoxUnit] = useState<number>(50);
-  const [boxUnitFontSize, setBoxUnitFontSize] = useState("30px");
+  const [showRaffleView, setShowRaffleView] = useLocalStorageState(
+    "showRaffleView",
+    {
+      defaultValue: false
+    }
+  );
+  const [winners] = useLocalStorageState<any[] | null>("winners");
+
+  const [slotCodeStatus, setSlotCodeStatus] = useLocalStorageState(
+    "slotCodeStatus",
+    {
+      defaultValue: "idle"
+    }
+  );
+  const [revealWinner, setRevealWinner] = useLocalStorageState("revealWinner", {
+    defaultValue: false
+  });
+
+  const [enableSlotMachineAnimation, setEnableSlotMachineAnimation] =
+    useLocalStorageState("enableSlotMachineAnimation", { defaultValue: false });
 
   const setupBoxUnit = () => {
     const screenHeight = window.innerHeight;
     const unit = screenHeight / 9;
     setBoxUnit(unit);
-
-    // Font size should be slightly smaller than the box (e.g., 70-80% of unit)
-    const fontSize = unit * 0.7;
-    setBoxUnitFontSize(`${fontSize}px`);
   };
 
   useEffect(() => {
     setupBoxUnit();
+    setRevealWinner(false);
+    setSlotCodeStatus("idle");
+    setEnableSlotMachineAnimation(false);
+
+    const animationTimer = setTimeout(() => {
+      setEnableSlotMachineAnimation(true);
+    }, 3000);
 
     window.addEventListener("resize", setupBoxUnit);
-    return () => window.removeEventListener("resize", setupBoxUnit);
+    return () => {
+      clearInterval(animationTimer);
+      window.removeEventListener("resize", setupBoxUnit);
+    };
   }, []);
 
   return (
-    <div className="bg-amber-800 w-full h-screen flex justify-center items-center relative overflow-hidden">
+    <div
+      className={`raffle-view-shell w-full h-screen absolute top-0 flex ${
+        showRaffleView ? "z-[40] opacity-100" : "-z-[10] opacity-0"
+      }`}
+    >
       <div
-        className="big-title text-white font-[Ultra]   flex justify-center items-center"
-        style={{
-          width: `${boxUnit * 12 + 4 * 12}px`,
-          height: `${boxUnit * 9}px`,
-          fontSize: boxUnitFontSize,
-          borderRadius: "8px" // Optional: just to make it look a bit softer
-        }}
+        className={`bg-amber-800 w-full h-screen justify-center items-center relative flex overflow-hidden `}
       >
-        CONGRATULATIONS
+        <SlotMachine boxUnit={boxUnit} />
+        <UpperDiv boxUnit={boxUnit} />
+        <LowerDiv boxUnit={boxUnit} />
+        <Background boxUnit={boxUnit} />
       </div>
-      <SlotMachine boxUnit={boxUnit} />
-      <Background boxUnit={boxUnit} />
     </div>
   );
 };

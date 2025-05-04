@@ -1,4 +1,5 @@
 /* index.css or App.css */
+@import url("https://fonts.googleapis.com/css2?family=Chewy&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
@@ -229,4 +230,72 @@ tbody tr td {
 .slot-machine-inner {
   box-shadow:
     inset 0 0 20px rgba(0, 0, 0, 0.6), inset 0 0 40px rgba(0, 0, 0, 0.4)
+}
+
+/* CONGRATULATIONS ANIMATIONS */
+
+@keyframes jump {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10%);
+  }
+}
+
+@keyframes gradientShift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.letter {
+  position: relative;
+  display: inline-block;
+  color: rgb(0, 0, 0);
+  animation: jump 0.6s ease-in-out infinite;
+  z-index: 45;
+
+  /* This creates a white border all around */
+}
+
+.congratulatory-text {
+  text-shadow:
+    -2px -2px 0 white,
+    2px -2px 0 white,
+    -2px 2px 0 white,
+    2px 2px 0 white,
+    0 -2px 0 white,
+    0 2px 0 white,
+    -2px 0 0 white,
+    2px 0 0 white;
+}
+
+.raffle-bg-animation {
+  animation: gradientAnimation 80s ease infinite forwards;
+  /* Slower animation */
+}
+
+/* Slow-moving keyframes */
+@keyframes gradientAnimation {
+  0% {
+    background-position: 0% 0%;
+  }
+
+  50% {
+    background-position: 100% 100%;
+  }
+
+  100% {
+    background-position: 0% 0%;
+  }
 }

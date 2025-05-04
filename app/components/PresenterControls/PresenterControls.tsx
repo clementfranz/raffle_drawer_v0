@@ -28,7 +28,7 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
     } else {
       setIsPresentingStatus("presenting");
       window.open(
-        "/present",
+        "/presenter",
         "_blank",
         "width=1300,height=600,noopener,noreferrer"
       );

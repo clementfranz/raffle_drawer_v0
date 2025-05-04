@@ -13,21 +13,4 @@
       rgb(46, 46, 46) 30px,
       rgb(46, 46, 46) 80px);
   background-size: 400% 400%;
-  animation: gradientAnimation 80s ease infinite forwards;
-  /* Slower animation */
-}
-
-/* Slow-moving keyframes */
-@keyframes gradientAnimation {
-  0% {
-    background-position: 0% 0%;
-  }
-
-  50% {
-    background-position: 100% 100%;
-  }
-
-  100% {
-    background-position: 0% 0%;
-  }
 }

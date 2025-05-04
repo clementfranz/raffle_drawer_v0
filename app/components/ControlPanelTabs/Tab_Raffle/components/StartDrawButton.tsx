@@ -44,7 +44,7 @@ function generateRandomNumbers(max: number, exempted: number[] = []): number[] {
   const allNumbers = new Set<number>();
 
   // Ensure we generate 3 unique random numbers
-  while (result.length < 3) {
+  while (result.length < 4) {
     const randomNum = Math.floor(Math.random() * max) + 1; // Generate number between 1 and max
 
     // Check if the number is not in the exempted list and hasn't been added already

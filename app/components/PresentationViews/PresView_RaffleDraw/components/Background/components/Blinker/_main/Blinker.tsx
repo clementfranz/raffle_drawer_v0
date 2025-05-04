@@ -7,7 +7,7 @@ type BlinkerProps = {
   turnOn: boolean;
 };
 
-const Blinker = ({ boxUnit, turnOn = false }: BlinkerProps) => {
+const Blinker = ({ boxUnit, turnOn }: BlinkerProps) => {
   return (
     <div className="blinker-bulb">
       <div
@@ -15,7 +15,7 @@ const Blinker = ({ boxUnit, turnOn = false }: BlinkerProps) => {
         style={{ width: `${boxUnit * 0.8}px` }}
       >
         <div
-          className={`bulb-glass w-[70%]  aspect-square rounded-full relative overflow-hidden  ${
+          className={`bulb-glass w-[70%]  aspect-square rounded-full relative overflow-hidden transition-all duration-200 ${
             turnOn ? styles.bulbOn : styles.bulbOff
           }`}
         ></div>

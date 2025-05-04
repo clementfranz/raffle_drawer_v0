@@ -39,6 +39,19 @@ export default function Home() {
   const [transitionActive, setTransitionActive] =
     useLocalStorageState<boolean>("transitionActive");
 
+  const [showRaffleView, setShowRaffleView] = useLocalStorageState(
+    "showRaffleView",
+    {
+      defaultValue: false
+    }
+  );
+
+  useEffect(() => {
+    if (presentingView !== "raffle-view") {
+      setShowRaffleView(false);
+    }
+  }, [presentingView]);
+
   useEffect(() => {
     if (transitionActive) {
       setLockViewCards(true);
@@ -52,8 +65,27 @@ export default function Home() {
     setTransitionActive(false);
   }, []);
 
+  type PresentingStatus = "presenting" | "not-presenting";
+  const [presentingStatus, setPresentingStatus] =
+    useLocalStorageState<PresentingStatus>("presentingStatus");
+  const [isRevealedStart, setIsRevealedStart] =
+    useLocalStorageState("isRevealedStart");
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      setPresentingStatus("not-presenting");
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      setIsRevealedStart(false);
+    };
+  }, []);
+
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
       {(() => {
         switch (presentingView) {
           case "intro":
@@ -66,7 +98,7 @@ export default function Home() {
             return <PresView_Overview />;
 
           case "raffle-draw":
-            return <PresView_RaffleDraw />;
+            setShowRaffleView(true);
 
           default:
             return <PresView_Intro />;
@@ -77,6 +109,7 @@ export default function Home() {
           <PresView_Transition />
         </div>
       )}
+      <PresView_RaffleDraw />
     </div>
   );
 }
