@@ -10,6 +10,75 @@ interface Participant {
   regional_location: string;
 }
 
+function deleteEntryFromRaffleWinners(
+  raffle_code: string,
+  id_entry: string | number
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB"); // use your existing version (5 or higher)
+
+    request.onsuccess = () => {
+      const db: IDBDatabase = request.result;
+      const transaction: IDBTransaction = db.transaction(
+        "raffleWinners",
+        "readwrite"
+      );
+      const store: IDBObjectStore = transaction.objectStore("raffleWinners");
+
+      // Step 1: Get the entry by id_entry first
+      const getRequest: IDBRequest<any> = store.get(id_entry);
+
+      getRequest.onsuccess = () => {
+        const result = getRequest.result;
+
+        if (result) {
+          // Step 2: Verify raffle_code matches
+          if (result.raffle_code === raffle_code) {
+            // Step 3: Delete
+            const deleteRequest: IDBRequest = store.delete(id_entry);
+
+            deleteRequest.onsuccess = () => {
+              resolve(
+                `Entry with id_entry ${id_entry} and raffle_code ${raffle_code} deleted successfully.`
+              );
+            };
+
+            deleteRequest.onerror = () => {
+              reject(
+                `Failed to delete entry: ${
+                  deleteRequest.error?.message || "Unknown error"
+                }`
+              );
+            };
+          } else {
+            reject(
+              `raffle_code mismatch. Entry found but raffle_code does not match.`
+            );
+          }
+        } else {
+          reject(`No entry found with id_entry ${id_entry}`);
+        }
+      };
+
+      getRequest.onerror = () => {
+        reject(
+          `Failed to retrieve entry: ${
+            getRequest.error?.message || "Unknown error"
+          }`
+        );
+      };
+    };
+
+    request.onerror = () => {
+      reject(
+        `Failed to open ParticipantsDB: ${
+          request.error?.message || "Unknown error"
+        }`
+      );
+    };
+  });
+}
+
 interface ParticipantsTableProps {
   tableData: Participant[];
   loadingTable: boolean;
@@ -42,7 +111,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
     size = 250
   ): Promise<Participant[]> => {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open("ParticipantsDB", 6); // Use current version
+      const request = indexedDB.open("ParticipantsDB"); // Use current version
 
       request.onsuccess = (event: Event) => {
         const db = (event.target as IDBOpenDBRequest)?.result;
@@ -138,40 +207,45 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
     setActiveTab(tab);
   };
 
+  const removeWinner = (code: string, id: string | number) => {
+    deleteEntryFromRaffleWinners(code, id);
+    fetchData(activeTab, pageNumber, pageSize);
+  };
+
   useEffect(() => {
     checkUrlAndSetPage();
   }, [location.search]); // run when URL changes
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (activeTab === "main") {
-          const page1 = await getDataPerPage(
-            "ParticipantsDB",
-            "participantsData_raffle2025",
-            pageNumber,
-            pageSize
-          );
-          setTableLocalData(page1);
-        } else if (activeTab === "winners") {
-          const winnersData = await getRaffleWinnersBySize(
-            pageNumber,
-            pageSize
-          );
-          setTableLocalData(winnersData);
-        }
-        setWithParticipantsData(true);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setTableLocalData([]);
-        setWithParticipantsData(false);
-      } finally {
-        setTableIsLoading(false);
+  const fetchData = async (
+    activeTab: string,
+    pageNumber: number,
+    pageSize: number
+  ) => {
+    try {
+      if (activeTab === "main") {
+        const page1 = await getDataPerPage(
+          "ParticipantsDB",
+          "participantsData_raffle2025",
+          pageNumber,
+          pageSize
+        );
+        setTableLocalData(page1);
+      } else if (activeTab === "winners") {
+        const winnersData = await getRaffleWinnersBySize(pageNumber, pageSize);
+        setTableLocalData(winnersData);
       }
-    };
-
+      setWithParticipantsData(true);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setTableLocalData([]);
+      setWithParticipantsData(false);
+    } finally {
+      setTableIsLoading(false);
+    }
+  };
+  useEffect(() => {
     setTableIsLoading(true);
-    fetchData();
+    fetchData(activeTab, pageNumber, pageSize);
   }, [pageNumber, pageSize, activeTab]); // run when pageNumber or pageSize changes
 
   useEffect(() => {
@@ -189,6 +263,9 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                 <th className="p-2 text-left border-b">Participant's Name</th>
                 <th className="p-2 text-left border-b">Code</th>
                 <th className="p-2 text-left border-b">Location</th>
+                {activeTab !== "main" && (
+                  <th className="p-2 text-left border-b">Controls</th>
+                )}
               </tr>
             </thead>
             <tbody className="">
@@ -204,6 +281,18 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                   <td className="">{entry.full_name}</td>
                   <td className="text-base font-bold">{entry.raffle_code}</td>
                   <td className="">{entry.regional_location}</td>
+                  {activeTab !== "main" && (
+                    <td className="">
+                      <button
+                        onClick={() => {
+                          removeWinner(entry.raffle_code, entry.id_entry);
+                        }}
+                        className="bg-red-700 text-white p-1 px-2 rounded-lg hover:bg-red-600 cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

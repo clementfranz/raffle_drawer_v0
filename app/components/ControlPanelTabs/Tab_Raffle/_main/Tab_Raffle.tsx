@@ -24,17 +24,19 @@ interface RaffleEntry {
 
 function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
   return new Promise((resolve, reject) => {
-    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB", 6); // ✅ version bumped
+    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB", 7); // ✅ version bumped
 
     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
       const db = request.result;
 
       if (!db.objectStoreNames.contains("raffleWinners")) {
         const store = db.createObjectStore("raffleWinners", {
-          keyPath: "id_entry"
+          keyPath: "id",
+          autoIncrement: true
         });
 
         // ✅ Create indexes
+        store.createIndex("id_entry", "id_entry", { unique: false });
         store.createIndex("date_chosen", "date_chosen", { unique: false });
         store.createIndex("regional_location", "regional_location", {
           unique: false
@@ -139,6 +141,26 @@ function generateRandomNumbers(max: number, exempted: number[] = []): number[] {
 
   return result;
 }
+// Function to generate 3 unique random numbers
+function generateSingleRandomNumber(
+  max: number,
+  exempted: number[] = []
+): number[] {
+  const result: number[] = [];
+  const allNumbers = new Set<number>();
+
+  while (result.length < 1) {
+    const randomNum = Math.floor(Math.random() * max) + 1; // Generate number between 1 and max
+
+    // Check if the number is not in the exempted list and hasn't been added already
+    if (!exempted.includes(randomNum) && !allNumbers.has(randomNum)) {
+      result.push(randomNum);
+      allNumbers.add(randomNum);
+    }
+  }
+
+  return result;
+}
 
 const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   const [fileDetails, setFileDetails] = useLocalStorageState<{
@@ -150,18 +172,22 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   });
 
   // Function to generate winners
-  const generateWinners = () => {
-    // Ensure there's a valid number of entries to avoid generating invalid random numbers
-    const maxEntries = fileDetails?.entries || 100000; // Default to 100000 if fileDetails or entries is undefined
+  // Function to generate winners
+  const generateWinner = (winnerType: string = "primary") => {
+    // ✅ Ensure there's a valid number of entries
+    const maxEntries = Number(fileDetails?.entries) || 999999; // Default to 999999 if undefined or 0
 
-    // Generate 3 random numbers
-    const randomNumbers = generateRandomNumbers(maxEntries);
+    // ✅ Generate a single random number (but wrapped in array for map to work)
+    const singleRandomNumber = [generateSingleRandomNumber(maxEntries)];
 
-    // Fetch the records based on random numbers
-    Promise.all(randomNumbers.map((number) => getRecordByIdEntry(number)))
+    // ✅ Fetch the records based on random numbers
+    Promise.all(singleRandomNumber.map((number) => getRecordByIdEntry(number)))
       .then((winnersData) => {
-        // Set winners data after fetching all records
-        setWinners(winnersData);
+        // ✅ Filter out any null/undefined records just in case
+        const validWinners = winnersData.filter(Boolean);
+
+        // ✅ Set winners data after fetching all records
+        setWinners((prev = []) => [...validWinners, ...prev]);
       })
       .catch((error) => {
         console.error("Error fetching winners data:", error);
@@ -171,7 +197,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   // Trigger draw start and winner generation
   const triggerStartDraw = () => {
     setIsRevealed(false);
-    generateWinners();
+    generateWinner();
     setStartDraw(true);
   };
 
