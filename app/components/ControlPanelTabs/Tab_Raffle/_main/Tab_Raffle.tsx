@@ -1,7 +1,5 @@
 import React from "react";
 
-import StartDrawButton from "../components/StartDrawButton";
-
 // UI Components
 // UI Components
 import TabMainBody from "~/ui/ControlPanelUI/TabMainBody/_main/TabMainBody";
@@ -12,6 +10,72 @@ import useLocalStorageState from "use-local-storage-state";
 
 interface Tab_RaffleProps {
   isActiveTab?: boolean;
+}
+interface RaffleEntry {
+  id_entry: string; // Adjusted to string to match the sample data
+  date_chosen: string;
+  full_name: string;
+  id: number;
+  isCancelled: boolean;
+  raffle_code: string;
+  regional_location: string;
+  time_registered: string;
+}
+
+function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB", 6); // ✅ version bumped
+
+    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
+      const db = request.result;
+
+      if (!db.objectStoreNames.contains("raffleWinners")) {
+        const store = db.createObjectStore("raffleWinners", {
+          keyPath: "id_entry"
+        });
+
+        // ✅ Create indexes
+        store.createIndex("date_chosen", "date_chosen", { unique: false });
+        store.createIndex("regional_location", "regional_location", {
+          unique: false
+        });
+        store.createIndex("isCancelled", "isCancelled", { unique: false });
+      }
+    };
+
+    request.onsuccess = () => {
+      const db: IDBDatabase = request.result;
+      const transaction: IDBTransaction = db.transaction(
+        "raffleWinners",
+        "readwrite"
+      );
+      const store: IDBObjectStore = transaction.objectStore("raffleWinners");
+
+      const addRequest: IDBRequest<IDBValidKey> = store.add(entry);
+
+      addRequest.onsuccess = () => {
+        resolve(
+          `Entry with id_entry ${entry.id_entry} stored successfully in raffleWinners.`
+        );
+      };
+
+      addRequest.onerror = () => {
+        reject(
+          `Failed to store entry: ${
+            addRequest.error?.message || "Unknown error"
+          }`
+        );
+      };
+    };
+
+    request.onerror = () => {
+      reject(
+        `Failed to open ParticipantsDB: ${
+          request.error?.message || "Unknown error"
+        }`
+      );
+    };
+  });
 }
 
 // Function to get record by ID from IndexedDB
@@ -34,7 +98,13 @@ function getRecordByIdEntry(id: number): Promise<any> {
 
       getRequest.onsuccess = () => {
         if (getRequest.result) {
-          resolve(getRequest.result); // Return the matched record
+          const modifiedResult = {
+            date_chosen: new Date().toISOString(),
+            isCancelled: false,
+            ...getRequest.result
+          };
+          storeRaffleWinner(modifiedResult);
+          resolve(modifiedResult); // Return the modified record
         } else {
           reject(`No record found with id_entry: ${id}`);
         }
@@ -70,7 +140,7 @@ function generateRandomNumbers(max: number, exempted: number[] = []): number[] {
   return result;
 }
 
-const Tab_Raffle: React.FC<Tab_RaffleProps> = ({ isActiveTab }) => {
+const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   const [fileDetails, setFileDetails] = useLocalStorageState<{
     entries: number;
   }>("fileDetails"); // Default to a large value if not set
@@ -335,7 +405,6 @@ const Tab_Raffle: React.FC<Tab_RaffleProps> = ({ isActiveTab }) => {
           <TabSubPanel title="Proclaimed Winner"></TabSubPanel>
         </TabShell>
         <TabShell position="bottom">
-          {/* <StartDrawButton /> */}
           <TabActionButton onClick={handleResetMachine}>
             Reset Machine
           </TabActionButton>

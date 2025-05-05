@@ -35,6 +35,68 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(250);
 
+  const [activeTab, setActiveTab] = useState("main");
+
+  const getRaffleWinnersBySize = (
+    page = 1,
+    size = 250
+  ): Promise<Participant[]> => {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open("ParticipantsDB", 6); // Use current version
+
+      request.onsuccess = (event: Event) => {
+        const db = (event.target as IDBOpenDBRequest)?.result;
+        if (!db) {
+          reject("Failed to open DB: Database is null");
+          return;
+        }
+        const transaction = db.transaction(["raffleWinners"], "readonly");
+        const store = transaction.objectStore("raffleWinners");
+
+        const winners: Participant[] = [];
+        let count = 0;
+
+        const lowerBound = (page - 1) * size;
+        const upperBound = page * size;
+
+        const cursorRequest = store.openCursor(null, "next"); // Ascending order
+
+        cursorRequest.onsuccess = (e: Event) => {
+          const cursor = (e.target as IDBRequest<IDBCursorWithValue>)?.result;
+          if (cursor) {
+            if (count >= lowerBound && count < upperBound) {
+              winners.push(cursor.value as Participant);
+            }
+            count++;
+
+            if (count < upperBound) {
+              cursor.continue();
+            } else {
+              resolve(winners); // Done fetching this page
+            }
+          } else {
+            // No more records
+            resolve(winners);
+          }
+        };
+
+        cursorRequest.onerror = (e: Event) => {
+          const error = (e.target as IDBRequest)?.error;
+          reject(
+            `Failed to fetch raffle winners: ${
+              error?.message || "Unknown error"
+            }`
+          );
+        };
+      };
+
+      request.onerror = (e: Event) => {
+        const error = (e.target as IDBRequest)?.error;
+        reject(`Failed to open DB: ${error?.message || "Unknown error"}`);
+      };
+    });
+  };
+
   const getDataPerPage = async (
     dbName: string,
     storeName: string,
@@ -68,10 +130,12 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
     const params = new URLSearchParams(location.search);
 
     const page = parseInt(params.get("page") || "1", 10);
-    const size = parseInt(params.get("pageSize") || "100", 10);
+    const size = parseInt(params.get("pageSize") || "250", 10);
+    const tab = params.get("filter") || "main";
 
     setPageNumber(page);
     setPageSize(size);
+    setActiveTab(tab);
   };
 
   useEffect(() => {
@@ -81,14 +145,21 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const page1 = await getDataPerPage(
-          "ParticipantsDB",
-          "participantsData_raffle2025",
-          pageNumber,
-          pageSize
-        );
-        console.log("Page 1:", page1);
-        setTableLocalData(page1);
+        if (activeTab === "main") {
+          const page1 = await getDataPerPage(
+            "ParticipantsDB",
+            "participantsData_raffle2025",
+            pageNumber,
+            pageSize
+          );
+          setTableLocalData(page1);
+        } else if (activeTab === "winners") {
+          const winnersData = await getRaffleWinnersBySize(
+            pageNumber,
+            pageSize
+          );
+          setTableLocalData(winnersData);
+        }
         setWithParticipantsData(true);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -101,7 +172,7 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
 
     setTableIsLoading(true);
     fetchData();
-  }, [pageNumber, pageSize]); // run when pageNumber or pageSize changes
+  }, [pageNumber, pageSize, activeTab]); // run when pageNumber or pageSize changes
 
   useEffect(() => {
     checkUrlAndSetPage();
