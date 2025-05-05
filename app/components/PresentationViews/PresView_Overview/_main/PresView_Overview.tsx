@@ -11,7 +11,7 @@ const PresView_Overview = () => {
       <div className="table-shell h-0 grow p-10 w-full">
         <ParticipantsTable />
       </div>
-      <div className="regional-stats">
+      <div className="regional-stats p-10 w-full pt-0">
         <RegionalStats />
       </div>
     </div>
