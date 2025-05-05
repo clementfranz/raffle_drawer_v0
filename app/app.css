@@ -318,5 +318,5 @@ tbody tr td {
 }
 
 .animate-slideUp {
-  animation: slideUp 800s ease-in-out forwards;
+  animation: slideUp 600s linear infinite reverse;
 }
