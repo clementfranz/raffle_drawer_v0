@@ -51,9 +51,9 @@ const SettingsButton = () => {
               <li>✅ Raffle Draw Randomizer Algorithm</li>
               <li>✅ Raffle Draw View Polishing</li>
               <li>✅ Picking for Final Winner</li>
-              <li>⏳ Cancelling for Final Winner</li>
+              <li>✅ Removing of Winner</li>
+              <li>✅ Presentation View Switching</li>
               <li>⏳ Participants Summary View Polishing</li>
-              <li>⏹️ Presentation View Switching</li>
             </ul>
             <p className="mt-4 text-sm">Legend:</p>
             <p className="text-sm w-full  gap-4 flex">

@@ -19,12 +19,6 @@ export function Welcome() {
           Dashboard
         </a>
         <a
-          href="/present"
-          className="bg-amber-950 text-white font-bold p-4 rounded-2xl hover:bg-amber-800"
-        >
-          Present Mode
-        </a>
-        <a
           href="/presenter"
           className="bg-red-800 text-white font-bold p-4 rounded-2xl hover:bg-red-700"
         >
