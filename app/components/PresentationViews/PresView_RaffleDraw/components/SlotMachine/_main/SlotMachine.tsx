@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import SlotReelWindow from "../components/SlotReelWindow/SlotReelWindow";
 import useLocalStorageState from "use-local-storage-state";
+import { useWinnerRecords } from "~/hooks/useWinnerRecords";
 
 type SlotMachineProps = {
   boxUnit: number;
@@ -32,11 +33,12 @@ const SlotMachine = ({ boxUnit }: SlotMachineProps) => {
 
   const [winners] = useLocalStorageState<any[] | null>("winners");
 
+  const { winnerRecords, getWinnerByIndex } = useWinnerRecords();
+  const winner = getWinnerByIndex(showWinnerNth as 0 | 3 | 1 | 2);
+
   useEffect(() => {
-    winners && winners[showWinnerNth]
-      ? setSlotCode(winners[showWinnerNth]?.raffle_code)
-      : setSlotCode("KOPIKOBLANCA");
-  }, [winners, showWinnerNth]);
+    setSlotCode(winner?.raffle_code || "KOPIKOBLANCA");
+  }, [winners, showWinnerNth, winner]); // 👈 safer dependency list
 
   return (
     <div

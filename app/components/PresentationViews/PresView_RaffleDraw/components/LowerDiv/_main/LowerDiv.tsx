@@ -1,5 +1,6 @@
 import React from "react";
 import useLocalStorageState from "use-local-storage-state";
+import { useWinnerRecords } from "~/hooks/useWinnerRecords";
 
 type LowerDiv_Props = {
   boxUnit: number;
@@ -15,6 +16,8 @@ const LowerDiv = ({ boxUnit }: LowerDiv_Props) => {
   });
 
   const [winners] = useLocalStorageState<any[]>("winners");
+  const { winnerRecords, getWinnerByIndex } = useWinnerRecords();
+  const winner = getWinnerByIndex(showWinnerNth as 0 | 3 | 1 | 2);
   return (
     <div
       className={` absolute z-[45] h-1/2 bottom-0 flex justify-center items-center flex-col ${
@@ -35,7 +38,7 @@ const LowerDiv = ({ boxUnit }: LowerDiv_Props) => {
             fontSize: `${boxUnit * 0.9}px`
           }}
         >
-          {winners && winners[showWinnerNth]?.full_name}
+          {winner?.full_name}
         </div>
         <div
           className="participant-location w-full text-center bg-white uppercase font-[Montserrat] font-bold"
@@ -44,7 +47,7 @@ const LowerDiv = ({ boxUnit }: LowerDiv_Props) => {
             fontSize: `${boxUnit * 0.6}px`
           }}
         >
-          {winners && winners[showWinnerNth]?.regional_location}
+          {winner?.regional_location}
         </div>
       </div>
     </div>

@@ -7,6 +7,8 @@ import TabShell from "~/ui/ControlPanelUI/TabShell/_main/TabShell";
 import TabSubPanel from "~/ui/ControlPanelUI/TabSubPanel/_main/TabSubPanel";
 import TabActionButton from "~/ui/ControlPanelUI/TabActionButton/_main/TabActionButton";
 import useLocalStorageState from "use-local-storage-state";
+import { useWinnerRecords } from "~/hooks/useWinnerRecords";
+import type { WinnerRecords, Winner } from "~/types/WinnerTypes";
 
 interface Tab_RaffleProps {
   isActiveTab?: boolean;
@@ -24,7 +26,7 @@ interface RaffleEntry {
 
 function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
   return new Promise((resolve, reject) => {
-    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB", 7); // ✅ version bumped
+    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB", 8); // ✅ version bumped
 
     request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
       const db = request.result;
@@ -37,6 +39,7 @@ function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
 
         // ✅ Create indexes
         store.createIndex("id_entry", "id_entry", { unique: false });
+        store.createIndex("winner_type", "winner_type", { unique: false });
         store.createIndex("date_chosen", "date_chosen", { unique: false });
         store.createIndex("regional_location", "regional_location", {
           unique: false
@@ -81,7 +84,7 @@ function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
 }
 
 // Function to get record by ID from IndexedDB
-function getRecordByIdEntry(id: number): Promise<any> {
+function getRecordByIdEntry(id: number, type: string): Promise<any> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open("ParticipantsDB"); // Open the DB
 
@@ -103,6 +106,7 @@ function getRecordByIdEntry(id: number): Promise<any> {
           const modifiedResult = {
             date_chosen: new Date().toISOString(),
             isCancelled: false,
+            winner_type: type,
             ...getRequest.result
           };
           storeRaffleWinner(modifiedResult);
@@ -141,28 +145,30 @@ function generateRandomNumbers(max: number, exempted: number[] = []): number[] {
 
   return result;
 }
-// Function to generate 3 unique random numbers
-function generateSingleRandomNumber(
+// Optimized version to generate a single unique random number
+const generateSingleRandomNumber = (
   max: number,
-  exempted: number[] = []
-): number[] {
-  const result: number[] = [];
-  const allNumbers = new Set<number>();
+  exempted: Set<number> = new Set()
+): number => {
+  let randomNum: number;
 
-  while (result.length < 1) {
-    const randomNum = Math.floor(Math.random() * max) + 1; // Generate number between 1 and max
+  do {
+    randomNum = Math.floor(Math.random() * max) + 1; // Generate number between 1 and max
+  } while (exempted.has(randomNum)); // Retry if the number is in the exempted set
 
-    // Check if the number is not in the exempted list and hasn't been added already
-    if (!exempted.includes(randomNum) && !allNumbers.has(randomNum)) {
-      result.push(randomNum);
-      allNumbers.add(randomNum);
-    }
-  }
-
-  return result;
-}
+  return randomNum;
+};
 
 const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
+  const {
+    winnerRecords,
+    setWinner,
+    setBackupWinner,
+    resetWinners,
+    getFilledWinners,
+    clearBackup,
+    getWinnerByIndex
+  } = useWinnerRecords();
   const [fileDetails, setFileDetails] = useLocalStorageState<{
     entries: number;
   }>("fileDetails"); // Default to a large value if not set
@@ -171,33 +177,39 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     defaultValue: false
   });
 
-  // Function to generate winners
-  // Function to generate winners
-  const generateWinner = (winnerType: string = "primary") => {
+  const generateWinner = (
+    winnerType: string = "primary",
+    nthBackup: 0 | 1 | 2 | 3 = 0
+  ) => {
     // ✅ Ensure there's a valid number of entries
     const maxEntries = Number(fileDetails?.entries) || 999999; // Default to 999999 if undefined or 0
 
-    // ✅ Generate a single random number (but wrapped in array for map to work)
-    const singleRandomNumber = [generateSingleRandomNumber(maxEntries)];
+    // ✅ Generate a single random number (no need for an array, just a single number)
+    const singleRandomNumber = generateSingleRandomNumber(maxEntries);
 
-    // ✅ Fetch the records based on random numbers
-    Promise.all(singleRandomNumber.map((number) => getRecordByIdEntry(number)))
-      .then((winnersData) => {
-        // ✅ Filter out any null/undefined records just in case
-        const validWinners = winnersData.filter(Boolean);
-
-        // ✅ Set winners data after fetching all records
-        setWinners((prev = []) => [...validWinners, ...prev]);
+    // ✅ Fetch the record based on the random number
+    getRecordByIdEntry(singleRandomNumber, winnerType)
+      .then((winnerData: Winner | null) => {
+        if (winnerData) {
+          if (winnerType === "primary") {
+            setWinner(winnerData);
+          } else {
+            setBackupWinner((nthBackup - 1) as 0 | 1 | 2, winnerData);
+          }
+        }
       })
       .catch((error) => {
-        console.error("Error fetching winners data:", error);
+        console.error("Error fetching winner data:", error);
       });
   };
 
   // Trigger draw start and winner generation
-  const triggerStartDraw = () => {
+  const triggerStartDraw = (
+    type: string = "primary",
+    nth: 0 | 1 | 2 | 3 = 0
+  ) => {
     setIsRevealed(false);
-    generateWinner();
+    generateWinner(type, nth);
     setStartDraw(true);
   };
 
@@ -290,6 +302,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
 
   const handleClearWinners = () => {
     handleResetMachine();
+    resetWinners();
     setRevealWinner01(false);
     setRevealWinner02(false);
     setRevealWinner03(false);
@@ -309,17 +322,17 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
           <TabSubPanel title={"Winner"} className="gap-3 flex flex-col">
             <div className="grid w-full">
               <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
-                {winners && revealWinner01 ? (
+                {getFilledWinners().primary && revealWinner01 ? (
                   <>
                     <div className="participant-name text-xl">
-                      {winners[0]?.full_name}
+                      {winnerRecords.primary?.full_name}
                     </div>
                     <div className="participant-details flex w-full justify-between">
                       <div className="participant-location">
-                        {winners[0].regional_location}
+                        {winnerRecords.primary?.regional_location}
                       </div>
                       <div className="participant-code font-[courier] font-bold tracking-widest">
-                        {winners[0].raffle_code}
+                        {winnerRecords.primary?.raffle_code}
                       </div>
                     </div>
                   </>
@@ -337,97 +350,101 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               </div>
             </div>
           </TabSubPanel>
-          {winners && winners.length > 0 && (
-            <TabSubPanel
-              title={"Backup Winners"}
-              className="gap-3 flex flex-col"
-            >
-              <div className="grid w-full gap-3">
-                <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
-                  {revealWinner02 ? (
-                    <>
-                      <div className="participant-name text-xl">
-                        {winners[1]?.full_name}
-                      </div>
-                      <div className="participant-details flex w-full justify-between">
-                        <div className="participant-location">
-                          {winners[1].regional_location}
+          {getFilledWinners().backups &&
+            getFilledWinners().backups.length > 0 && (
+              <TabSubPanel
+                title={"Backup Winners"}
+                className="gap-3 flex flex-col"
+              >
+                <div className="grid w-full gap-3">
+                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
+                    {revealWinner02 ? (
+                      <>
+                        <div className="participant-name text-xl">
+                          {winnerRecords.backups[0]?.full_name}
                         </div>
-                        <div className="participant-code font-[courier] font-bold tracking-widest">
-                          {winners[1].raffle_code}
+                        <div className="participant-details flex w-full justify-between">
+                          <div className="participant-location">
+                            {winnerRecords.backups[0]?.regional_location}
+                          </div>
+                          <div className="participant-code font-[courier] font-bold tracking-widest">
+                            {winnerRecords.backups[0]?.raffle_code}
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  ) : (
-                    <button
-                      className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                      onClick={() => {
-                        startRevealWinner(2);
-                      }}
-                    >
-                      Raffle First Backup Winner
-                    </button>
-                  )}
+                      </>
+                    ) : (
+                      <button
+                        className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                        onClick={() => {
+                          triggerStartDraw("backup", 1);
+                          startRevealWinner(2);
+                        }}
+                      >
+                        Raffle First Backup Winner
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="grid w-full gap-3">
-                <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
-                  {revealWinner03 ? (
-                    <>
-                      <div className="participant-name text-xl">
-                        {winners[2]?.full_name}
-                      </div>
-                      <div className="participant-details flex w-full justify-between">
-                        <div className="participant-location">
-                          {winners[2].regional_location}
+                <div className="grid w-full gap-3">
+                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
+                    {revealWinner03 ? (
+                      <>
+                        <div className="participant-name text-xl">
+                          {winnerRecords.backups[1]?.full_name}
                         </div>
-                        <div className="participant-code font-[courier] font-bold tracking-widest">
-                          {winners[2].raffle_code}
+                        <div className="participant-details flex w-full justify-between">
+                          <div className="participant-location">
+                            {winnerRecords.backups[1]?.regional_location}
+                          </div>
+                          <div className="participant-code font-[courier] font-bold tracking-widest">
+                            {winnerRecords.backups[1]?.raffle_code}
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  ) : (
-                    <button
-                      className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                      onClick={() => {
-                        startRevealWinner(3);
-                      }}
-                    >
-                      Raffle Second Backup Winner
-                    </button>
-                  )}
+                      </>
+                    ) : (
+                      <button
+                        className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                        onClick={() => {
+                          triggerStartDraw("backup", 2);
+                          startRevealWinner(3);
+                        }}
+                      >
+                        Raffle Second Backup Winner
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="grid w-full gap-3">
-                <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
-                  {revealWinner04 ? (
-                    <>
-                      <div className="participant-name text-xl">
-                        {winners[3]?.full_name}
-                      </div>
-                      <div className="participant-details flex w-full justify-between">
-                        <div className="participant-location">
-                          {winners[3].regional_location}
+                <div className="grid w-full gap-3">
+                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
+                    {revealWinner04 ? (
+                      <>
+                        <div className="participant-name text-xl">
+                          {winnerRecords.backups[2]?.full_name}
                         </div>
-                        <div className="participant-code font-[courier] font-bold tracking-widest">
-                          {winners[3].raffle_code}
+                        <div className="participant-details flex w-full justify-between">
+                          <div className="participant-location">
+                            {winnerRecords.backups[2]?.regional_location}
+                          </div>
+                          <div className="participant-code font-[courier] font-bold tracking-widest">
+                            {winnerRecords.backups[2]?.raffle_code}
+                          </div>
                         </div>
-                      </div>
-                    </>
-                  ) : (
-                    <button
-                      className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                      onClick={() => {
-                        startRevealWinner(4);
-                      }}
-                    >
-                      Raffle Second Backup Winner
-                    </button>
-                  )}
+                      </>
+                    ) : (
+                      <button
+                        className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                        onClick={() => {
+                          triggerStartDraw("backup", 3);
+                          startRevealWinner(4);
+                        }}
+                      >
+                        Raffle Third Backup Winner
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </TabSubPanel>
-          )}
+              </TabSubPanel>
+            )}
           <TabSubPanel title="Proclaimed Winner"></TabSubPanel>
         </TabShell>
         <TabShell position="bottom">

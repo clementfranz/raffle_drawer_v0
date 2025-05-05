@@ -299,3 +299,24 @@ tbody tr td {
     background-position: 0% 0%;
   }
 }
+
+.present-participants-table tbody tr td,
+.present-participants-table thead th {
+  @apply text-2xl
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(0);
+    top: 0;
+  }
+
+  100% {
+    transform: translateY(-100%);
+    bottom: 0;
+  }
+}
+
+.animate-slideUp {
+  animation: slideUp 800s ease-in-out forwards;
+}

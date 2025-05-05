@@ -8,6 +8,8 @@ interface Participant {
   full_name: string;
   raffle_code: string;
   regional_location: string;
+  winner_type: string;
+  date_chosen: string;
 }
 
 function deleteEntryFromRaffleWinners(
@@ -84,10 +86,10 @@ interface ParticipantsTableProps {
   loadingTable: boolean;
 }
 
-const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
+const ParticipantsTable = ({
   tableData,
   loadingTable
-}) => {
+}: ParticipantsTableProps) => {
   const location = useLocation();
 
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
@@ -108,10 +110,11 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
 
   const getRaffleWinnersBySize = (
     page = 1,
-    size = 250
+    size = 250,
+    type: string = "winner" // Filter by this winner_type
   ): Promise<Participant[]> => {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open("ParticipantsDB"); // Use current version
+      const request = indexedDB.open("ParticipantsDB");
 
       request.onsuccess = (event: Event) => {
         const db = (event.target as IDBOpenDBRequest)?.result;
@@ -128,23 +131,24 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
         const lowerBound = (page - 1) * size;
         const upperBound = page * size;
 
-        const cursorRequest = store.openCursor(null, "next"); // Ascending order
+        // ✅ Use "prev" to get latest records first
+        const cursorRequest = store.openCursor(null, "prev");
 
         cursorRequest.onsuccess = (e: Event) => {
           const cursor = (e.target as IDBRequest<IDBCursorWithValue>)?.result;
           if (cursor) {
-            if (count >= lowerBound && count < upperBound) {
-              winners.push(cursor.value as Participant);
-            }
-            count++;
+            const record = cursor.value as Participant;
 
-            if (count < upperBound) {
-              cursor.continue();
-            } else {
-              resolve(winners); // Done fetching this page
+            // ✅ Filter records by winner_type
+            if (record.winner_type === type) {
+              if (count >= lowerBound && count < upperBound) {
+                winners.push(record);
+              }
+              count++;
             }
+
+            cursor.continue();
           } else {
-            // No more records
             resolve(winners);
           }
         };
@@ -231,7 +235,18 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
         );
         setTableLocalData(page1);
       } else if (activeTab === "winners") {
-        const winnersData = await getRaffleWinnersBySize(pageNumber, pageSize);
+        const winnersData = await getRaffleWinnersBySize(
+          pageNumber,
+          pageSize,
+          "primary"
+        );
+        setTableLocalData(winnersData);
+      } else {
+        const winnersData = await getRaffleWinnersBySize(
+          pageNumber,
+          pageSize,
+          "backup"
+        );
         setTableLocalData(winnersData);
       }
       setWithParticipantsData(true);
@@ -264,7 +279,10 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                 <th className="p-2 text-left border-b">Code</th>
                 <th className="p-2 text-left border-b">Location</th>
                 {activeTab !== "main" && (
-                  <th className="p-2 text-left border-b">Controls</th>
+                  <>
+                    <th className="p-2 text-left border-b">Draw Date</th>
+                    <th className="p-2 text-left border-b">Controls</th>
+                  </>
                 )}
               </tr>
             </thead>
@@ -282,16 +300,29 @@ const ParticipantsTable: React.FC<ParticipantsTableProps> = ({
                   <td className="text-base font-bold">{entry.raffle_code}</td>
                   <td className="">{entry.regional_location}</td>
                   {activeTab !== "main" && (
-                    <td className="">
-                      <button
-                        onClick={() => {
-                          removeWinner(entry.raffle_code, entry.id_entry);
-                        }}
-                        className="bg-red-700 text-white p-1 px-2 rounded-lg hover:bg-red-600 cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    </td>
+                    <>
+                      <td>
+                        {new Date(entry.date_chosen).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "short",
+                            day: "2-digit",
+                            weekday: "short"
+                          }
+                        )}
+                      </td>
+                      <td className="">
+                        <button
+                          onClick={() => {
+                            removeWinner(entry.raffle_code, entry.id_entry);
+                          }}
+                          className="bg-red-700 text-white p-1 px-2 rounded-lg hover:bg-red-600 cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </>
                   )}
                 </tr>
               ))}
