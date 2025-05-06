@@ -2,7 +2,7 @@ import { type Dispatch, type SetStateAction } from "react";
 
 // Packages
 import Papa from "papaparse";
-import { openDB, type IDBPDatabase } from "idb";
+import { openDB, deleteDB, wrap, unwrap, type IDBPDatabase } from "idb";
 
 type Participant = {
   id_entry: string;
@@ -60,12 +60,19 @@ export const importCsvToIndexedDB = async (
   setPreUploadLoading(true);
   const dbName = "ParticipantsDB";
 
-  // Open the database to check the current version
-  const dbTemp = await openDB(dbName);
-  const currentVersion = dbTemp.version;
-  dbTemp.close();
+  // Try opening the database — if doesn't exist, start at version 1
+  let currentVersion = 1;
 
-  // Open the database with the current version or increment if needed
+  try {
+    const dbTemp = await openDB(dbName);
+    currentVersion = dbTemp.version;
+    dbTemp.close();
+  } catch (e) {
+    // No existing DB, so start fresh
+    console.log("No existing DB found. Starting new one.");
+  }
+
+  // Open the database with correct version (increment)
   const db = await openDB(dbName, currentVersion + 1, {
     upgrade(db) {
       const storeName = `participantsData_${specialCode}`;
