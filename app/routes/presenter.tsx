@@ -19,7 +19,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Home() {
+export default function Presenter() {
   useRouteSpecificBodyClass("/presenter", [
     "bg-gray-800!",
     "h-screen!",
@@ -82,7 +82,7 @@ export default function Home() {
     useLocalStorageState("isRevealedStart");
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-screen h-screen relative">
       {(() => {
         switch (presentingView) {
           case "intro":

@@ -13,7 +13,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export default function Home() {
+export default function InfoPrint() {
   const location = useLocation();
 
   const [infoPrintBook, setInfoPrintBook] = useState<any>("something");
