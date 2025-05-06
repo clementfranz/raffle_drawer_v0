@@ -54,17 +54,19 @@ export const importCsvToIndexedDB = async (
   specialCode: string,
   batchSize: number,
   setEntriesProcessed: Dispatch<SetStateAction<number>>,
-  setUploadProgress: Dispatch<SetStateAction<number>>
+  setUploadProgress: Dispatch<SetStateAction<number>>,
+  setPreUploadLoading: Dispatch<SetStateAction<boolean>>
 ) => {
-  setUploadProgress(1);
+  setPreUploadLoading(true);
   const dbName = "ParticipantsDB";
 
-  // First, get current version
+  // Open the database to check the current version
   const dbTemp = await openDB(dbName);
-  const newVersion = dbTemp.version + 1;
+  const currentVersion = dbTemp.version;
   dbTemp.close();
 
-  const db = await openDB(dbName, newVersion, {
+  // Open the database with the current version or increment if needed
+  const db = await openDB(dbName, currentVersion + 1, {
     upgrade(db) {
       const storeName = `participantsData_${specialCode}`;
       if (!db.objectStoreNames.contains(storeName)) {
@@ -99,6 +101,7 @@ export const importCsvToIndexedDB = async (
   totalRows = await countTotalRows();
 
   return new Promise<void>((resolve, reject) => {
+    setPreUploadLoading(false);
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,

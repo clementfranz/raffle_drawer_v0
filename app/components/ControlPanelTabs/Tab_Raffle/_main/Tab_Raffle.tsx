@@ -33,12 +33,16 @@ function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
 
       if (!db.objectStoreNames.contains("raffleWinners")) {
         const store = db.createObjectStore("raffleWinners", {
-          keyPath: "id",
+          keyPath: "id", // use auto-incremented id as the primary key
           autoIncrement: true
         });
 
-        // ✅ Create indexes
-        store.createIndex("id_entry", "id_entry", { unique: false });
+        // ✅ Create composite index for uniqueness of [id_entry + raffle_code]
+        store.createIndex("id_entry_raffle_code", ["id_entry", "raffle_code"], {
+          unique: true
+        });
+
+        // Other indexes
         store.createIndex("winner_type", "winner_type", { unique: false });
         store.createIndex("date_chosen", "date_chosen", { unique: false });
         store.createIndex("regional_location", "regional_location", {
@@ -127,25 +131,6 @@ function getRecordByIdEntry(id: number, type: string): Promise<any> {
   });
 }
 
-// Function to generate 3 unique random numbers
-function generateRandomNumbers(max: number, exempted: number[] = []): number[] {
-  const result: number[] = [];
-  const allNumbers = new Set<number>();
-
-  // Ensure we generate 3 unique random numbers
-  while (result.length < 4) {
-    const randomNum = Math.floor(Math.random() * max) + 1; // Generate number between 1 and max
-
-    // Check if the number is not in the exempted list and hasn't been added already
-    if (!exempted.includes(randomNum) && !allNumbers.has(randomNum)) {
-      result.push(randomNum);
-      allNumbers.add(randomNum);
-    }
-  }
-
-  return result;
-}
-// Optimized version to generate a single unique random number
 const generateSingleRandomNumber = (
   max: number,
   exempted: Set<number> = new Set()
@@ -153,8 +138,8 @@ const generateSingleRandomNumber = (
   let randomNum: number;
 
   do {
-    randomNum = Math.floor(Math.random() * max) + 1; // Generate number between 1 and max
-  } while (exempted.has(randomNum)); // Retry if the number is in the exempted set
+    randomNum = Math.floor(Math.random() * max) + 1;
+  } while (exempted.has(randomNum));
 
   return randomNum;
 };
@@ -255,7 +240,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     { defaultValue: false }
   );
   const [slotCode, setSlotCode] = useLocalStorageState("slotCode", {
-    defaultValue: "????????????"
+    defaultValue: "??????????"
   });
 
   const processRevealWinner = (num: number) => {
@@ -266,7 +251,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
       setShowWinnerNth(num - 1);
       setSlotCodeStatus("roll");
       clearInterval(startRollingTimer);
-    }, 2000);
+    }, 1000);
     const revealWinnerTimer = setTimeout(() => {
       switch (num) {
         case 1:
@@ -287,7 +272,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
       }
       setRevealWinner(true);
       clearInterval(revealWinnerTimer);
-    }, 9000);
+    }, 3000);
   };
 
   const startRevealWinner = (nthWinner: number) => {

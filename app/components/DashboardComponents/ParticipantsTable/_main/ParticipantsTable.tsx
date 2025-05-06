@@ -4,7 +4,7 @@ import { openDB } from "idb";
 import useLocalStorageState from "use-local-storage-state";
 
 interface Participant {
-  id_entry: number;
+  id_entry: string;
   full_name: string;
   raffle_code: string;
   regional_location: string;
@@ -12,53 +12,46 @@ interface Participant {
   date_chosen: string;
 }
 
-function deleteEntryFromRaffleWinners(
+const deleteEntryFromRaffleWinners = (
   raffle_code: string,
-  id_entry: string | number
-): Promise<string> {
+  id_entry: string
+): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB"); // use your existing version (5 or higher)
+    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB");
 
     request.onsuccess = () => {
       const db: IDBDatabase = request.result;
-      const transaction: IDBTransaction = db.transaction(
-        "raffleWinners",
-        "readwrite"
-      );
-      const store: IDBObjectStore = transaction.objectStore("raffleWinners");
+      const transaction = db.transaction("raffleWinners", "readwrite");
+      const store = transaction.objectStore("raffleWinners");
+      const index = store.index("id_entry_raffle_code");
 
-      // Step 1: Get the entry by id_entry first
-      const getRequest: IDBRequest<any> = store.get(id_entry);
+      // Step 1: Get the entry by [id_entry, raffle_code] composite key
+      const getRequest: IDBRequest<any> = index.get([id_entry, raffle_code]);
 
       getRequest.onsuccess = () => {
         const result = getRequest.result;
 
         if (result) {
-          // Step 2: Verify raffle_code matches
-          if (result.raffle_code === raffle_code) {
-            // Step 3: Delete
-            const deleteRequest: IDBRequest = store.delete(id_entry);
+          // Step 2: Delete using primary key (which is 'id' in our store)
+          const deleteRequest = store.delete(result.id);
 
-            deleteRequest.onsuccess = () => {
-              resolve(
-                `Entry with id_entry ${id_entry} and raffle_code ${raffle_code} deleted successfully.`
-              );
-            };
-
-            deleteRequest.onerror = () => {
-              reject(
-                `Failed to delete entry: ${
-                  deleteRequest.error?.message || "Unknown error"
-                }`
-              );
-            };
-          } else {
-            reject(
-              `raffle_code mismatch. Entry found but raffle_code does not match.`
+          deleteRequest.onsuccess = () => {
+            resolve(
+              `Entry with id_entry ${id_entry} and raffle_code ${raffle_code} deleted successfully.`
             );
-          }
+          };
+
+          deleteRequest.onerror = () => {
+            reject(
+              `Failed to delete entry: ${
+                deleteRequest.error?.message || "Unknown error"
+              }`
+            );
+          };
         } else {
-          reject(`No entry found with id_entry ${id_entry}`);
+          reject(
+            `No entry found with id_entry ${id_entry} and raffle_code ${raffle_code}`
+          );
         }
       };
 
@@ -67,6 +60,17 @@ function deleteEntryFromRaffleWinners(
           `Failed to retrieve entry: ${
             getRequest.error?.message || "Unknown error"
           }`
+        );
+      };
+
+      // ✅ Best practice: close DB connection after transaction completes
+      transaction.oncomplete = () => {
+        db.close();
+      };
+
+      transaction.onerror = () => {
+        reject(
+          `Transaction failed: ${transaction.error?.message || "Unknown error"}`
         );
       };
     };
@@ -79,7 +83,7 @@ function deleteEntryFromRaffleWinners(
       );
     };
   });
-}
+};
 
 interface ParticipantsTableProps {
   tableData: Participant[];
@@ -211,7 +215,7 @@ const ParticipantsTable = ({
     setActiveTab(tab);
   };
 
-  const removeWinner = (code: string, id: string | number) => {
+  const removeWinner = (code: string, id: string) => {
     deleteEntryFromRaffleWinners(code, id);
     fetchData(activeTab, pageNumber, pageSize);
   };
@@ -261,10 +265,12 @@ const ParticipantsTable = ({
   useEffect(() => {
     setTableIsLoading(true);
     fetchData(activeTab, pageNumber, pageSize);
-  }, [pageNumber, pageSize, activeTab]); // run when pageNumber or pageSize changes
+  }, [pageNumber, pageSize, activeTab, withParticipantsData]); // run when pageNumber or pageSize changes
 
   useEffect(() => {
     checkUrlAndSetPage();
+    setTableIsLoading(true);
+    fetchData(activeTab, pageNumber, pageSize);
   }, []);
 
   return (

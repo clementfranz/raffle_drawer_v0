@@ -10,7 +10,7 @@ type SlotMachineProps = {
 
 const SlotMachine = ({ boxUnit }: SlotMachineProps) => {
   const [slotCode, setSlotCode] = useLocalStorageState("slotCode", {
-    defaultValue: "KOPIKOBLANCA"
+    defaultValue: "KOPIKBLNCA"
   });
   const [showWinnerNth] = useLocalStorageState<number>("showWinnerNth", {
     defaultValue: 0
@@ -37,7 +37,7 @@ const SlotMachine = ({ boxUnit }: SlotMachineProps) => {
   const winner = getWinnerByIndex(showWinnerNth as 0 | 3 | 1 | 2);
 
   useEffect(() => {
-    setSlotCode(winner?.raffle_code || "KOPIKOBLANCA");
+    setSlotCode(winner?.raffle_code || "KPIKOBLNCA");
   }, [winners, showWinnerNth, winner]); // 👈 safer dependency list
 
   return (
@@ -76,7 +76,7 @@ const SlotMachine = ({ boxUnit }: SlotMachineProps) => {
                   <SlotReelWindow
                     key={index}
                     nthChar={index}
-                    boxUnit={boxUnit}
+                    boxUnit={(boxUnit * 12) / 10}
                     codeChar={char}
                     slotCodeStatus={slotCodeStatus}
                   />

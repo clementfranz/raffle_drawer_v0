@@ -7,6 +7,7 @@ import UploadButton from "../../UploadButton/_main/UploadButton";
 // Custom Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileCsv } from "@fortawesome/free-solid-svg-icons";
+import useLocalStorageState from "use-local-storage-state";
 
 type SelectedWeek = {
   weekName: string;
@@ -18,6 +19,17 @@ type CompletedProps = {
 };
 
 const Phase04_Completed = ({ selectedWeek, uploadStatus }: CompletedProps) => {
+  const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
+    "withParticipantsData",
+    {
+      defaultValue: false
+    }
+  );
+
+  const handleConfirmDone = () => {
+    setWithParticipantsData(true);
+  };
+
   return (
     <div className={`upload-phase ${uploadStatus !== "completed" && "hidden"}`}>
       <UploadBox className="bg-yellow-800 relative overflow-hidden">
@@ -41,7 +53,10 @@ const Phase04_Completed = ({ selectedWeek, uploadStatus }: CompletedProps) => {
           </div>
         </UploadBox.Body>
         <UploadBox.Footer className=" z-10">
-          <UploadButton className="bg-[#0000008c]! hover:bg-[#00000052]! ">
+          <UploadButton
+            className="bg-[#0000008c]! hover:bg-[#00000052]! "
+            onClick={handleConfirmDone}
+          >
             Confirm Done
           </UploadButton>
         </UploadBox.Footer>

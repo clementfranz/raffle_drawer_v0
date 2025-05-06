@@ -49,10 +49,10 @@ const SlotReelWindow = ({
       <div
         className={`reel-roll absolute flex flex-col left-0 w-full ${
           enableSlotMachineAnimation && "transition-all"
-        } ease-in-out duration-1000`}
+        } ease-in-out duration-200`}
         style={{
-          top: `-${boxUnit * (targetPos - 1)}px`,
-          transitionDelay: `${slotCodeStatus === "roll" ? nthChar * 0.5 : 0}s`
+          top: `-${boxUnit * (targetPos - 0.75)}px`,
+          transitionDelay: `${slotCodeStatus === "roll" ? nthChar * 150 : 0}ms`
         }}
       >
         <div

@@ -31,6 +31,7 @@ const Phase03_Processing = ({
 }: ProcessingProps) => {
   const [entriesProcessed, setEntriesProcessed] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [preUploadLoading, setPreUploadLoading] = useState(false);
 
   const handleImport = async (file: File) => {
     try {
@@ -39,7 +40,8 @@ const Phase03_Processing = ({
         "raffle2025",
         1000, // batch size
         setEntriesProcessed,
-        setUploadProgress
+        setUploadProgress,
+        setPreUploadLoading
       );
       console.log("Import completed ✅");
     } catch (err) {
@@ -112,7 +114,13 @@ const Phase03_Processing = ({
         </UploadBox.Body>
         <UploadBox.Footer className=" z-10">
           <UploadButton clickable={false} className="bg-[#0000008c]! ">
-            Processing File - {uploadProgress}%
+            {preUploadLoading ? (
+              <span className="pulse text-red-600 font-bold">
+                Please wait...
+              </span>
+            ) : (
+              <>Processing File - {uploadProgress}%</>
+            )}
           </UploadButton>
         </UploadBox.Footer>
         <div

@@ -33,6 +33,7 @@ export const useIndexedDB = (): IndexedDBHook => {
       upgrade(db) {
         // Create object store and indexes if not already present
         const store = db.createObjectStore("entries", { keyPath: "id_entry" });
+
         store.createIndex("id_entry", "id_entry", { unique: true });
         store.createIndex("regional_location", "regional_location"); // Index for region queries
       }
