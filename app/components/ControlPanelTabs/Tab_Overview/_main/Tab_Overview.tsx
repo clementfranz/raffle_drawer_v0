@@ -28,7 +28,11 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   return (
     <TabMainBody isActive={isActiveTab}>
       <TabShell position="top">
-        <TabSubPanel title={"Participants Overview"}>
+        <TabSubPanel
+          title={`${
+            withParticipantsData ? "Participants Overview" : "Upload Data"
+          }`}
+        >
           {withParticipantsData ? (
             <ParticipantsListSummary />
           ) : (

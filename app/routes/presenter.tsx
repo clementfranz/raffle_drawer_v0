@@ -63,15 +63,6 @@ export default function Home() {
   useEffect(() => {
     setPresentingView("intro");
     setTransitionActive(false);
-  }, []);
-
-  type PresentingStatus = "presenting" | "not-presenting";
-  const [presentingStatus, setPresentingStatus] =
-    useLocalStorageState<PresentingStatus>("presentingStatus");
-  const [isRevealedStart, setIsRevealedStart] =
-    useLocalStorageState("isRevealedStart");
-
-  useEffect(() => {
     const handleBeforeUnload = () => {
       setPresentingStatus("not-presenting");
     };
@@ -83,6 +74,12 @@ export default function Home() {
       setIsRevealedStart(false);
     };
   }, []);
+
+  type PresentingStatus = "presenting" | "not-presenting";
+  const [presentingStatus, setPresentingStatus] =
+    useLocalStorageState<PresentingStatus>("presentingStatus");
+  const [isRevealedStart, setIsRevealedStart] =
+    useLocalStorageState("isRevealedStart");
 
   return (
     <div className="w-full h-full relative">

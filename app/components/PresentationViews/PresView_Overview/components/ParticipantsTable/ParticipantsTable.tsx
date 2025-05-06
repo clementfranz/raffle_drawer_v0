@@ -100,7 +100,7 @@ const ParticipantsTable = () => {
     <>
       {tableLocalData && tableLocalData.length > 0 && !tableIsLoading ? (
         <div
-          className={`present-participants-table grow overflow-hidden h-full w-full text-black ${styles.participantsTable}`}
+          className={`present-participants-table grow overflow-y-scroll h-full w-full text-black ${styles.participantsTable}`}
         >
           <table className="min-w-full table-fixed border-separate border-spacing-0 ">
             <thead className="bg-emerald-900 text-white sticky top-0 z-10 text-8xl!">
@@ -111,7 +111,7 @@ const ParticipantsTable = () => {
                 <th className="p-2 text-left border-b">Location</th>
               </tr>
             </thead>
-            <tbody className="animate-slideUp">
+            <tbody className="animate-slideUpX">
               {tableLocalData?.map((entry: Participant, index: number) => (
                 <tr key={`participant-${entry.id_entry}-${index}`}>
                   <td>

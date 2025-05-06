@@ -9,6 +9,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileCsv } from "@fortawesome/free-solid-svg-icons";
 
 import { formatFileSize, importCsvToIndexedDB } from "./utils/necessaryOnly";
+import useLocalStorageState from "use-local-storage-state";
+
+const indexDBName = "ParticipantsDB";
+const storeName = "participantsData_raffle2025";
 
 type FileDetails = any;
 
@@ -22,6 +26,87 @@ type ProcessingProps = {
   uploadStatus: string;
 };
 
+const countLocationsFromIndexedDB = async (
+  setLoadingStats: (loading: boolean) => void,
+  setCountingProgress: (percentage: number) => void,
+  indexDBName: string,
+  storeName: string
+): Promise<{ location: string; count: number }[]> => {
+  return new Promise((resolve, reject) => {
+    console.log("Starting Counting Regions: ...");
+
+    setLoadingStats(true);
+    setCountingProgress(0);
+
+    const request = indexedDB.open(indexDBName);
+
+    request.onerror = () => reject("Failed to open IndexedDB");
+
+    request.onsuccess = () => {
+      const db = request.result;
+      const transaction = db.transaction(storeName, "readonly");
+      const store = transaction.objectStore(storeName);
+
+      const locationsCount: Record<string, number> = {};
+
+      // Step 1: Count total entries first
+      let totalEntries = 0;
+      const countRequest = store.count();
+
+      countRequest.onsuccess = () => {
+        totalEntries = countRequest.result;
+        if (totalEntries === 0) {
+          setLoadingStats(false);
+          setCountingProgress(100);
+          resolve([]);
+          return;
+        }
+
+        // Step 2: Start cursoring and track progress
+        let processedEntries = 0;
+        const cursorRequest = store.openCursor();
+
+        cursorRequest.onsuccess = (event) => {
+          const cursor = (event.target as IDBRequest<IDBCursorWithValue>)
+            .result;
+          if (cursor) {
+            const data = cursor.value;
+            const location = data.regional_location || "Unknown";
+
+            locationsCount[location] = (locationsCount[location] || 0) + 1;
+
+            processedEntries++;
+            const progress = Math.min(
+              Math.round((processedEntries / totalEntries) * 100),
+              100
+            );
+            setCountingProgress(progress);
+
+            cursor.continue();
+          } else {
+            // Done
+            const result = Object.entries(locationsCount).map(
+              ([location, count]) => ({
+                location,
+                count
+              })
+            );
+            setLoadingStats(false);
+            setCountingProgress(100);
+
+            console.log("✅ Done Counting Regions: ...");
+            resolve(result);
+          }
+        };
+
+        cursorRequest.onerror = () => reject("Cursor failed");
+      };
+
+      countRequest.onerror = () => reject("Count request failed");
+    };
+  });
+};
+
 const Phase03_Processing = ({
   fileAttached,
   fileDetails,
@@ -30,8 +115,27 @@ const Phase03_Processing = ({
   uploadStatus
 }: ProcessingProps) => {
   const [entriesProcessed, setEntriesProcessed] = useState(0);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [countingProgress, setCountingProgress] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [preUploadLoading, setPreUploadLoading] = useState(false);
+
+  const [regionalStats, setRegionalStats] = useLocalStorageState<
+    { location: string; count: number }[]
+  >("reginalStats", {
+    defaultValue: []
+  });
+
+  const getRegionalStats = () => {
+    countLocationsFromIndexedDB(
+      setLoadingStats,
+      setCountingProgress,
+      indexDBName,
+      storeName
+    ).then((registeredLocations) => {
+      setRegionalStats(registeredLocations);
+    });
+  };
 
   const handleImport = async (file: File) => {
     try {
@@ -43,6 +147,7 @@ const Phase03_Processing = ({
         setUploadProgress,
         setPreUploadLoading
       );
+      await getRegionalStats();
       console.log("Import completed ✅");
     } catch (err) {
       console.error("Import failed", err);
@@ -119,7 +224,7 @@ const Phase03_Processing = ({
                 Please wait...
               </span>
             ) : (
-              <>Processing File - {uploadProgress}%</>
+              <>Processing File - {uploadProgress + countingProgress}%</>
             )}
           </UploadButton>
         </UploadBox.Footer>

@@ -162,6 +162,13 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     defaultValue: false
   });
 
+  type PresentingStatus = "presenting" | "not-presenting";
+  const [presentingStatus] =
+    useLocalStorageState<PresentingStatus>("presentingStatus");
+  const [presentingView] = useLocalStorageState<string | null>(
+    "presentingView"
+  );
+
   const generateWinner = (
     winnerType: string = "primary",
     nthBackup: 0 | 1 | 2 | 3 = 0
@@ -298,7 +305,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   return (
     <>
       <TabMainBody isActive={isActiveTab}>
-        <TabShell position="top">
+        <TabShell position="top" className={"relative"}>
           <TabSubPanel title={"Raffle Draw"}>
             <div className="raffle-draw-status bg-gray-950 w-full rounded-xl h-[80px] border-gray-600 border-2 flex items-center justify-center text-xl font-[courier] font-bold text-amber-200 text-shadow-amber-500 text-shadow-md ">
               Not Started Yet
@@ -431,6 +438,26 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               </TabSubPanel>
             )}
           <TabSubPanel title="Proclaimed Winner"></TabSubPanel>
+          <div
+            className={`checkpoint bg-[#220404b6] w-full h-full absolute left-0 top-0 text-white flex justify-center items-center ${
+              presentingStatus === "presenting" &&
+              presentingView === "raffle-draw" &&
+              "hidden"
+            }`}
+          >
+            <div className="checkpoint-content bg-red-900 rounded-2xl p-4 text-center w-8/10">
+              <div>Raffle Controls Disabled</div>
+              <div className="text-sm mt-4">
+                {presentingStatus !== "presenting" ? (
+                  <>Please start presentation and switch to raffle view</>
+                ) : (
+                  presentingView !== "raffle-draw" && (
+                    <>Please switch view to raffle draw.</>
+                  )
+                )}
+              </div>
+            </div>
+          </div>
         </TabShell>
         <TabShell position="bottom">
           <TabActionButton onClick={handleResetMachine}>
