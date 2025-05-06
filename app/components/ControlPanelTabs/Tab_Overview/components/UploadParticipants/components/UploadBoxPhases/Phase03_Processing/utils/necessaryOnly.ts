@@ -60,7 +60,6 @@ export const importCsvToIndexedDB = async (
   setPreUploadLoading(true);
   const dbName = "ParticipantsDB";
 
-  // Try opening the database — if doesn't exist, start at version 1
   let currentVersion = 1;
 
   try {
@@ -68,11 +67,9 @@ export const importCsvToIndexedDB = async (
     currentVersion = dbTemp.version;
     dbTemp.close();
   } catch (e) {
-    // No existing DB, so start fresh
     console.log("No existing DB found. Starting new one.");
   }
 
-  // Open the database with correct version (increment)
   const db = await openDB(dbName, currentVersion + 1, {
     upgrade(db) {
       const storeName = `participantsData_${specialCode}`;
@@ -91,7 +88,6 @@ export const importCsvToIndexedDB = async (
   let totalRows = 0;
   let entriesInserted = 0;
 
-  // Count rows first
   const countTotalRows = (): Promise<number> => {
     return new Promise((resolve, reject) => {
       let count = 0;
@@ -109,35 +105,40 @@ export const importCsvToIndexedDB = async (
 
   return new Promise<void>((resolve, reject) => {
     setPreUploadLoading(false);
+
+    let savingPromise: Promise<void> = Promise.resolve();
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      step: async (results, parser) => {
+      step: (results, parser) => {
         const row = results.data as Participant;
 
         batch.push(row);
         entriesInserted += 1;
 
-        // ✅ Real-time update on every row
         setEntriesProcessed(entriesInserted);
         setUploadProgress(Math.round((entriesInserted / totalRows) * 100));
 
         if (batch.length >= batchSize) {
-          parser.pause();
-
-          await savePerBatch(db, storeName, batch);
-
+          const currentBatch = batch;
           batch = [];
-          parser.resume();
+
+          // Queue saving without awaiting directly
+          savingPromise = savingPromise.then(() =>
+            savePerBatch(db, storeName, currentBatch)
+          );
         }
       },
       complete: async () => {
         // Save remaining
         if (batch.length > 0) {
+          await savingPromise;
           await savePerBatch(db, storeName, batch);
+        } else {
+          await savingPromise;
         }
 
-        // Final update
         setEntriesProcessed(entriesInserted);
         setUploadProgress(100);
 

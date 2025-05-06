@@ -2,6 +2,7 @@
   "name": "raffle_drawer_v0",
   "private": true,
   "type": "module",
+  "homepage": ".",
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",

@@ -188,7 +188,13 @@ const ParticipantsTable = ({
     const startId = (pageNo - 1) * size + 1;
     const endId = pageNo * size;
 
-    const range = IDBKeyRange.bound(startId, endId);
+    let range: IDBKeyRange | null = null;
+    try {
+      range = IDBKeyRange.bound(startId, endId);
+    } catch (err) {
+      console.error("Invalid range:", startId, endId);
+      throw err;
+    }
     const data: any[] = [];
 
     let cursor = await store.openCursor(range);
@@ -264,13 +270,21 @@ const ParticipantsTable = ({
   };
   useEffect(() => {
     setTableIsLoading(true);
-    fetchData(activeTab, pageNumber, pageSize);
+    if (withParticipantsData) {
+      fetchData(activeTab, pageNumber, pageSize);
+    } else {
+      setTableIsLoading(false);
+    }
   }, [pageNumber, pageSize, activeTab, withParticipantsData]); // run when pageNumber or pageSize changes
 
   useEffect(() => {
     checkUrlAndSetPage();
     setTableIsLoading(true);
-    fetchData(activeTab, pageNumber, pageSize);
+    if (withParticipantsData) {
+      fetchData(activeTab, pageNumber, pageSize);
+    } else {
+      setTableIsLoading(false);
+    }
   }, []);
 
   return (
