@@ -87,28 +87,59 @@ function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
   });
 }
 
-const getRecordByIdEntry = (id: number, type: string): Promise<any> => {
+let cachedDB: IDBDatabase | null = null;
+
+const openDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    if (cachedDB !== null) {
+      console.log("[INFO] Reusing cached DB connection");
+      return resolve(cachedDB);
+    }
+
+    console.log("[INFO] Opening new DB connection...");
+    const request = indexedDB.open("ParticipantsDB");
+
+    request.onsuccess = (event) => {
+      cachedDB = (event.target as IDBRequest).result;
+      console.log("[SUCCESS] Database opened and cached");
+      if (cachedDB) {
+        resolve(cachedDB);
+        cachedDB.onclose = () => {
+          console.warn("[WARN] Database connection closed");
+          cachedDB = null;
+        };
+      }
+
+      // Handle if connection gets closed unexpectedly
+    };
+
+    request.onerror = () => {
+      console.error("[ERROR] Error opening database");
+      reject("Error opening database");
+    };
+
+    request.onblocked = () => {
+      console.error("[BLOCKED] Database open request is blocked.");
+    };
+  });
+};
+
+const getRecordByIdEntry = async (id: number, type: string): Promise<any> => {
   console.log(
     `[INFO] Starting getRecordByIdEntry for id: ${id}, type: ${type}`
   );
 
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("ParticipantsDB"); // Open the DB
-    console.log(
-      "[INFO] IndexedDB open request made... waiting for onsuccess or onerror"
-    );
+  try {
+    console.log("[INFO] Waiting for DB connection...");
+    const db = await openDB();
+    console.log("[SUCCESS] Got DB connection. Proceeding...");
 
-    request.onsuccess = (event) => {
-      console.log("[SUCCESS] Database opened successfully");
-      const db = (event.target as IDBRequest).result;
-
+    return new Promise((resolve, reject) => {
       const transaction = db.transaction(
         ["participantsData_raffle2025"],
         "readonly"
       );
-      console.log(
-        "[INFO] Transaction started for object store: participantsData_raffle2025"
-      );
+      console.log("[INFO] Transaction started");
 
       transaction.oncomplete = () =>
         console.log("[SUCCESS] Transaction completed");
@@ -119,9 +150,7 @@ const getRecordByIdEntry = (id: number, type: string): Promise<any> => {
         "participantsData_raffle2025"
       );
 
-      console.log(
-        `[INFO] Sending get request for id: ${id}... waiting for onsuccess or onerror`
-      );
+      console.log(`[INFO] Sending get request for id: ${id}`);
       const getRequest = objectStore.get(id);
 
       getRequest.onsuccess = () => {
@@ -155,25 +184,11 @@ const getRecordByIdEntry = (id: number, type: string): Promise<any> => {
         console.error("[ERROR] Error retrieving record");
         reject("Error retrieving record");
       };
-    };
-
-    request.onerror = () => {
-      console.error("[ERROR] Error opening database");
-      reject("Error opening database");
-    };
-
-    request.onblocked = () => {
-      console.error(
-        "[BLOCKED] Database request is blocked. Maybe another tab is using it."
-      );
-    };
-
-    request.onupgradeneeded = () => {
-      console.warn(
-        "[INFO] onupgradeneeded fired. Possibly first time opening DB or version change."
-      );
-    };
-  });
+    });
+  } catch (e) {
+    console.error("[ERROR] Failed before starting transaction:", e);
+    throw e;
+  }
 };
 
 const generateSingleRandomNumber = (
