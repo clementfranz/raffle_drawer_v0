@@ -6,7 +6,7 @@ import useLocalStorageState from "use-local-storage-state";
 const ParticipantsListSummary: React.FC = () => {
   const [regionalStats, setRegionalStats] = useLocalStorageState<
     { location: string; count: number }[]
-  >("reginalStats", {
+  >("regionalStats", {
     defaultValue: []
   });
 

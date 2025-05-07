@@ -122,7 +122,7 @@ const Phase03_Processing = ({
 
   const [regionalStats, setRegionalStats] = useLocalStorageState<
     { location: string; count: number }[]
-  >("reginalStats", {
+  >("regionalStats", {
     defaultValue: []
   });
 
@@ -143,6 +143,7 @@ const Phase03_Processing = ({
         file,
         "raffle2025",
         1000, // batch size
+        fileDetails.entries,
         setEntriesProcessed,
         setUploadProgress,
         setPreUploadLoading
@@ -158,13 +159,31 @@ const Phase03_Processing = ({
     if (uploadProgress === 100) {
       setUploadStatus("completed");
     }
-  }, [uploadProgress]);
+    console.log("UPLOAD PROGRESS: ", uploadProgress);
+    console.log("COUNTING PROGRESS: ", countingProgress);
+  }, [uploadProgress, countingProgress]);
 
   useEffect(() => {
-    if (triggerImport && fileAttached) {
+    if (fileDetails && fileDetails.entries > 0) {
+      const progress = Math.round(
+        (entriesProcessed / fileDetails.entries) * 100
+      );
+      setUploadProgress(progress);
+      console.log("LIVE UPLOAD PROGRESS: ", progress);
+    }
+  }, [entriesProcessed]);
+
+  useEffect(() => {
+    if (
+      triggerImport &&
+      fileAttached &&
+      fileDetails &&
+      fileDetails.entries > 0
+    ) {
       handleImport(fileAttached);
     }
-  }, [triggerImport]);
+    console.log("FILE ENTRIES COUNT", fileDetails.entries);
+  }, [triggerImport, fileDetails]);
 
   return (
     <div
@@ -224,7 +243,7 @@ const Phase03_Processing = ({
                 Please wait...
               </span>
             ) : (
-              <>Processing File - {uploadProgress + countingProgress}%</>
+              <>Processing File - {(uploadProgress + countingProgress) / 2}%</>
             )}
           </UploadButton>
         </UploadBox.Footer>

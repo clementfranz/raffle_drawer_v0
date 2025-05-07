@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 // UI Components
 // UI Components
@@ -162,6 +162,8 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     defaultValue: false
   });
 
+  const [winnerLoading, setWinnerLoading] = useState(false);
+
   type PresentingStatus = "presenting" | "not-presenting";
   const [presentingStatus] =
     useLocalStorageState<PresentingStatus>("presentingStatus");
@@ -169,40 +171,72 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     "presentingView"
   );
 
-  const generateWinner = (
+  useEffect(() => {
+    if (winnerLoading) {
+      console.log("Generating winner start...");
+    } else {
+      console.log("Generating winner start...");
+    }
+  }, [winnerLoading]);
+
+  // ✅ Generate Winner Function (Async with Loading + Return Success Flag)
+  const generateWinner = async (
     winnerType: string = "primary",
     nthBackup: 0 | 1 | 2 | 3 = 0
-  ) => {
-    // ✅ Ensure there's a valid number of entries
-    const maxEntries = Number(fileDetails?.entries) || 999999; // Default to 999999 if undefined or 0
+  ): Promise<boolean> => {
+    try {
+      console.log("Generating winner start");
+      setWinnerLoading(true); // Start loading
 
-    // ✅ Generate a single random number (no need for an array, just a single number)
-    const singleRandomNumber = generateSingleRandomNumber(maxEntries);
+      // ✅ Ensure there's a valid number of entries
+      const maxEntries = Number(fileDetails?.entries) || 999999;
 
-    // ✅ Fetch the record based on the random number
-    getRecordByIdEntry(singleRandomNumber, winnerType)
-      .then((winnerData: Winner | null) => {
-        if (winnerData) {
-          if (winnerType === "primary") {
-            setWinner(winnerData);
-          } else {
-            setBackupWinner((nthBackup - 1) as 0 | 1 | 2, winnerData);
-          }
+      // ✅ Generate a single random number
+      const singleRandomNumber = generateSingleRandomNumber(maxEntries);
+
+      // ✅ Fetch the record
+      const winnerData: Winner | null = await getRecordByIdEntry(
+        singleRandomNumber,
+        winnerType
+      );
+
+      if (winnerData) {
+        if (winnerType === "primary") {
+          console.log("Setting a winner");
+          setWinner(winnerData);
+        } else {
+          console.log("Setting a backup winner");
+          setBackupWinner((nthBackup - 1) as 0 | 1 | 2, winnerData);
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching winner data:", error);
-      });
+        return true; // ✅ Success
+      } else {
+        console.warn("No winner data found");
+        return false; // ❌ No winner found
+      }
+    } catch (error) {
+      console.error("Error fetching winner data:", error);
+      return false; // ❌ Error
+    } finally {
+      setWinnerLoading(false); // Stop loading
+      console.log("Generating winner ended");
+    }
   };
 
-  // Trigger draw start and winner generation
-  const triggerStartDraw = (
+  // ✅ Trigger Draw Start Function (Fixed to be Async)
+  const triggerStartDraw = async (
     type: string = "primary",
     nth: 0 | 1 | 2 | 3 = 0
   ) => {
+    console.log("Attempting: ", type, " ", nth);
     setIsRevealed(false);
-    generateWinner(type, nth);
-    setStartDraw(true);
+
+    const successGeneration = await generateWinner(type, nth);
+
+    if (successGeneration) {
+      setStartDraw(true);
+    } else {
+      console.warn("Winner generation failed, draw not started");
+    }
   };
 
   const [slotCodeStatus, setSlotCodeStatus] = useLocalStorageState(
@@ -368,6 +402,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                       <button
                         className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
                         onClick={() => {
+                          console.log("Raffling backup winner #1");
                           triggerStartDraw("backup", 1);
                           startRevealWinner(2);
                         }}
@@ -397,6 +432,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                       <button
                         className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
                         onClick={() => {
+                          console.log("Raffling backup winner #2");
                           triggerStartDraw("backup", 2);
                           startRevealWinner(3);
                         }}
@@ -426,6 +462,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                       <button
                         className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
                         onClick={() => {
+                          console.log("Raffling backup winner #3");
                           triggerStartDraw("backup", 3);
                           startRevealWinner(4);
                         }}
@@ -438,26 +475,6 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               </TabSubPanel>
             )}
           <TabSubPanel title="Proclaimed Winner"></TabSubPanel>
-          <div
-            className={`checkpoint bg-[#220404b6] w-full h-full absolute left-0 top-0 text-white flex justify-center items-center ${
-              presentingStatus === "presenting" &&
-              presentingView === "raffle-draw" &&
-              "hidden"
-            }`}
-          >
-            <div className="checkpoint-content bg-red-900 rounded-2xl p-4 text-center w-8/10">
-              <div>Raffle Controls Disabled</div>
-              <div className="text-sm mt-4">
-                {presentingStatus !== "presenting" ? (
-                  <>Please start presentation and switch to raffle view</>
-                ) : (
-                  presentingView !== "raffle-draw" && (
-                    <>Please switch view to raffle draw.</>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
         </TabShell>
         <TabShell position="bottom">
           <TabActionButton onClick={handleResetMachine}>
@@ -467,6 +484,26 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
             Clear Winners
           </TabActionButton>
         </TabShell>
+        <div
+          className={`checkpoint bg-[#220404b6] w-full h-full absolute left-0 top-0 text-white flex justify-center items-center ${
+            presentingStatus === "presenting" &&
+            presentingView === "raffle-draw" &&
+            "hidden"
+          }`}
+        >
+          <div className="checkpoint-content bg-red-900 rounded-2xl p-4 text-center w-8/10">
+            <div>Raffle Controls Disabled</div>
+            <div className="text-sm mt-4">
+              {presentingStatus !== "presenting" ? (
+                <>Please start presentation and switch to raffle view</>
+              ) : (
+                presentingView !== "raffle-draw" && (
+                  <>Please switch view to raffle draw.</>
+                )
+              )}
+            </div>
+          </div>
+        </div>
       </TabMainBody>
     </>
   );

@@ -53,10 +53,13 @@ export const importCsvToIndexedDB = async (
   file: File,
   specialCode: string,
   batchSize: number,
+  totalEntries: number,
   setEntriesProcessed: Dispatch<SetStateAction<number>>,
   setUploadProgress: Dispatch<SetStateAction<number>>,
   setPreUploadLoading: Dispatch<SetStateAction<boolean>>
 ) => {
+  console.log("Accepted Total Entries: ", totalEntries);
+
   setPreUploadLoading(true);
   const dbName = "ParticipantsDB";
 
@@ -85,23 +88,7 @@ export const importCsvToIndexedDB = async (
 
   const storeName = `participantsData_${specialCode}`;
   let batch: Participant[] = [];
-  let totalRows = 0;
   let entriesInserted = 0;
-
-  const countTotalRows = (): Promise<number> => {
-    return new Promise((resolve, reject) => {
-      let count = 0;
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        step: () => count++,
-        complete: () => resolve(count),
-        error: (err) => reject(err)
-      });
-    });
-  };
-
-  totalRows = await countTotalRows();
 
   return new Promise<void>((resolve, reject) => {
     setPreUploadLoading(false);
@@ -118,7 +105,8 @@ export const importCsvToIndexedDB = async (
         entriesInserted += 1;
 
         setEntriesProcessed(entriesInserted);
-        setUploadProgress(Math.round((entriesInserted / totalRows) * 100));
+        // console.log("Entries Processed: ", entriesInserted);
+        setUploadProgress(Math.round((entriesInserted / totalEntries) * 100));
 
         if (batch.length >= batchSize) {
           const currentBatch = batch;
@@ -141,7 +129,6 @@ export const importCsvToIndexedDB = async (
 
         setEntriesProcessed(entriesInserted);
         setUploadProgress(100);
-
         console.log("CSV import completed");
         resolve();
       },

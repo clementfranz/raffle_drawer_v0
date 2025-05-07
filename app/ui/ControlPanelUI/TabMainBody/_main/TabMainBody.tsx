@@ -8,7 +8,7 @@ type TabMainBodyProps = {
 const TabMainBody = ({ isActive = false, children }: TabMainBodyProps) => {
   return (
     <div
-      className={`w-full flex-col justify-between  text-white grow ${
+      className={`w-full flex-col justify-between relative   text-white grow ${
         isActive ? "flex" : "hidden"
       }`}
     >

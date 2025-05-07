@@ -7,7 +7,7 @@ const storeName = "participantsData_raffle2025";
 const RegionalStats = () => {
   const [regionalStats, setRegionalStats] = useLocalStorageState<
     { location: string; count: number }[]
-  >("reginalStats", {
+  >("regionalStats", {
     defaultValue: []
   });
 
