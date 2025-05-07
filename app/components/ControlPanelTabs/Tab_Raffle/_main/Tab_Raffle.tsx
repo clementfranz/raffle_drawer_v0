@@ -87,49 +87,94 @@ function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
   });
 }
 
-// Function to get record by ID from IndexedDB
-function getRecordByIdEntry(id: number, type: string): Promise<any> {
+const getRecordByIdEntry = (id: number, type: string): Promise<any> => {
+  console.log(
+    `[INFO] Starting getRecordByIdEntry for id: ${id}, type: ${type}`
+  );
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open("ParticipantsDB"); // Open the DB
+    console.log(
+      "[INFO] IndexedDB open request made... waiting for onsuccess or onerror"
+    );
 
     request.onsuccess = (event) => {
+      console.log("[SUCCESS] Database opened successfully");
       const db = (event.target as IDBRequest).result;
+
       const transaction = db.transaction(
-        ["participantsData_raffle2025"], // Object store name
+        ["participantsData_raffle2025"],
         "readonly"
       );
+      console.log(
+        "[INFO] Transaction started for object store: participantsData_raffle2025"
+      );
+
+      transaction.oncomplete = () =>
+        console.log("[SUCCESS] Transaction completed");
+      transaction.onerror = () => console.error("[ERROR] Transaction failed");
+      transaction.onabort = () => console.error("[ABORT] Transaction aborted");
+
       const objectStore = transaction.objectStore(
         "participantsData_raffle2025"
       );
 
-      // Since the `id_entry` is unique, we can directly use the object store's `get` method.
-      const getRequest = objectStore.get(id); // Use the `id` to get the record
+      console.log(
+        `[INFO] Sending get request for id: ${id}... waiting for onsuccess or onerror`
+      );
+      const getRequest = objectStore.get(id);
 
       getRequest.onsuccess = () => {
+        console.log("[SUCCESS] Get request onsuccess fired");
         if (getRequest.result) {
+          console.log("[INFO] Record found, modifying result...");
           const modifiedResult = {
             date_chosen: new Date().toISOString(),
             isCancelled: false,
             winner_type: type,
             ...getRequest.result
           };
-          storeRaffleWinner(modifiedResult);
-          resolve(modifiedResult); // Return the modified record
+          try {
+            console.log(
+              "[INFO] Storing modified record with storeRaffleWinner..."
+            );
+            storeRaffleWinner(modifiedResult);
+            console.log("[SUCCESS] Modified record stored. Resolving promise.");
+            resolve(modifiedResult);
+          } catch (e) {
+            console.error("[ERROR] Failed to store modified record:", e);
+            reject(e);
+          }
         } else {
+          console.warn(`[WARN] No record found with id_entry: ${id}`);
           reject(`No record found with id_entry: ${id}`);
         }
       };
 
       getRequest.onerror = () => {
+        console.error("[ERROR] Error retrieving record");
         reject("Error retrieving record");
       };
     };
 
     request.onerror = () => {
+      console.error("[ERROR] Error opening database");
       reject("Error opening database");
     };
+
+    request.onblocked = () => {
+      console.error(
+        "[BLOCKED] Database request is blocked. Maybe another tab is using it."
+      );
+    };
+
+    request.onupgradeneeded = () => {
+      console.warn(
+        "[INFO] onupgradeneeded fired. Possibly first time opening DB or version change."
+      );
+    };
   });
-}
+};
 
 const generateSingleRandomNumber = (
   max: number,
