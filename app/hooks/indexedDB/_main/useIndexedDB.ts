@@ -93,6 +93,19 @@ export async function deleteItem(storeName: StoreName, id: IDBValidKey) {
   return db.delete(storeName, id as string);
 }
 
+export async function deleteAllItems(storeName: StoreName): Promise<boolean> {
+  try {
+    const db = await initDB();
+    const tx = db.transaction(storeName, "readwrite");
+    await tx.store.clear();
+    await tx.done;
+    return true;
+  } catch (error) {
+    console.error("Failed to delete all items:", error);
+    return false;
+  }
+}
+
 export async function countEntriesByLocationWithProgress(
   setCountProgress: (progress: number) => void
 ): Promise<{ location: string; count: number }[]> {

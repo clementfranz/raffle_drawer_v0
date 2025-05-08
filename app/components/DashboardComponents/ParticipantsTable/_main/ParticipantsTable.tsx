@@ -65,6 +65,7 @@ const ParticipantsTable = ({}) => {
   };
 
   const fetchData = async () => {
+    setTableIsLoading(true);
     const activeTab = getActiveTab();
 
     console.log("Fetching data...");
@@ -113,6 +114,10 @@ const ParticipantsTable = ({}) => {
       setTableIsLoading(false); // Always end loading state
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, [withParticipantsData]);
 
   useEffect(() => {
     setTableIsLoading(true);

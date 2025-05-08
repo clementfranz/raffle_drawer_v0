@@ -29,87 +29,6 @@ type ProcessingProps = {
   uploadStatus: string;
 };
 
-const countLocationsFromIndexedDB = async (
-  setLoadingStats: (loading: boolean) => void,
-  setCountingProgress: (percentage: number) => void,
-  indexDBName: string,
-  storeName: string
-): Promise<{ location: string; count: number }[]> => {
-  return new Promise((resolve, reject) => {
-    console.log("Starting Counting Regions: ...");
-
-    setLoadingStats(true);
-    setCountingProgress(0);
-
-    const request = indexedDB.open(indexDBName);
-
-    request.onerror = () => reject("Failed to open IndexedDB");
-
-    request.onsuccess = () => {
-      const db = request.result;
-      const transaction = db.transaction(storeName, "readonly");
-      const store = transaction.objectStore(storeName);
-
-      const locationsCount: Record<string, number> = {};
-
-      // Step 1: Count total entries first
-      let totalEntries = 0;
-      const countRequest = store.count();
-
-      countRequest.onsuccess = () => {
-        totalEntries = countRequest.result;
-        if (totalEntries === 0) {
-          setLoadingStats(false);
-          setCountingProgress(100);
-          resolve([]);
-          return;
-        }
-
-        // Step 2: Start cursoring and track progress
-        let processedEntries = 0;
-        const cursorRequest = store.openCursor();
-
-        cursorRequest.onsuccess = (event) => {
-          const cursor = (event.target as IDBRequest<IDBCursorWithValue>)
-            .result;
-          if (cursor) {
-            const data = cursor.value;
-            const location = data.regional_location || "Unknown";
-
-            locationsCount[location] = (locationsCount[location] || 0) + 1;
-
-            processedEntries++;
-            const progress = Math.min(
-              Math.round((processedEntries / totalEntries) * 100),
-              100
-            );
-            setCountingProgress(progress);
-
-            cursor.continue();
-          } else {
-            // Done
-            const result = Object.entries(locationsCount).map(
-              ([location, count]) => ({
-                location,
-                count
-              })
-            );
-            setLoadingStats(false);
-            setCountingProgress(100);
-
-            console.log("✅ Done Counting Regions: ...");
-            resolve(result);
-          }
-        };
-
-        cursorRequest.onerror = () => reject("Cursor failed");
-      };
-
-      countRequest.onerror = () => reject("Count request failed");
-    };
-  });
-};
-
 const Phase03_Processing = ({
   fileAttached,
   fileDetails,
@@ -192,7 +111,7 @@ const Phase03_Processing = ({
   }, [uploadProgress, countingProgress]);
 
   useEffect(() => {
-    if (fileDetails && fileDetails.entries > 0) {
+    if (fileDetails && fileDetails?.entries > 0) {
       const progress = Math.round(
         (entriesProcessed / fileDetails.entries) * 100
       );
@@ -202,15 +121,12 @@ const Phase03_Processing = ({
   }, [entriesProcessed]);
 
   useEffect(() => {
-    if (
-      triggerImport &&
-      fileAttached &&
-      fileDetails &&
-      fileDetails.entries > 0
-    ) {
-      handleImport(fileAttached);
+    if (triggerImport && fileAttached && fileDetails) {
+      if (fileDetails.entries > 0) {
+        handleImport(fileAttached);
+        console.log("FILE ENTRIES COUNT", fileDetails.entries);
+      }
     }
-    console.log("FILE ENTRIES COUNT", fileDetails.entries);
   }, [triggerImport, fileDetails]);
 
   return (

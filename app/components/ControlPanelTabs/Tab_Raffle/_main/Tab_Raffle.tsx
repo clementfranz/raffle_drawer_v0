@@ -44,6 +44,14 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     defaultValue: false
   });
 
+  const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
+    "withParticipantsData"
+  );
+
+  const [favoredRegion] = useLocalStorageState<string | undefined>(
+    "favoredRegion"
+  );
+
   const [winnerLoading, setWinnerLoading] = useState(false);
 
   type PresentingStatus = "presenting" | "not-presenting";
@@ -69,7 +77,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     console.log("Attempting: ", type, " ", nth);
     setIsRevealed(false);
 
-    const participant = await handlePickRandomParticipant(type);
+    const participant = await handlePickRandomParticipant(type, favoredRegion);
 
     if (participant) {
       if (type === "primary") {
@@ -364,6 +372,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
           className={`checkpoint bg-[#220404b6] w-full h-full absolute left-0 top-0 text-white flex justify-center items-center ${
             presentingStatus === "presenting" &&
             presentingView === "raffle-draw" &&
+            withParticipantsData &&
             "hidden"
           }`}
         >
@@ -372,10 +381,12 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
             <div className="text-sm mt-4">
               {presentingStatus !== "presenting" ? (
                 <>Please start presentation and switch to raffle view</>
+              ) : presentingView !== "raffle-draw" ? (
+                <>Please switch view to raffle draw.</>
               ) : (
-                presentingView !== "raffle-draw" && (
-                  <>Please switch view to raffle draw.</>
-                )
+                <>
+                  No Data available for raffle. <br /> Please upload data first.{" "}
+                </>
               )}
             </div>
           </div>
