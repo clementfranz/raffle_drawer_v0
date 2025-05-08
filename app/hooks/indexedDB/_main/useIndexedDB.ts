@@ -243,25 +243,24 @@ export async function getAllWinnerPerType(type: string): Promise<any[]> {
     const transaction = db.transaction(storeName, "readonly");
     const store = transaction.objectStore(storeName);
 
-    // Use the compound index: [winner_type, draw_date]
     const index = store.index("winner_type_draw_date");
 
-    // Define range: only matching the given type, for all draw_dates
-    const range = IDBKeyRange.bound([type, 0], [type, Infinity]);
+    // For strings, lowest possible "" (empty string) and highest "\uffff"
+    const range = IDBKeyRange.bound([type, ""], [type, "\uffff"]);
 
-    // Open cursor with direction 'prev' (newest draw_date first)
+    // Open cursor in 'prev' direction (newest first)
     let cursor = await index.openCursor(range, "prev");
 
     while (cursor) {
-      winners.push(cursor.value); // Collect this winner
-      cursor = await cursor.continue(); // Move to next
+      winners.push(cursor.value);
+      cursor = await cursor.continue();
     }
+
+    return winners;
   } catch (error) {
     console.error("Error fetching winners for page:", error);
     throw new Error("Failed to retrieve winners for page.");
   }
-
-  return winners;
 }
 
 export async function hasAnyParticipants(): Promise<boolean> {
