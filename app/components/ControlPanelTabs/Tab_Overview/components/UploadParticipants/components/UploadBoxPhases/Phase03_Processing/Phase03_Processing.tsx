@@ -78,7 +78,6 @@ const Phase03_Processing = ({
 
         if (uploadDone) {
           handleGetRegionalStats();
-          setWithParticipantsData(true);
         }
 
         console.log("Import completed ✅");

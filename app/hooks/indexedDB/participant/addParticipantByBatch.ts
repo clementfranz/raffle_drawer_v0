@@ -7,14 +7,22 @@ export async function addParticipantByBatch(
 ): Promise<any[]> {
   const batchSize = 500; // Adjust the batch size based on performance testing
   const results: any[] = [];
+  interface ParticipantData {
+    id?: number;
+    id_entry?: string;
+    raffle_code?: string;
+    is_archived?: boolean;
+    regional_location?: string;
+    participant_batch_id: string;
+    is_drawn: boolean;
+  }
 
-  // Ensure default values for is_drawn and is_archived
-  const normalizedDataArray = dataArray.map((data) => {
+  const normalizedDataArray = dataArray.map<ParticipantData>((data) => {
     return {
-      ...data,
+      is_drawn: "false",
+      is_archived: "false",
       participant_batch_id: batchId,
-      is_drawn: data.is_drawn !== undefined ? data.is_drawn : false,
-      is_archived: data.is_archived !== undefined ? data.is_archived : false
+      ...data
     };
   });
 

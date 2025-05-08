@@ -17,6 +17,7 @@ interface Participant {
   regional_location: string;
   winner_type: string;
   draw_date: string;
+  is_drawn: string;
 }
 
 const deleteEntryFromRaffleWinners = async (
@@ -36,6 +37,11 @@ const ParticipantsTable = ({}) => {
       defaultValue: false
     }
   );
+
+  const [refreshTable, setRefreshTable] = useLocalStorageState("refreshTable", {
+    defaultValue: 0
+  });
+
   const [tableLocalData, setTableLocalData] = useState<Participant[] | null>(
     null
   );
@@ -120,6 +126,10 @@ const ParticipantsTable = ({}) => {
   }, [withParticipantsData]);
 
   useEffect(() => {
+    fetchData();
+  }, [refreshTable]);
+
+  useEffect(() => {
     setTableIsLoading(true);
     if (withParticipantsData) {
       fetchData();
@@ -143,10 +153,14 @@ const ParticipantsTable = ({}) => {
                 <th className="p-2 text-left border-b">Participant's Name</th>
                 <th className="p-2 text-left border-b">Code</th>
                 <th className="p-2 text-left border-b">Location</th>
-                {activeTab !== "main" && (
+                {activeTab !== "main" ? (
                   <>
                     <th className="p-2 text-left border-b">Draw Date</th>
                     <th className="p-2 text-left border-b">Controls</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="p-2 text-left border-b">Is Drawn</th>
                   </>
                 )}
               </tr>
@@ -164,7 +178,7 @@ const ParticipantsTable = ({}) => {
                   <td className="">{entry.full_name}</td>
                   <td className="text-base font-bold">{entry.raffle_code}</td>
                   <td className="">{entry.regional_location}</td>
-                  {activeTab !== "main" && (
+                  {activeTab !== "main" ? (
                     <>
                       <td>
                         {new Date(entry.draw_date).toLocaleDateString("en-US", {
@@ -184,6 +198,10 @@ const ParticipantsTable = ({}) => {
                           Remove
                         </button>
                       </td>
+                    </>
+                  ) : (
+                    <>
+                      <td>{entry.is_drawn !== "false" && "⭐"}</td>
                     </>
                   )}
                 </tr>

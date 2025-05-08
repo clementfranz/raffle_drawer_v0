@@ -20,10 +20,7 @@ type CompletedProps = {
 
 const Phase04_Completed = ({ selectedWeek, uploadStatus }: CompletedProps) => {
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
-    "withParticipantsData",
-    {
-      defaultValue: false
-    }
+    "withParticipantsData"
   );
 
   const handleConfirmDone = () => {

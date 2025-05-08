@@ -6,7 +6,7 @@ import { migrateWinnerParticipant } from "../migrations/migrate_WinnerParticipan
 import type * as Types from "../types";
 
 const DB_NAME = "RaffleDrawDB";
-const DB_VERSION = 10;
+const DB_VERSION = 14;
 
 let dbPromise: Promise<IDBPDatabase<RaffleDBSchema>> | null = null;
 
@@ -28,6 +28,10 @@ interface RaffleDBSchema extends DBSchema {
       participant_batch_id: string;
       regional_location: string;
       id_entry: string;
+      is_drawn: string;
+      raffle_code: string;
+      region_drawn: string;
+      entry_drawn: any;
     };
   };
   winnerParticipant: {
@@ -279,6 +283,27 @@ function generateRandomIndex(maxNumber: number): number {
   return Math.floor(Math.random() * maxNumber);
 }
 
+async function getWinnersRaffleCodes(): Promise<string[]> {
+  const db = await initDB();
+  const tx = db.transaction("winnerParticipant", "readonly");
+  const store = tx.objectStore("winnerParticipant");
+  const index = store.index("raffle_code");
+
+  const raffleCodes: string[] = [];
+
+  // Open a cursor to iterate over all entries
+  let cursor = await index.openCursor();
+
+  while (cursor) {
+    if (cursor.value && cursor.value.raffle_code) {
+      raffleCodes.push(cursor.value.raffle_code);
+    }
+    cursor = await cursor.continue();
+  }
+
+  return raffleCodes;
+}
+
 async function getParticipantsByRegion(
   region: string
 ): Promise<Types.ParticipantTypes.Participant[]> {
@@ -290,10 +315,10 @@ async function getParticipantsByRegion(
 
   const result: Types.ParticipantTypes.Participant[] = [];
 
-  // Use index for fast filtering
-  console.log("Filtering regions");
-  const index = store.index("regional_location");
-  const range = IDBKeyRange.only(region);
+  // Use compound index for fast filtering
+  console.log("Filtering by region AND is_drawn true");
+  const index = store.index("region_drawn");
+  const range = IDBKeyRange.only([region, "false"]);
   let cursor = await index.openCursor(range);
 
   while (cursor) {
@@ -304,6 +329,18 @@ async function getParticipantsByRegion(
   return result;
 }
 
+const lastResortWinnerFinderByIdEntry =
+  async (): Promise<Types.ParticipantTypes.Participant | null> => {
+    const db = await initDB();
+    const tx = db.transaction("participant", "readonly");
+    const store = tx.objectStore("participant");
+
+    const index = store.index("is_drawn");
+    const firstUndrawn = await index.get("false"); // get the first participant where is_drawn === "false"
+
+    return firstUndrawn ?? null;
+  };
+
 async function getParticipantByIdEntry(
   id_entry: string
 ): Promise<Types.ParticipantTypes.Participant | null> {
@@ -311,8 +348,8 @@ async function getParticipantByIdEntry(
   const tx = db.transaction("participant", "readonly");
   const store = tx.objectStore("participant");
 
-  const index = store.index("id_entry");
-  const request = await index.get(id_entry);
+  const index = store.index("entry_drawn");
+  const request = await index.get([id_entry, "false"]); // compound key lookup
 
   return request ?? null;
 }
@@ -335,8 +372,18 @@ export async function pickRandomParticipant(
       throw new Error(`No participants found in region: ${favorableRegion}`);
     }
 
-    const randomIndex = generateRandomIndex(filteredParticipants.length);
-    chosenParticipant = filteredParticipants[randomIndex];
+    let randomIndex: number | null = null;
+
+    while (!chosenParticipant) {
+      randomIndex = generateRandomIndex(filteredParticipants.length);
+      chosenParticipant = filteredParticipants[randomIndex] || null;
+
+      if (!chosenParticipant) {
+        console.log(
+          `Participant not found at index: ${randomIndex}, retrying...`
+        );
+      }
+    }
   } else {
     const totalParticipants = await getTotalParticipants();
 
@@ -344,11 +391,29 @@ export async function pickRandomParticipant(
       throw new Error("No participants available.");
     }
 
-    const randomId = generateRandomIndex(totalParticipants).toString();
-    chosenParticipant = await getParticipantByIdEntry(randomId);
+    let randomId: string | null = null;
+    let tries: number = 0;
 
+    while (!chosenParticipant && tries < 5) {
+      randomId = generateRandomIndex(totalParticipants).toString();
+      chosenParticipant = await getParticipantByIdEntry(randomId);
+
+      if (!chosenParticipant) {
+        console.log(
+          `Participant not found with ID entry: ${randomId}, retrying...`
+        );
+        tries++;
+      }
+    }
+
+    // If after 5 tries no participant was found, call lastResort
     if (!chosenParticipant) {
-      throw new Error(`Participant not found with ID entry: ${randomId}`);
+      console.log("Max retries reached. Calling lastResort()...");
+      const lastResort = await lastResortWinnerFinderByIdEntry();
+      chosenParticipant = lastResort;
+      if (!chosenParticipant) {
+        throw new Error(`Participant not found with ID entry: ${randomId}`);
+      }
     }
   }
 

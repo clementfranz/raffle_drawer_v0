@@ -20,6 +20,10 @@ const PaginationBar = () => {
   const [pageSize, setPageSize] = useState(10);
   const [lastPage, setLastPage] = useState(1);
 
+  const [withParticipantsData] = useLocalStorageState("withParticipantsData", {
+    defaultValue: false
+  });
+
   interface FileDetails {
     entries: number;
   }
@@ -86,7 +90,11 @@ const PaginationBar = () => {
   };
 
   return (
-    <div className="pagination bg-orange-200 rounded-full text-xs flex flex-row items-center h-[40px]">
+    <div
+      className={`pagination bg-orange-200 rounded-full text-xs flex-row items-center h-[40px] ${
+        withParticipantsData ? "flex" : "hidden"
+      }`}
+    >
       <button
         className="hover:bg-orange-300 px-2 ps-3 h-[40px] rounded-r-lg cursor-pointer text-sm aspect-square overflow-hidden rounded-l-full"
         aria-label="Previous Page"

@@ -18,6 +18,7 @@ import ParticipantsTable from "~/components/DashboardComponents/ParticipantsTabl
 
 import useLocalStorageState from "use-local-storage-state";
 import { NavLink, useLocation } from "react-router";
+import ShowingEntriesCounter from "~/components/DashboardComponents/ShowingEntriesCounter/ShowingEntriesCounter";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -136,19 +137,7 @@ export default function Main() {
                 </NavLink>
               </li>
             </ul>
-            <li className="text-sm flex items-center gap-2">
-              Showing Entries:&nbsp;
-              <b className="flex gap-2 items-baseline justify-center">
-                From{" "}
-                <span className="bg-gray-700 w-[40px] flex  text-white p-2 py-1 rounded-md justify-center">
-                  1
-                </span>{" "}
-                to{" "}
-                <span className="bg-gray-700 w-[40px] flex  text-white p-2 py-1 rounded-md justify-center">
-                  250
-                </span>{" "}
-              </b>
-            </li>
+            <ShowingEntriesCounter />
             <ul className="flex space-x-4 text-sm">
               <li className="flex items-center justify-center h-full">
                 Total Participants for this week:&nbsp;

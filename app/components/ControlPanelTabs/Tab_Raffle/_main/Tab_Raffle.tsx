@@ -11,6 +11,7 @@ import { useWinnerRecords } from "~/hooks/useWinnerRecords";
 import type { WinnerRecords, Winner } from "~/types/WinnerTypes";
 import { addWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipant";
 import { pickRandomParticipant } from "~/hooks/indexedDB/_main/useIndexedDB";
+import { updateWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/updateWinnerParticipant";
 
 interface Tab_RaffleProps {
   isActiveTab?: boolean;
@@ -54,6 +55,9 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
 
   const [winnerLoading, setWinnerLoading] = useState(false);
 
+  const [isWinnerValid, setIsWinnerValid] = useState(true);
+  const [invalidWInnerModalOn, setInvalidWInnerModalOn] = useState(false);
+
   type PresentingStatus = "presenting" | "not-presenting";
   const [presentingStatus] =
     useLocalStorageState<PresentingStatus>("presentingStatus");
@@ -83,10 +87,12 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
       if (type === "primary") {
         setWinner(participant);
         console.log("Setting Winner");
+        startRevealWinner(1);
       } else {
         console.log("Setting Backup Winner");
         if (nth === 0 || nth === 1 || nth === 2) {
           setBackupWinner(nth, participant);
+          startRevealWinner(nth + 2);
         }
       }
       setStartDraw(true);
@@ -104,6 +110,10 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
 
   const [revealWinner, setRevealWinner] = useLocalStorageState("revealWinner", {
     defaultValue: false
+  });
+
+  const [refreshTable, setRefreshTable] = useLocalStorageState("refreshTable", {
+    defaultValue: 0
   });
 
   const [showWinnerNth, setShowWinnerNth] = useLocalStorageState(
@@ -168,6 +178,9 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
           break;
       }
       setRevealWinner(true);
+      setRefreshTable((prev) => {
+        return prev + 1;
+      });
       clearInterval(revealWinnerTimer);
     }, 3000);
   };
@@ -185,15 +198,33 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   const saveWinnerParticipant = async (
     participant: any,
     winnerType: "primary" | "backup"
-  ) => {
-    const saveSuccess = await addWinnerParticipant(participant, winnerType);
-    if (saveSuccess) {
+  ): Promise<boolean> => {
+    try {
+      const saveWinner = await addWinnerParticipant(participant, winnerType);
+      if (!saveWinner) {
+        console.error("Failed to save winner:", participant.full_name);
+        return false;
+      }
+
+      const updateWinner = await updateWinnerParticipant(
+        participant.raffle_code
+      );
+      if (!updateWinner) {
+        console.error("Failed to update winner:", participant.full_name);
+        return false;
+      }
+
       console.log(
         "Success saving winner: ",
         participant.full_name,
         " with winner type of ",
         winnerType
       );
+
+      return true;
+    } catch (error) {
+      console.error("Error saving winner:", participant.full_name, error);
+      return false;
     }
   };
 
@@ -202,12 +233,21 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     region?: string | null
   ) => {
     console.log("Picking Random Participant");
-    const participant = await pickRandomParticipant(region ?? undefined);
-    if (participant) {
-      saveWinnerParticipant(participant, winnerType);
-      console.log(participant);
+    try {
+      const participant = await pickRandomParticipant(region ?? undefined);
+      if (participant) {
+        saveWinnerParticipant(participant, winnerType);
+        console.log(participant);
+        setIsWinnerValid(true);
+      }
+      return participant;
+    } catch (error) {
+      setIsWinnerValid(false);
+      handleResetMachine();
+      setInvalidWInnerModalOn(true);
+      console.error("Error picking random participant:", error);
+      return null;
     }
-    return participant;
   };
 
   const handleClearWinners = () => {
@@ -251,7 +291,6 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                     className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
                     onClick={() => {
                       triggerStartDraw();
-                      startRevealWinner(1);
                     }}
                   >
                     Start Draw
@@ -288,7 +327,6 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                         onClick={() => {
                           console.log("Raffling backup winner #1");
                           triggerStartDraw("backup", 0);
-                          startRevealWinner(2);
                         }}
                       >
                         Raffle First Backup Winner
@@ -318,7 +356,6 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                         onClick={() => {
                           console.log("Raffling backup winner #2");
                           triggerStartDraw("backup", 1);
-                          startRevealWinner(3);
                         }}
                       >
                         Raffle Second Backup Winner
@@ -348,7 +385,6 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                         onClick={() => {
                           console.log("Raffling backup winner #3");
                           triggerStartDraw("backup", 2);
-                          startRevealWinner(4);
                         }}
                       >
                         Raffle Third Backup Winner
@@ -359,6 +395,47 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               </TabSubPanel>
             )}
           <TabSubPanel title="Proclaimed Winner"></TabSubPanel>
+          <div
+            className={`checkpoint bg-[#220404b6] w-full h-full absolute left-0 top-0 text-white flex justify-center items-center ${
+              !invalidWInnerModalOn && "hidden"
+            }`}
+          >
+            <div className="checkpoint-content bg-red-900 rounded-2xl p-4 text-center w-8/10">
+              <div>No Participant Available</div>
+              {favoredRegion !== undefined ? (
+                <div className="text-sm mt-4">
+                  No winners can be raffled anymore in the specified region.
+                  <br />[{favoredRegion}]
+                  <br /> Please retry with different region.
+                  <div className="button-container mt-4">
+                    <button
+                      onClick={() => {
+                        setInvalidWInnerModalOn(false);
+                      }}
+                      className="bg-black hover:bg-red-950 text-white p-3 cursor-pointer rounded-2xl w-full"
+                    >
+                      Okay
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm mt-4">
+                  No more available participants to draw. <br />
+                  Please add more participants
+                  <div className="button-container mt-4">
+                    <button
+                      onClick={() => {
+                        setInvalidWInnerModalOn(false);
+                      }}
+                      className="bg-black hover:bg-red-950 text-white p-3 cursor-pointer rounded-2xl w-full"
+                    >
+                      Okay
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </TabShell>
         <TabShell position="bottom">
           <TabActionButton onClick={handleResetMachine}>

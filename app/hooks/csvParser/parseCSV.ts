@@ -9,7 +9,8 @@ export const parseCSV = (file: File): Promise<any> => {
       error: (error) => {
         reject(error); // Handle error if parsing fails
       },
-      header: true // Set to true if you want the first row to be treated as headers
+      header: true, // Treat the first row as headers
+      skipEmptyLines: true // Skip blank lines
     });
   });
 };
