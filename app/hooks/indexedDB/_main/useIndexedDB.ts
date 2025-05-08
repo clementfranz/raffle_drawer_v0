@@ -4,6 +4,7 @@ import { migrateParticipant } from "../migrations/migrate_Participant";
 import { migrateWinnerParticipant } from "../migrations/migrate_WinnerParticipant";
 
 import type * as Types from "../types";
+import { fullNameCleaner } from "~/utils/fullNameCleaner";
 
 const DB_NAME = "RaffleDrawDB";
 const DB_VERSION = 15;
@@ -425,6 +426,12 @@ export async function pickRandomParticipant(
       }
     }
   }
+
+  chosenParticipant = {
+    ...chosenParticipant,
+    full_name_raw: chosenParticipant.full_name,
+    full_name: fullNameCleaner(chosenParticipant.full_name)
+  };
 
   return chosenParticipant;
 }

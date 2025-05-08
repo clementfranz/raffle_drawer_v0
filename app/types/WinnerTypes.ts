@@ -5,6 +5,7 @@ export interface Winner {
   raffle_code: string;
   regional_location: string;
   time_registered: string;
+  full_name_raw: string;
 }
 
 export interface WinnerRecords {

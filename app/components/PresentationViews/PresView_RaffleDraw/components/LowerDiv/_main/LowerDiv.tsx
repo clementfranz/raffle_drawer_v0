@@ -1,7 +1,6 @@
 import React from "react";
 import useLocalStorageState from "use-local-storage-state";
 import { useWinnerRecords } from "~/hooks/useWinnerRecords";
-import { fullNameCleaner } from "~/utils/fullNameCleaner";
 
 type LowerDiv_Props = {
   boxUnit: number;
@@ -33,7 +32,7 @@ const LowerDiv = ({ boxUnit }: LowerDiv_Props) => {
         } rounded-3xl overflow-hidden`}
       >
         <div
-          className="participant-name font-['Sour_Gummy'] font-bold"
+          className="participant-name font-['Sour_Gummy'] font-bold text-center"
           style={{
             padding: `${boxUnit * 0.2}px ${boxUnit * 0.6}px`,
             fontSize: `${boxUnit * 0.9}px`
@@ -41,8 +40,8 @@ const LowerDiv = ({ boxUnit }: LowerDiv_Props) => {
         >
           {winner && (
             <>
-              {fullNameCleaner(winner.full_name)}
-              {console.log(winner.full_name)}
+              {winner.full_name}
+              {console.log("Winner Chosen: [cleaned name]", winner.full_name)}
             </>
           )}
         </div>

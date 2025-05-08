@@ -84,15 +84,17 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     const participant = await handlePickRandomParticipant(type, favoredRegion);
 
     if (participant) {
-      if (type === "primary") {
-        setWinner(participant);
-        console.log("Setting Winner");
-        startRevealWinner(1);
-      } else {
-        console.log("Setting Backup Winner");
-        if (nth === 0 || nth === 1 || nth === 2) {
-          setBackupWinner(nth, participant);
-          startRevealWinner(nth + 2);
+      if (participant) {
+        if (type === "primary") {
+          setWinner(participant);
+          console.log("Setting Winner");
+          startRevealWinner(1);
+        } else {
+          console.log("Setting Backup Winner");
+          if (nth === 0 || nth === 1 || nth === 2) {
+            setBackupWinner(nth, participant);
+            startRevealWinner(nth + 2);
+          }
         }
       }
       setStartDraw(true);
@@ -274,7 +276,10 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
                 {getFilledWinners().primary && revealWinner01 ? (
                   <>
-                    <div className="participant-name text-xl">
+                    <div
+                      className="participant-name text-xl"
+                      title={winnerRecords.primary?.full_name_raw}
+                    >
                       {winnerRecords.primary?.full_name}
                     </div>
                     <div className="participant-details flex w-full justify-between">
@@ -309,7 +314,10 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                   <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
                     {revealWinner02 ? (
                       <>
-                        <div className="participant-name text-xl">
+                        <div
+                          className="participant-name text-xl"
+                          title={winnerRecords.backups[0]?.full_name_raw}
+                        >
                           {winnerRecords.backups[0]?.full_name}
                         </div>
                         <div className="participant-details flex w-full justify-between">
@@ -338,7 +346,10 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                   <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
                     {revealWinner03 ? (
                       <>
-                        <div className="participant-name text-xl">
+                        <div
+                          className="participant-name text-xl"
+                          title={winnerRecords.backups[1]?.full_name_raw}
+                        >
                           {winnerRecords.backups[1]?.full_name}
                         </div>
                         <div className="participant-details flex w-full justify-between">
@@ -367,7 +378,10 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                   <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
                     {revealWinner04 ? (
                       <>
-                        <div className="participant-name text-xl">
+                        <div
+                          className="participant-name text-xl"
+                          title={winnerRecords.backups[2]?.full_name_raw}
+                        >
                           {winnerRecords.backups[2]?.full_name}
                         </div>
                         <div className="participant-details flex w-full justify-between">

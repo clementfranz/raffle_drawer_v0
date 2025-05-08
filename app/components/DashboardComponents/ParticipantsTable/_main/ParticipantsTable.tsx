@@ -13,6 +13,7 @@ import { removeWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/rem
 interface Participant {
   id_entry: string;
   full_name: string;
+  full_name_raw: string;
   raffle_code: string;
   regional_location: string;
   winner_type: string;
@@ -125,9 +126,9 @@ const ParticipantsTable = ({}) => {
     fetchData();
   }, [withParticipantsData]);
 
-  useEffect(() => {
-    fetchData();
-  }, [refreshTable]);
+  // useEffect(() => {
+  //   fetchData();
+  // }, [refreshTable]);
 
   useEffect(() => {
     setTableIsLoading(true);
@@ -177,7 +178,16 @@ const ParticipantsTable = ({}) => {
                       .padStart(8, "0")
                       .replace(/(\d{2})(\d{3})(\d{3})/, "$1-$2-$3")}
                   </td>
-                  <td className="">{entry.full_name}</td>
+                  <td
+                    className=""
+                    title={
+                      activeTab !== "main"
+                        ? `${entry.full_name_raw}`
+                        : undefined
+                    }
+                  >
+                    {entry.full_name}
+                  </td>
                   <td className="text-base font-bold">{entry.raffle_code}</td>
                   <td className="">{entry.regional_location}</td>
                   {activeTab !== "main" ? (

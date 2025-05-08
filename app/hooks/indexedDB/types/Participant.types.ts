@@ -8,4 +8,5 @@ export interface Participant {
   raffle_code: string;
   regional_location: string;
   time_registered: string;
+  full_name_raw: string;
 }
