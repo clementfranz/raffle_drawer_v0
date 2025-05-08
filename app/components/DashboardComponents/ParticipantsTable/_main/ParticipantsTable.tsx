@@ -150,7 +150,9 @@ const ParticipantsTable = ({}) => {
             <thead className="bg-[#bf4759] text-white sticky top-0 z-10">
               <tr>
                 <th className="p-2 text-left border-b">No.:</th>
-                <th className="p-2 text-left border-b">Participant's Name</th>
+                <th className="p-2 text-left border-b w-1/2">
+                  Participant's Name
+                </th>
                 <th className="p-2 text-left border-b">Code</th>
                 <th className="p-2 text-left border-b">Location</th>
                 {activeTab !== "main" ? (
@@ -175,7 +177,7 @@ const ParticipantsTable = ({}) => {
                       .padStart(8, "0")
                       .replace(/(\d{2})(\d{3})(\d{3})/, "$1-$2-$3")}
                   </td>
-                  <td className="">{entry.full_name}</td>
+                  <td className=" w-1/2">{entry.full_name}</td>
                   <td className="text-base font-bold">{entry.raffle_code}</td>
                   <td className="">{entry.regional_location}</td>
                   {activeTab !== "main" ? (
