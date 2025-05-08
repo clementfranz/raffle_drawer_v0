@@ -54,6 +54,9 @@ export function fullNameCleaner(paragraph: string): string {
     match.replace(/\./g, "")
   );
 
+  // Remove lone dots surrounded by spaces
+  cleanedName = cleanedName.replace(/\s\.\s/g, " ");
+
   // Capitalize words
   cleanedName = cleanedName
     .split(" ")

@@ -126,9 +126,9 @@ const ParticipantsTable = ({}) => {
     fetchData();
   }, [withParticipantsData]);
 
-  // useEffect(() => {
-  //   fetchData();
-  // }, [refreshTable]);
+  useEffect(() => {
+    fetchData();
+  }, [refreshTable]);
 
   useEffect(() => {
     setTableIsLoading(true);

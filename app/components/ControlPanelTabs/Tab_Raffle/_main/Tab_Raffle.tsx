@@ -73,6 +73,34 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     }
   }, [winnerLoading]);
 
+  const [loadingButton0, setLoadingButton0] = useState(false);
+  const [loadingButton1, setLoadingButton1] = useState(false);
+  const [loadingButton2, setLoadingButton2] = useState(false);
+  const [loadingButton3, setLoadingButton3] = useState(false);
+
+  const toggleButtonLoading = (
+    which: 0 | 1 | 2 | 3,
+    switchState: "on" | "off"
+  ) => {
+    const targetState = switchState === "on";
+
+    switch (which) {
+      case 1:
+        setLoadingButton1(targetState);
+        break;
+      case 2:
+        setLoadingButton2(targetState);
+        break;
+      case 3:
+        setLoadingButton3(targetState);
+        break;
+
+      default:
+        setLoadingButton0(targetState);
+        break;
+    }
+  };
+
   // ✅ Trigger Draw Start Function (Fixed to be Async)
   const triggerStartDraw = async (
     type: "primary" | "backup" = "primary",
@@ -84,17 +112,17 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     const participant = await handlePickRandomParticipant(type, favoredRegion);
 
     if (participant) {
-      if (participant) {
-        if (type === "primary") {
-          setWinner(participant);
-          console.log("Setting Winner");
-          startRevealWinner(1);
-        } else {
-          console.log("Setting Backup Winner");
-          if (nth === 0 || nth === 1 || nth === 2) {
-            setBackupWinner(nth, participant);
-            startRevealWinner(nth + 2);
-          }
+      if (type === "primary") {
+        setWinner(participant);
+        console.log("Setting Winner");
+        startRevealWinner(1);
+        toggleButtonLoading(0, "on");
+      } else {
+        console.log("Setting Backup Winner");
+        if (nth === 0 || nth === 1 || nth === 2) {
+          setBackupWinner(nth, participant);
+          startRevealWinner(nth + 2);
+          toggleButtonLoading((nth + 1) as 0 | 1 | 2 | 3, "on");
         }
       }
       setStartDraw(true);
@@ -165,15 +193,19 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
       switch (num) {
         case 1:
           setRevealWinner01(true);
+          toggleButtonLoading(0, "off");
           break;
         case 2:
           setRevealWinner02(true);
+          toggleButtonLoading(1, "off");
           break;
         case 3:
           setRevealWinner03(true);
+          toggleButtonLoading(2, "off");
           break;
         case 4:
           setRevealWinner04(true);
+          toggleButtonLoading(3, "off");
           break;
 
         default:
@@ -254,12 +286,15 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
 
   const handleClearWinners = () => {
     handleResetMachine();
-    resetWinners();
-    setRevealWinner01(false);
-    setRevealWinner02(false);
-    setRevealWinner03(false);
-    setRevealWinner04(false);
-    setWinners(null);
+    const clearWinnersTimeout = setTimeout(() => {
+      resetWinners();
+      setRevealWinner01(false);
+      setRevealWinner02(false);
+      setRevealWinner03(false);
+      setRevealWinner04(false);
+      setWinners(null);
+      clearTimeout(clearWinnersTimeout);
+    }, 500);
   };
 
   return (
@@ -274,32 +309,42 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
           <TabSubPanel title={"Winner"} className="gap-3 flex flex-col">
             <div className="grid w-full">
               <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
-                {getFilledWinners().primary && revealWinner01 ? (
+                {!loadingButton0 ? (
                   <>
-                    <div
-                      className="participant-name text-xl"
-                      title={winnerRecords.primary?.full_name_raw}
-                    >
-                      {winnerRecords.primary?.full_name}
-                    </div>
-                    <div className="participant-details flex w-full justify-between">
-                      <div className="participant-location">
-                        {winnerRecords.primary?.regional_location}
-                      </div>
-                      <div className="participant-code font-[courier] font-bold tracking-widest">
-                        {winnerRecords.primary?.raffle_code}
-                      </div>
-                    </div>
+                    {getFilledWinners().primary && revealWinner01 ? (
+                      <>
+                        <div
+                          className="participant-name text-xl"
+                          title={winnerRecords.primary?.full_name_raw}
+                        >
+                          {winnerRecords.primary?.full_name}
+                        </div>
+                        <div className="participant-details flex w-full justify-between">
+                          <div className="participant-location">
+                            {winnerRecords.primary?.regional_location}
+                          </div>
+                          <div className="participant-code font-[courier] font-bold tracking-widest">
+                            {winnerRecords.primary?.raffle_code}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <button
+                        className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                        onClick={() => {
+                          triggerStartDraw();
+                        }}
+                      >
+                        Start Draw
+                      </button>
+                    )}
                   </>
                 ) : (
-                  <button
-                    className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                    onClick={() => {
-                      triggerStartDraw();
-                    }}
-                  >
-                    Start Draw
-                  </button>
+                  <>
+                    <div className="h-[50px] w-full text-center flex justify-center items-center">
+                      Loading... Please wait.{" "}
+                    </div>
+                  </>
                 )}
               </div>
             </div>
@@ -312,97 +357,125 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               >
                 <div className="grid w-full gap-3">
                   <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
-                    {revealWinner02 ? (
+                    {!loadingButton1 ? (
                       <>
-                        <div
-                          className="participant-name text-xl"
-                          title={winnerRecords.backups[0]?.full_name_raw}
-                        >
-                          {winnerRecords.backups[0]?.full_name}
-                        </div>
-                        <div className="participant-details flex w-full justify-between">
-                          <div className="participant-location">
-                            {winnerRecords.backups[0]?.regional_location}
-                          </div>
-                          <div className="participant-code font-[courier] font-bold tracking-widest">
-                            {winnerRecords.backups[0]?.raffle_code}
-                          </div>
-                        </div>
+                        {revealWinner02 ? (
+                          <>
+                            <div
+                              className="participant-name text-xl"
+                              title={winnerRecords.backups[0]?.full_name_raw}
+                            >
+                              {winnerRecords.backups[0]?.full_name}
+                            </div>
+                            <div className="participant-details flex w-full justify-between">
+                              <div className="participant-location">
+                                {winnerRecords.backups[0]?.regional_location}
+                              </div>
+                              <div className="participant-code font-[courier] font-bold tracking-widest">
+                                {winnerRecords.backups[0]?.raffle_code}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <button
+                            className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                            onClick={() => {
+                              console.log("Raffling backup winner #1");
+                              triggerStartDraw("backup", 0);
+                            }}
+                          >
+                            Raffle First Backup Winner
+                          </button>
+                        )}
                       </>
                     ) : (
-                      <button
-                        className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                        onClick={() => {
-                          console.log("Raffling backup winner #1");
-                          triggerStartDraw("backup", 0);
-                        }}
-                      >
-                        Raffle First Backup Winner
-                      </button>
+                      <>
+                        <div className="h-[50px] w-full text-center flex justify-center items-center">
+                          Loading... Please wait.{" "}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
                 <div className="grid w-full gap-3">
                   <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
-                    {revealWinner03 ? (
+                    {!loadingButton2 ? (
                       <>
-                        <div
-                          className="participant-name text-xl"
-                          title={winnerRecords.backups[1]?.full_name_raw}
-                        >
-                          {winnerRecords.backups[1]?.full_name}
-                        </div>
-                        <div className="participant-details flex w-full justify-between">
-                          <div className="participant-location">
-                            {winnerRecords.backups[1]?.regional_location}
-                          </div>
-                          <div className="participant-code font-[courier] font-bold tracking-widest">
-                            {winnerRecords.backups[1]?.raffle_code}
-                          </div>
-                        </div>
+                        {revealWinner03 ? (
+                          <>
+                            <div
+                              className="participant-name text-xl"
+                              title={winnerRecords.backups[1]?.full_name_raw}
+                            >
+                              {winnerRecords.backups[1]?.full_name}
+                            </div>
+                            <div className="participant-details flex w-full justify-between">
+                              <div className="participant-location">
+                                {winnerRecords.backups[1]?.regional_location}
+                              </div>
+                              <div className="participant-code font-[courier] font-bold tracking-widest">
+                                {winnerRecords.backups[1]?.raffle_code}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <button
+                            className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                            onClick={() => {
+                              console.log("Raffling backup winner #2");
+                              triggerStartDraw("backup", 1);
+                            }}
+                          >
+                            Raffle Second Backup Winner
+                          </button>
+                        )}
                       </>
                     ) : (
-                      <button
-                        className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                        onClick={() => {
-                          console.log("Raffling backup winner #2");
-                          triggerStartDraw("backup", 1);
-                        }}
-                      >
-                        Raffle Second Backup Winner
-                      </button>
+                      <div className="h-[50px] w-full text-center flex justify-center items-center">
+                        Loading... Please wait.{" "}
+                      </div>
                     )}
                   </div>
                 </div>
                 <div className="grid w-full gap-3">
                   <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
-                    {revealWinner04 ? (
+                    {!loadingButton3 ? (
                       <>
-                        <div
-                          className="participant-name text-xl"
-                          title={winnerRecords.backups[2]?.full_name_raw}
-                        >
-                          {winnerRecords.backups[2]?.full_name}
-                        </div>
-                        <div className="participant-details flex w-full justify-between">
-                          <div className="participant-location">
-                            {winnerRecords.backups[2]?.regional_location}
-                          </div>
-                          <div className="participant-code font-[courier] font-bold tracking-widest">
-                            {winnerRecords.backups[2]?.raffle_code}
-                          </div>
-                        </div>
+                        {revealWinner04 ? (
+                          <>
+                            <div
+                              className="participant-name text-xl"
+                              title={winnerRecords.backups[2]?.full_name_raw}
+                            >
+                              {winnerRecords.backups[2]?.full_name}
+                            </div>
+                            <div className="participant-details flex w-full justify-between">
+                              <div className="participant-location">
+                                {winnerRecords.backups[2]?.regional_location}
+                              </div>
+                              <div className="participant-code font-[courier] font-bold tracking-widest">
+                                {winnerRecords.backups[2]?.raffle_code}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <button
+                            className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                            onClick={() => {
+                              console.log("Raffling backup winner #3");
+                              triggerStartDraw("backup", 2);
+                            }}
+                          >
+                            Raffle Third Backup Winner
+                          </button>
+                        )}
                       </>
                     ) : (
-                      <button
-                        className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                        onClick={() => {
-                          console.log("Raffling backup winner #3");
-                          triggerStartDraw("backup", 2);
-                        }}
-                      >
-                        Raffle Third Backup Winner
-                      </button>
+                      <>
+                        <div className="h-[50px] w-full text-center flex justify-center items-center">
+                          Loading... Please wait.{" "}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
