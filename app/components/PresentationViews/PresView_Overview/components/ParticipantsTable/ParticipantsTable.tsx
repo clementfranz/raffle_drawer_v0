@@ -13,6 +13,7 @@ interface Participant {
 }
 
 import styles from "./ParticipantsTable.module.css";
+import { getAllParticipantsPerPage } from "~/hooks/indexedDB/_main/useIndexedDB";
 
 // inside ParticipantsTable component
 const ParticipantsTable = () => {
@@ -70,13 +71,12 @@ const ParticipantsTable = () => {
 
   const fetchData = async (pageNumber: number, pageSize: number) => {
     try {
-      const page1 = await getDataPerPage(
-        "ParticipantsDB",
-        "participantsData_raffle2025",
+      const participantsData = await getAllParticipantsPerPage(
+        "WEEK-2025-06",
         pageNumber,
         pageSize
       );
-      setTableLocalData(page1);
+      setTableLocalData(participantsData);
       setWithParticipantsData(true);
     } catch (error) {
       console.error("Error fetching data:", error);
