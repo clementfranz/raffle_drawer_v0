@@ -18,6 +18,9 @@ export function migrateWinnerParticipant(db: IDBPDatabase<any>) {
     store.createIndex("participant_batch_id", "participant_batch_id", {
       unique: false
     });
+    store.createIndex("winner_type_draw_date", ["winner_type", "draw_date"], {
+      unique: false
+    });
 
     console.log("winnerParticipant store created ✅");
   }

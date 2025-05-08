@@ -6,7 +6,7 @@ import { migrateWinnerParticipant } from "../migrations/migrate_WinnerParticipan
 import type * as Types from "../types";
 
 const DB_NAME = "RaffleDrawDB";
-const DB_VERSION = 14;
+const DB_VERSION = 15;
 
 let dbPromise: Promise<IDBPDatabase<RaffleDBSchema>> | null = null;
 
@@ -37,7 +37,12 @@ interface RaffleDBSchema extends DBSchema {
   winnerParticipant: {
     key: string;
     value: Types.WinnerParticipantTypes.WinnerParticipant;
-    indexes: { winner_type: string; id_entry: string; raffle_code: string };
+    indexes: {
+      winner_type: string;
+      id_entry: string;
+      raffle_code: string;
+      winner_type_draw_date: any;
+    };
   };
 }
 
@@ -227,7 +232,7 @@ export async function getAllParticipantsPerPage(
 }
 
 export async function getAllWinnerPerType(type: string): Promise<any[]> {
-  console.log("Getting winners with type: ", type, "...");
+  console.log("Getting winners with type:", type, "...");
 
   const db = await initDB();
   const storeName: StoreName = "winnerParticipant";
@@ -238,9 +243,14 @@ export async function getAllWinnerPerType(type: string): Promise<any[]> {
     const transaction = db.transaction(storeName, "readonly");
     const store = transaction.objectStore(storeName);
 
-    const index = store.index("winner_type");
+    // Use the compound index: [winner_type, draw_date]
+    const index = store.index("winner_type_draw_date");
 
-    let cursor = await index.openCursor(IDBKeyRange.only(type), "next");
+    // Define range: only matching the given type, for all draw_dates
+    const range = IDBKeyRange.bound([type, 0], [type, Infinity]);
+
+    // Open cursor with direction 'prev' (newest draw_date first)
+    let cursor = await index.openCursor(range, "prev");
 
     while (cursor) {
       winners.push(cursor.value); // Collect this winner
