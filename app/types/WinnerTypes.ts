@@ -1,9 +1,7 @@
 export interface Winner {
-  date_chosen: string;
   full_name: string;
   id: number;
   id_entry: string | number;
-  isCancelled: boolean;
   raffle_code: string;
   regional_location: string;
   time_registered: string;

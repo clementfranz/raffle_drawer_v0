@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { openDB } from "idb";
 import useLocalStorageState from "use-local-storage-state";
+import {
+  getAllParticipantsPerPage,
+  getAllWinnerPerType,
+  hasAnyParticipants,
+  hasAnyWinners
+} from "~/hooks/indexedDB/_main/useIndexedDB";
+import { removeWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/removeWinnerParticipant";
 
 interface Participant {
   id_entry: string;
@@ -9,91 +16,18 @@ interface Participant {
   raffle_code: string;
   regional_location: string;
   winner_type: string;
-  date_chosen: string;
+  draw_date: string;
 }
 
-const deleteEntryFromRaffleWinners = (
+const deleteEntryFromRaffleWinners = async (
   raffle_code: string,
   id_entry: string
-): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB");
-
-    request.onsuccess = () => {
-      const db: IDBDatabase = request.result;
-      const transaction = db.transaction("raffleWinners", "readwrite");
-      const store = transaction.objectStore("raffleWinners");
-      const index = store.index("id_entry_raffle_code");
-
-      // Step 1: Get the entry by [id_entry, raffle_code] composite key
-      const getRequest: IDBRequest<any> = index.get([id_entry, raffle_code]);
-
-      getRequest.onsuccess = () => {
-        const result = getRequest.result;
-
-        if (result) {
-          // Step 2: Delete using primary key (which is 'id' in our store)
-          const deleteRequest = store.delete(result.id);
-
-          deleteRequest.onsuccess = () => {
-            resolve(
-              `Entry with id_entry ${id_entry} and raffle_code ${raffle_code} deleted successfully.`
-            );
-          };
-
-          deleteRequest.onerror = () => {
-            reject(
-              `Failed to delete entry: ${
-                deleteRequest.error?.message || "Unknown error"
-              }`
-            );
-          };
-        } else {
-          reject(
-            `No entry found with id_entry ${id_entry} and raffle_code ${raffle_code}`
-          );
-        }
-      };
-
-      getRequest.onerror = () => {
-        reject(
-          `Failed to retrieve entry: ${
-            getRequest.error?.message || "Unknown error"
-          }`
-        );
-      };
-
-      // ✅ Best practice: close DB connection after transaction completes
-      transaction.oncomplete = () => {
-        db.close();
-      };
-
-      transaction.onerror = () => {
-        reject(
-          `Transaction failed: ${transaction.error?.message || "Unknown error"}`
-        );
-      };
-    };
-
-    request.onerror = () => {
-      reject(
-        `Failed to open ParticipantsDB: ${
-          request.error?.message || "Unknown error"
-        }`
-      );
-    };
-  });
+) => {
+  const result = await removeWinnerParticipant(id_entry, raffle_code);
+  console.log("Deletion: ", result);
 };
 
-interface ParticipantsTableProps {
-  tableData: Participant[];
-  loadingTable: boolean;
-}
-
-const ParticipantsTable = ({
-  tableData,
-  loadingTable
-}: ParticipantsTableProps) => {
+const ParticipantsTable = ({}) => {
   const location = useLocation();
 
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
@@ -107,185 +41,91 @@ const ParticipantsTable = ({
   );
 
   const [tableIsLoading, setTableIsLoading] = useState<boolean>(false);
-  const [pageNumber, setPageNumber] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(250);
 
   const [activeTab, setActiveTab] = useState("main");
 
-  const getRaffleWinnersBySize = (
-    page = 1,
-    size = 250,
-    type: string = "winner" // Filter by this winner_type
-  ): Promise<Participant[]> => {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open("ParticipantsDB");
-
-      request.onsuccess = (event: Event) => {
-        const db = (event.target as IDBOpenDBRequest)?.result;
-        if (!db) {
-          reject("Failed to open DB: Database is null");
-          return;
-        }
-        const transaction = db.transaction(["raffleWinners"], "readonly");
-        const store = transaction.objectStore("raffleWinners");
-
-        const winners: Participant[] = [];
-        let count = 0;
-
-        const lowerBound = (page - 1) * size;
-        const upperBound = page * size;
-
-        // ✅ Use "prev" to get latest records first
-        const cursorRequest = store.openCursor(null, "prev");
-
-        cursorRequest.onsuccess = (e: Event) => {
-          const cursor = (e.target as IDBRequest<IDBCursorWithValue>)?.result;
-          if (cursor) {
-            const record = cursor.value as Participant;
-
-            // ✅ Filter records by winner_type
-            if (record.winner_type === type) {
-              if (count >= lowerBound && count < upperBound) {
-                winners.push(record);
-              }
-              count++;
-            }
-
-            cursor.continue();
-          } else {
-            resolve(winners);
-          }
-        };
-
-        cursorRequest.onerror = (e: Event) => {
-          const error = (e.target as IDBRequest)?.error;
-          reject(
-            `Failed to fetch raffle winners: ${
-              error?.message || "Unknown error"
-            }`
-          );
-        };
-      };
-
-      request.onerror = (e: Event) => {
-        const error = (e.target as IDBRequest)?.error;
-        reject(`Failed to open DB: ${error?.message || "Unknown error"}`);
-      };
-    });
-  };
-
-  const getDataPerPage = async (
-    dbName: string,
-    storeName: string,
-    pageNo: number,
-    size: number
-  ): Promise<any[]> => {
-    setTableIsLoading(true);
-    const db = await openDB(dbName);
-    const tx = db.transaction(storeName, "readonly");
-    const store = tx.objectStore(storeName);
-
-    const startId = (pageNo - 1) * size + 1;
-    const endId = pageNo * size;
-
-    let range: IDBKeyRange | null = null;
-    try {
-      range = IDBKeyRange.bound(startId, endId);
-    } catch (err) {
-      console.error("Invalid range:", startId, endId);
-      throw err;
-    }
-    const data: any[] = [];
-
-    let cursor = await store.openCursor(range);
-
-    while (cursor) {
-      data.push(cursor.value);
-      cursor = await cursor.continue();
-    }
-
-    await tx.done;
-    setTableIsLoading(false);
-    return data;
-  };
-
-  const checkUrlAndSetPage = () => {
+  const getActiveTab = () => {
     const params = new URLSearchParams(location.search);
+    const tab = params.get("filter") || "main";
+    console.log("ACTIVE TAB: >>>>>", tab);
+    setActiveTab(tab);
+    return tab;
+  };
 
+  const getPageNumberAndSize = () => {
+    const params = new URLSearchParams(location.search);
     const page = parseInt(params.get("page") || "1", 10);
     const size = parseInt(params.get("pageSize") || "250", 10);
-    const tab = params.get("filter") || "main";
-
-    setPageNumber(page);
-    setPageSize(size);
-    setActiveTab(tab);
+    return { page, size };
   };
 
   const removeWinner = (code: string, id: string) => {
     deleteEntryFromRaffleWinners(code, id);
-    fetchData(activeTab, pageNumber, pageSize);
+    fetchData();
   };
 
-  useEffect(() => {
-    checkUrlAndSetPage();
-  }, [location.search]); // run when URL changes
+  const fetchData = async () => {
+    const activeTab = getActiveTab();
 
-  const fetchData = async (
-    activeTab: string,
-    pageNumber: number,
-    pageSize: number
-  ) => {
+    console.log("Fetching data...");
+    setTableIsLoading(true); // Start loading state early
+    const { page: pageNumber, size: pageSize } = getPageNumberAndSize(); // Use the corrected function name
+
     try {
-      if (activeTab === "main") {
-        const page1 = await getDataPerPage(
-          "ParticipantsDB",
-          "participantsData_raffle2025",
+      let fetchedData: any[] = [];
+
+      if (activeTab === "winners") {
+        console.log("Winner table loading...");
+        const hasPrimaryWinners = await hasAnyWinners("primary");
+
+        if (hasPrimaryWinners) {
+          const winnersData = await getAllWinnerPerType("primary");
+          fetchedData = winnersData || [];
+        } else {
+          console.log("No primary winners found.");
+        }
+      } else if (activeTab === "backupwinners") {
+        console.log("Backup winners table loading...");
+        const hasBackupWinners = await hasAnyWinners("backup");
+
+        if (hasBackupWinners) {
+          const winnersData = await getAllWinnerPerType("backup"); // 🔥 Fixed this line!
+          fetchedData = winnersData || [];
+        } else {
+          console.log("No backup winners found.");
+        }
+      } else {
+        console.log("Main table loading...");
+        const participantsData = await getAllParticipantsPerPage(
+          "WEEK-2025-06",
           pageNumber,
           pageSize
         );
-        setTableLocalData(page1);
-      } else if (activeTab === "winners") {
-        const winnersData = await getRaffleWinnersBySize(
-          pageNumber,
-          pageSize,
-          "primary"
-        );
-        setTableLocalData(winnersData);
-      } else {
-        const winnersData = await getRaffleWinnersBySize(
-          pageNumber,
-          pageSize,
-          "backup"
-        );
-        setTableLocalData(winnersData);
+        fetchedData = participantsData || [];
       }
-      setWithParticipantsData(true);
+
+      // Set data (empty array if no winners found)
+      setTableLocalData(fetchedData);
     } catch (error) {
       console.error("Error fetching data:", error);
-      setTableLocalData([]);
-      setWithParticipantsData(false);
+      setTableLocalData([]); // Clear table on error
     } finally {
-      setTableIsLoading(false);
+      setTableIsLoading(false); // Always end loading state
     }
   };
-  useEffect(() => {
-    setTableIsLoading(true);
-    if (withParticipantsData) {
-      fetchData(activeTab, pageNumber, pageSize);
-    } else {
-      setTableIsLoading(false);
-    }
-  }, [pageNumber, pageSize, activeTab, withParticipantsData]); // run when pageNumber or pageSize changes
 
   useEffect(() => {
-    checkUrlAndSetPage();
     setTableIsLoading(true);
     if (withParticipantsData) {
-      fetchData(activeTab, pageNumber, pageSize);
+      fetchData();
     } else {
       setTableIsLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [location.search]);
 
   return (
     <>
@@ -322,15 +162,12 @@ const ParticipantsTable = ({
                   {activeTab !== "main" && (
                     <>
                       <td>
-                        {new Date(entry.date_chosen).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "2-digit",
-                            weekday: "short"
-                          }
-                        )}
+                        {new Date(entry.draw_date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "2-digit",
+                          weekday: "short"
+                        })}
                       </td>
                       <td className="">
                         <button

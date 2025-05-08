@@ -8,8 +8,11 @@ import UploadButton from "../../UploadButton/_main/UploadButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileCsv } from "@fortawesome/free-solid-svg-icons";
 
-import { formatFileSize, importCsvToIndexedDB } from "./utils/necessaryOnly";
+import { formatFileSize } from "./utils/necessaryOnly";
 import useLocalStorageState from "use-local-storage-state";
+import { parseCSV } from "~/hooks/csvParser/parseCSV";
+import { addParticipantByBatch } from "~/hooks/indexedDB/participant/addParticipantByBatch";
+import { countEntriesByLocationWithProgress } from "~/hooks/indexedDB/_main/useIndexedDB";
 
 const indexDBName = "ParticipantsDB";
 const storeName = "participantsData_raffle2025";
@@ -126,37 +129,62 @@ const Phase03_Processing = ({
     defaultValue: []
   });
 
-  const getRegionalStats = () => {
-    countLocationsFromIndexedDB(
-      setLoadingStats,
-      setCountingProgress,
-      indexDBName,
-      storeName
-    ).then((registeredLocations) => {
-      setRegionalStats(registeredLocations);
-    });
-  };
+  const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
+    "withParticipantsData",
+    {
+      defaultValue: false
+    }
+  );
 
   const handleImport = async (file: File) => {
     try {
-      await importCsvToIndexedDB(
-        file,
-        "raffle2025",
-        1000, // batch size
-        fileDetails.entries,
-        setEntriesProcessed,
-        setUploadProgress,
-        setPreUploadLoading
-      );
-      await getRegionalStats();
-      console.log("Import completed ✅");
+      // Await the promise returned by parseCSV to get the CSV data
+      const CSVData = await parseCSV(file);
+
+      // Log the parsed data
+      console.log("Parsed CSV Data: ", CSVData);
+
+      // Proceed only if the CSV data is successfully parsed
+      if (CSVData) {
+        console.log("Attempting to upload...");
+
+        // Call addParticipantByBatch and update progress
+        const uploadDone = await addParticipantByBatch(
+          CSVData,
+          "WEEK-2025-06",
+          (newProgress) => {
+            setUploadProgress(newProgress);
+          }
+        );
+
+        if (uploadDone) {
+          handleGetRegionalStats();
+        }
+
+        console.log("Import completed ✅");
+      }
     } catch (err) {
       console.error("Import failed", err);
     }
   };
 
+  const handleGetRegionalStats = async () => {
+    console.log("Getting regional stats.");
+    const regionalStatistics = await countEntriesByLocationWithProgress(
+      setCountingProgress
+    );
+    if (regionalStatistics) {
+      setRegionalStats(regionalStatistics);
+      console.log("Done getting regional stats.");
+    }
+  };
+
   useEffect(() => {
-    if (uploadProgress === 100) {
+    // if (uploadProgress >= 100 && countingProgress < 100) {
+    //   handleGetRegionalStats();
+    // }
+
+    if (uploadProgress >= 100 && countingProgress >= 100) {
       setUploadStatus("completed");
     }
     console.log("UPLOAD PROGRESS: ", uploadProgress);
@@ -168,7 +196,7 @@ const Phase03_Processing = ({
       const progress = Math.round(
         (entriesProcessed / fileDetails.entries) * 100
       );
-      setUploadProgress(progress);
+      // setUploadProgress(progress);
       console.log("LIVE UPLOAD PROGRESS: ", progress);
     }
   }, [entriesProcessed]);
@@ -243,13 +271,23 @@ const Phase03_Processing = ({
                 Please wait...
               </span>
             ) : (
-              <>Processing File - {(uploadProgress + countingProgress) / 2}%</>
+              <>
+                {uploadProgress < 100 ? (
+                  <>Processing File - {uploadProgress.toFixed(2)}%</>
+                ) : (
+                  <>Getting Regional Stats - {countingProgress.toFixed(2)}%</>
+                )}
+              </>
             )}
           </UploadButton>
         </UploadBox.Footer>
         <div
           className={`progress-bar absolute top-0 left-0 h-full bg-green-600 -z-0  transition-all ease-linear  animate-pulse `}
           style={{ width: `${uploadProgress}%` }}
+        ></div>
+        <div
+          className={`progress-bar absolute top-0 left-0 h-full bg-amber-600 -z-0  transition-all ease-linear  animate-pulse opacity-40 `}
+          style={{ width: `${countingProgress}%` }}
         ></div>
       </UploadBox>
     </div>

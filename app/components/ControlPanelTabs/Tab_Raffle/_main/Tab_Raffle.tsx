@@ -9,6 +9,8 @@ import TabActionButton from "~/ui/ControlPanelUI/TabActionButton/_main/TabAction
 import useLocalStorageState from "use-local-storage-state";
 import { useWinnerRecords } from "~/hooks/useWinnerRecords";
 import type { WinnerRecords, Winner } from "~/types/WinnerTypes";
+import { addWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipant";
+import { pickRandomParticipant } from "~/hooks/indexedDB/_main/useIndexedDB";
 
 interface Tab_RaffleProps {
   isActiveTab?: boolean;
@@ -23,186 +25,6 @@ interface RaffleEntry {
   regional_location: string;
   time_registered: string;
 }
-
-function storeRaffleWinner(entry: RaffleEntry): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const request: IDBOpenDBRequest = indexedDB.open("ParticipantsDB", 8); // ✅ version bumped
-
-    request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-      const db = request.result;
-
-      if (!db.objectStoreNames.contains("raffleWinners")) {
-        const store = db.createObjectStore("raffleWinners", {
-          keyPath: "id", // use auto-incremented id as the primary key
-          autoIncrement: true
-        });
-
-        // ✅ Create composite index for uniqueness of [id_entry + raffle_code]
-        store.createIndex("id_entry_raffle_code", ["id_entry", "raffle_code"], {
-          unique: true
-        });
-
-        // Other indexes
-        store.createIndex("winner_type", "winner_type", { unique: false });
-        store.createIndex("date_chosen", "date_chosen", { unique: false });
-        store.createIndex("regional_location", "regional_location", {
-          unique: false
-        });
-        store.createIndex("isCancelled", "isCancelled", { unique: false });
-      }
-    };
-
-    request.onsuccess = () => {
-      const db: IDBDatabase = request.result;
-      const transaction: IDBTransaction = db.transaction(
-        "raffleWinners",
-        "readwrite"
-      );
-      const store: IDBObjectStore = transaction.objectStore("raffleWinners");
-
-      const addRequest: IDBRequest<IDBValidKey> = store.add(entry);
-
-      addRequest.onsuccess = () => {
-        resolve(
-          `Entry with id_entry ${entry.id_entry} stored successfully in raffleWinners.`
-        );
-      };
-
-      addRequest.onerror = () => {
-        reject(
-          `Failed to store entry: ${
-            addRequest.error?.message || "Unknown error"
-          }`
-        );
-      };
-    };
-
-    request.onerror = () => {
-      reject(
-        `Failed to open ParticipantsDB: ${
-          request.error?.message || "Unknown error"
-        }`
-      );
-    };
-  });
-}
-
-let cachedDB: IDBDatabase | null = null;
-
-const openDB = (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    if (cachedDB !== null) {
-      console.log("[INFO] Reusing cached DB connection");
-      return resolve(cachedDB);
-    }
-
-    console.log("[INFO] Opening new DB connection...");
-    const request = indexedDB.open("ParticipantsDB");
-
-    request.onsuccess = (event) => {
-      cachedDB = (event.target as IDBRequest).result;
-      console.log("[SUCCESS] Database opened and cached");
-      if (cachedDB) {
-        resolve(cachedDB);
-        cachedDB.onclose = () => {
-          console.warn("[WARN] Database connection closed");
-          cachedDB = null;
-        };
-      }
-
-      // Handle if connection gets closed unexpectedly
-    };
-
-    request.onerror = () => {
-      console.error("[ERROR] Error opening database");
-      reject("Error opening database");
-    };
-
-    request.onblocked = () => {
-      console.error("[BLOCKED] Database open request is blocked.");
-    };
-  });
-};
-
-const getRecordByIdEntry = async (id: number, type: string): Promise<any> => {
-  console.log(
-    `[INFO] Starting getRecordByIdEntry for id: ${id}, type: ${type}`
-  );
-
-  try {
-    console.log("[INFO] Waiting for DB connection...");
-    const db = await openDB();
-    console.log("[SUCCESS] Got DB connection. Proceeding...");
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(
-        ["participantsData_raffle2025"],
-        "readonly"
-      );
-      console.log("[INFO] Transaction started");
-
-      transaction.oncomplete = () =>
-        console.log("[SUCCESS] Transaction completed");
-      transaction.onerror = () => console.error("[ERROR] Transaction failed");
-      transaction.onabort = () => console.error("[ABORT] Transaction aborted");
-
-      const objectStore = transaction.objectStore(
-        "participantsData_raffle2025"
-      );
-
-      console.log(`[INFO] Sending get request for id: ${id}`);
-      const getRequest = objectStore.get(id);
-
-      getRequest.onsuccess = () => {
-        console.log("[SUCCESS] Get request onsuccess fired");
-        if (getRequest.result) {
-          console.log("[INFO] Record found, modifying result...");
-          const modifiedResult = {
-            date_chosen: new Date().toISOString(),
-            isCancelled: false,
-            winner_type: type,
-            ...getRequest.result
-          };
-          try {
-            console.log(
-              "[INFO] Storing modified record with storeRaffleWinner..."
-            );
-            storeRaffleWinner(modifiedResult);
-            console.log("[SUCCESS] Modified record stored. Resolving promise.");
-            resolve(modifiedResult);
-          } catch (e) {
-            console.error("[ERROR] Failed to store modified record:", e);
-            reject(e);
-          }
-        } else {
-          console.warn(`[WARN] No record found with id_entry: ${id}`);
-          reject(`No record found with id_entry: ${id}`);
-        }
-      };
-
-      getRequest.onerror = () => {
-        console.error("[ERROR] Error retrieving record");
-        reject("Error retrieving record");
-      };
-    });
-  } catch (e) {
-    console.error("[ERROR] Failed before starting transaction:", e);
-    throw e;
-  }
-};
-
-const generateSingleRandomNumber = (
-  max: number,
-  exempted: Set<number> = new Set()
-): number => {
-  let randomNum: number;
-
-  do {
-    randomNum = Math.floor(Math.random() * max) + 1;
-  } while (exempted.has(randomNum));
-
-  return randomNum;
-};
 
 const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   const {
@@ -239,60 +61,26 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     }
   }, [winnerLoading]);
 
-  // ✅ Generate Winner Function (Async with Loading + Return Success Flag)
-  const generateWinner = async (
-    winnerType: string = "primary",
-    nthBackup: 0 | 1 | 2 | 3 = 0
-  ): Promise<boolean> => {
-    try {
-      console.log("Generating winner start");
-      setWinnerLoading(true); // Start loading
-
-      // ✅ Ensure there's a valid number of entries
-      const maxEntries = Number(fileDetails?.entries) || 999999;
-
-      // ✅ Generate a single random number
-      const singleRandomNumber = generateSingleRandomNumber(maxEntries);
-
-      // ✅ Fetch the record
-      const winnerData: Winner | null = await getRecordByIdEntry(
-        singleRandomNumber,
-        winnerType
-      );
-
-      if (winnerData) {
-        if (winnerType === "primary") {
-          console.log("Setting a winner");
-          setWinner(winnerData);
-        } else {
-          console.log("Setting a backup winner");
-          setBackupWinner((nthBackup - 1) as 0 | 1 | 2, winnerData);
-        }
-        return true; // ✅ Success
-      } else {
-        console.warn("No winner data found");
-        return false; // ❌ No winner found
-      }
-    } catch (error) {
-      console.error("Error fetching winner data:", error);
-      return false; // ❌ Error
-    } finally {
-      setWinnerLoading(false); // Stop loading
-      console.log("Generating winner ended");
-    }
-  };
-
   // ✅ Trigger Draw Start Function (Fixed to be Async)
   const triggerStartDraw = async (
-    type: string = "primary",
-    nth: 0 | 1 | 2 | 3 = 0
+    type: "primary" | "backup" = "primary",
+    nth: 0 | 1 | 2 = 0
   ) => {
     console.log("Attempting: ", type, " ", nth);
     setIsRevealed(false);
 
-    const successGeneration = await generateWinner(type, nth);
+    const participant = await handlePickRandomParticipant(type);
 
-    if (successGeneration) {
+    if (participant) {
+      if (type === "primary") {
+        setWinner(participant);
+        console.log("Setting Winner");
+      } else {
+        console.log("Setting Backup Winner");
+        if (nth === 0 || nth === 1 || nth === 2) {
+          setBackupWinner(nth, participant);
+        }
+      }
       setStartDraw(true);
     } else {
       console.warn("Winner generation failed, draw not started");
@@ -386,6 +174,34 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     setIsRevealed(false);
   };
 
+  const saveWinnerParticipant = async (
+    participant: any,
+    winnerType: "primary" | "backup"
+  ) => {
+    const saveSuccess = await addWinnerParticipant(participant, winnerType);
+    if (saveSuccess) {
+      console.log(
+        "Success saving winner: ",
+        participant.full_name,
+        " with winner type of ",
+        winnerType
+      );
+    }
+  };
+
+  const handlePickRandomParticipant = async (
+    winnerType: "primary" | "backup" = "primary",
+    region?: string | null
+  ) => {
+    console.log("Picking Random Participant");
+    const participant = await pickRandomParticipant(region ?? undefined);
+    if (participant) {
+      saveWinnerParticipant(participant, winnerType);
+      console.log(participant);
+    }
+    return participant;
+  };
+
   const handleClearWinners = () => {
     handleResetMachine();
     resetWinners();
@@ -463,7 +279,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                         className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
                         onClick={() => {
                           console.log("Raffling backup winner #1");
-                          triggerStartDraw("backup", 1);
+                          triggerStartDraw("backup", 0);
                           startRevealWinner(2);
                         }}
                       >
@@ -493,7 +309,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                         className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
                         onClick={() => {
                           console.log("Raffling backup winner #2");
-                          triggerStartDraw("backup", 2);
+                          triggerStartDraw("backup", 1);
                           startRevealWinner(3);
                         }}
                       >
@@ -523,7 +339,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                         className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
                         onClick={() => {
                           console.log("Raffling backup winner #3");
-                          triggerStartDraw("backup", 3);
+                          triggerStartDraw("backup", 2);
                           startRevealWinner(4);
                         }}
                       >
