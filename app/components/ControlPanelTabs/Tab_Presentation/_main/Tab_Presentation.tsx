@@ -12,6 +12,9 @@ import ViewCards from "../components/ViewCards/_main/ViewCards";
 
 // View Cards Thumbnails
 import ScreenSaverThumbnail from "~/assets/images/viewCardThumbnails/ScreenSaverThumbnail.png";
+import IntroOnlyThumbnail from "~/assets/images/viewCardThumbnails/IntroOnlyThumnail.png";
+import ParticipantsOverviewThumbnail from "~/assets/images/viewCardThumbnails/ParticipantsOverviewThumbnail.png";
+import RaffleDrawThumbnail from "~/assets/images/viewCardThumbnails/RaffleDrawThumbnail.png";
 
 interface Tab_PresentationProps {
   isActiveTab?: boolean;
@@ -55,20 +58,26 @@ const Tab_Presentation: React.FC<Tab_PresentationProps> = ({ isActiveTab }) => {
     }
   };
 
+  const [activeThumbnail, setActiveThumbnail] = useState(IntroOnlyThumbnail);
+
   const transitToDefault = () => {
     transitViewTo("intro");
+    setActiveThumbnail(IntroOnlyThumbnail);
   };
 
   const transitToOverview = () => {
     transitViewTo("overview");
+    setActiveThumbnail(ParticipantsOverviewThumbnail);
   };
 
   const transitToRaffleDraw = () => {
     transitViewTo("raffle-draw");
+    setActiveThumbnail(RaffleDrawThumbnail);
   };
 
   const transitToScreenSaver = () => {
     transitViewTo("screen-saver");
+    setActiveThumbnail(ScreenSaverThumbnail);
   };
 
   return (
@@ -77,7 +86,10 @@ const Tab_Presentation: React.FC<Tab_PresentationProps> = ({ isActiveTab }) => {
         <TabShell position="top">
           <TabSubPanel title="Presentation Preview">
             <div className="view-options flex  gap-2 justify-center w-full">
-              <div className="view-preview  rounded-md aspect-video flex justify-center items-end text-sm  w-[80%]">
+              <div
+                className="view-preview  rounded-md aspect-video flex justify-center items-end text-sm  w-[80%] bg-cover bg-center transition-all duration-500"
+                style={{ backgroundImage: `url(${activeThumbnail})` }}
+              >
                 <div className="label">Raffle Winner</div>
               </div>
             </div>
@@ -86,7 +98,7 @@ const Tab_Presentation: React.FC<Tab_PresentationProps> = ({ isActiveTab }) => {
             <div className="view-options grid grid-cols-2 gap-2 relative">
               <ViewCards
                 onClick={transitToDefault}
-                thumbnailUrl={ScreenSaverThumbnail}
+                thumbnailUrl={IntroOnlyThumbnail}
               >
                 Intro Only
               </ViewCards>
@@ -96,10 +108,18 @@ const Tab_Presentation: React.FC<Tab_PresentationProps> = ({ isActiveTab }) => {
               >
                 Screen Saver
               </ViewCards>
-              <ViewCards onClick={transitToOverview}>
+              <ViewCards
+                onClick={transitToOverview}
+                thumbnailUrl={ParticipantsOverviewThumbnail}
+              >
                 Participants <br /> Overview
               </ViewCards>
-              <ViewCards onClick={transitToRaffleDraw}>Raffle Draw</ViewCards>
+              <ViewCards
+                onClick={transitToRaffleDraw}
+                thumbnailUrl={RaffleDrawThumbnail}
+              >
+                Raffle Draw
+              </ViewCards>
               <div
                 className={`loading-wall absolute top-0 left-0 bg-[#000000be] h-full w-full flex justify-center items-center text-white rounded-lg transition-all duration-500 ${
                   lockViewCards ? "z-30 opacity-100" : "-z-10 opacity-0"
