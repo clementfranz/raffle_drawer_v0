@@ -8,6 +8,7 @@ import TabActionButton from "~/ui/ControlPanelUI/TabActionButton/_main/TabAction
 import { pickRandomParticipant } from "~/hooks/indexedDB/_main/useIndexedDB";
 import { addWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipant";
 import useLocalStorageState from "use-local-storage-state";
+import ExportWinnerData from "../components/SubPanels/ExportWinnerData/ExportWinnerData";
 
 interface Tab_ConfigureProps {
   isActiveTab?: boolean;
@@ -113,55 +114,7 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
             </div>
           )}
         </TabSubPanel>
-        <TabSubPanel title={"Export Winner Data"}>
-          <p className="text-sm">Choose winner type to download:</p>
-          {true ? (
-            <>
-              <label
-                htmlFor="region-select"
-                className="block text-sm font-medium"
-              >
-                Select Region
-              </label>
-              <select
-                name="region-select"
-                id="region-select"
-                className="w-full bg-gray-600 p-2 mt-2 rounded-2xl"
-                value={favoredRegion ?? "undefined"}
-                onChange={(e) => handleApplyFavoredRegion(e, setFavoredRegion)}
-              >
-                <option value="undefined">WHOLE PHILIPPINES</option>
-                {regionalStats?.map((stat, index) => (
-                  <option
-                    key={index}
-                    value={stat.location}
-                    className="capitalize first-letter:uppercase"
-                  >
-                    {stat.location}
-                  </option>
-                ))}
-              </select>
-              <p className="text-sm mt-1 italic mb-4">
-                Resets to 'all regions' every restart of application.
-              </p>
-              <div className="mt-5 p-3 rounded-2xl bg-blue-800 text-white">
-                <div className="text-sm">Confirmed Favored Location: </div>
-                <div className="text-lg">
-                  {favoredRegion ?? "Whole Philippines"}
-                </div>
-              </div>
-              {/* <div className="button-bar flex justify-end">
-                <TabActionButton className="self-end ml-auto text-sm px-2">
-                  Apply
-                </TabActionButton>
-              </div> */}
-            </>
-          ) : (
-            <div className="mt-6 text-red-400">
-              No data available for regional stats
-            </div>
-          )}
-        </TabSubPanel>
+        <ExportWinnerData />
         <TabSubPanel title={"Testing Buttons"} className="hidden">
           <div className="button-bar flex justify-end">
             <TabActionButton
