@@ -21,15 +21,20 @@ interface Participant {
   is_drawn: string;
 }
 
-const deleteEntryFromRaffleWinners = async (
-  raffle_code: string,
-  id_entry: string
-) => {
-  const result = await removeWinnerParticipant(id_entry, raffle_code);
-  console.log("Deletion: ", result);
-};
-
 const ParticipantsTable = ({}) => {
+  const deleteEntryFromRaffleWinners = async (
+    raffle_code: string,
+    id_entry: string
+  ) => {
+    const result = await removeWinnerParticipant(id_entry, raffle_code);
+    if (result) {
+      setRefreshTable((prev) => {
+        return prev + 1;
+      });
+    }
+    console.log("Deletion: ", result);
+  };
+
   const location = useLocation();
 
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
@@ -174,7 +179,7 @@ const ParticipantsTable = ({}) => {
                   <td className="">
                     #
                     {entry.id_entry
-                      .toString()
+                      ?.toString()
                       .padStart(8, "0")
                       .replace(/(\d{2})(\d{3})(\d{3})/, "$1-$2-$3")}
                   </td>

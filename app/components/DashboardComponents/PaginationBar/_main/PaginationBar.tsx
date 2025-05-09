@@ -30,6 +30,20 @@ const PaginationBar = () => {
 
   const [fileDetails] = useLocalStorageState<FileDetails | null>("fileDetails");
 
+  const [activeTab, setActiveTab] = useState("main");
+
+  const getActiveTab = () => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("filter") || "main";
+    console.log("ACTIVE TAB: >>>>>", tab);
+    setActiveTab(tab);
+    return tab;
+  };
+
+  useEffect(() => {
+    getActiveTab();
+  }, [location.search]);
+
   const goToPage = (page: number) => {
     if (page < 1 || page > lastPage) return;
     params.set("page", page.toString());
@@ -92,7 +106,7 @@ const PaginationBar = () => {
   return (
     <div
       className={`pagination bg-orange-200 rounded-full text-xs flex-row items-center h-[40px] ${
-        withParticipantsData ? "flex" : "hidden"
+        withParticipantsData && activeTab == "main" ? "flex" : "hidden"
       }`}
     >
       <button

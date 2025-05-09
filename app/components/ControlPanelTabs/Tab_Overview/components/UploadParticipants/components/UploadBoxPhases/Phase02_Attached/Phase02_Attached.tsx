@@ -18,6 +18,8 @@ type AttachedProps = {
     React.SetStateAction<"idle" | "attached" | "processing" | "completed">
   >;
   uploadStatus: string;
+  setFileAttached: React.Dispatch<SetStateAction<File | null>>;
+  setFileDetails: React.Dispatch<SetStateAction<Object | null>>;
 };
 
 const formatFileSize = (bytes: number): string => {
@@ -38,7 +40,9 @@ const Phase02_Attached = ({
   fileDetails,
   setTriggerImport,
   setUploadStatus,
-  uploadStatus
+  uploadStatus,
+  setFileAttached,
+  setFileDetails
 }: AttachedProps) => {
   const handleSubmit = () => {
     if (fileAttached) {
@@ -48,6 +52,8 @@ const Phase02_Attached = ({
   };
 
   const handleCancel = () => {
+    setFileAttached(null);
+    setFileDetails(null);
     setUploadStatus("idle");
   };
 
@@ -65,13 +71,14 @@ const Phase02_Attached = ({
             />
           </div>
           <div className="file-details flex flex-col justify-between items-start h-[80px]">
-            <div className="file-name text-lg font-bold">
+            <div className="file-name text-lg font-bold w-[200px] overflow-hidden ">
               {fileAttached ? (
-                fileAttached.name
+                <span className="line-clamp-2 block">{fileAttached.name}</span>
               ) : (
                 <span className="italic">Unknown File</span>
               )}
             </div>
+
             <div className="file-subdetails text-sm flex flex-col items-start">
               <span>
                 Size:{" "}
@@ -103,9 +110,9 @@ const Phase02_Attached = ({
             >
               Cancel
             </UploadButton>
-            <UploadButton className="cursor-not-allowed!">
+            {/* <UploadButton className="cursor-not-allowed!">
               Re-upload
-            </UploadButton>
+            </UploadButton> */}
           </div>
           <UploadButton
             className="bg-[#0000008c]! hover:bg-[#00000052]!"

@@ -14,9 +14,6 @@ import { parseCSV } from "~/hooks/csvParser/parseCSV";
 import { addParticipantByBatch } from "~/hooks/indexedDB/participant/addParticipantByBatch";
 import { countEntriesByLocationWithProgress } from "~/hooks/indexedDB/_main/useIndexedDB";
 
-const indexDBName = "ParticipantsDB";
-const storeName = "participantsData_raffle2025";
-
 type FileDetails = any;
 
 type ProcessingProps = {
@@ -47,13 +44,6 @@ const Phase03_Processing = ({
   >("regionalStats", {
     defaultValue: []
   });
-
-  const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
-    "withParticipantsData",
-    {
-      defaultValue: false
-    }
-  );
 
   const handleImport = async (file: File) => {
     try {

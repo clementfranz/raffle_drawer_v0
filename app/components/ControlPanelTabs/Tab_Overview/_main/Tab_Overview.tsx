@@ -15,7 +15,7 @@ import TabShell from "~/ui/ControlPanelUI/TabShell/_main/TabShell";
 import TabSubPanel from "~/ui/ControlPanelUI/TabSubPanel/_main/TabSubPanel";
 import TabActionButton from "~/ui/ControlPanelUI/TabActionButton/_main/TabActionButton";
 import useLocalStorageState from "use-local-storage-state";
-import { clearAllParticipants } from "~/hooks/indexedDB/participant/clearAllParticipants";
+import ClearAllPaticipantsButton from "../components/ClearAllPaticipantsButton/ClearAllPaticipantsButton";
 
 const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   setIsPresenting,
@@ -23,25 +23,11 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   isActiveTab
 }) => {
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
-    "withParticipantsData"
-  );
-  const [fileDetails, setFileDetails] = useLocalStorageState<Object | null>(
-    "fileDetails",
-    { defaultValue: null }
-  );
-  const [regionalStats, setRegionalStats] =
-    useLocalStorageState("regionalStats");
-
-  const handleClearAllParticipants = async () => {
-    const clearSuccess = await clearAllParticipants();
-    if (clearSuccess) {
-      console.log("All Participants Cleared");
-      setWithParticipantsData(false);
-      setRegionalStats([]);
-      setFileDetails(null);
-      // window.location.reload();
+    "withParticipantsData",
+    {
+      defaultValue: false
     }
-  };
+  );
 
   return (
     <TabMainBody isActive={isActiveTab}>
@@ -60,9 +46,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
       </TabShell>
       <TabShell position="bottom">
         {/* <TabActionButton>Present Summary</TabActionButton> */}
-        <TabActionButton onClick={handleClearAllParticipants}>
-          Clear All Participants
-        </TabActionButton>
+        {withParticipantsData ? <ClearAllPaticipantsButton /> : ""}
       </TabShell>
     </TabMainBody>
   );

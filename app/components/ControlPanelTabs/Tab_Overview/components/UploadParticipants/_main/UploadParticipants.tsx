@@ -77,6 +77,8 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
             setTriggerImport={setTriggerImport}
             setUploadStatus={setUploadStatus}
             uploadStatus={uploadStatus}
+            setFileAttached={setFileAttached}
+            setFileDetails={setFileDetails}
           />
 
           {/* PHASE 03 */}
