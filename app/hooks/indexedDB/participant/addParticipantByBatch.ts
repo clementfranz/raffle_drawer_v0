@@ -5,7 +5,7 @@ export async function addParticipantByBatch(
   batchId: string,
   updateProgress: (progress: number) => void
 ): Promise<any[]> {
-  const batchSize = 500; // Adjust the batch size based on performance testing
+  const batchSize = 2500; // Adjust the batch size based on performance testing
   const results: any[] = [];
   interface ParticipantData {
     id?: number;
