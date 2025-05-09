@@ -2,20 +2,23 @@ import Papa from "papaparse";
 
 export async function exportCSVAuto<T extends Record<string, any>>(
   entries: T[],
-  filename: string = "data.csv"
+  filename: string = "data.csv",
+  excludeHeaders: string[] = []
 ): Promise<boolean> {
   if (entries.length === 0) {
     console.warn("No entries to export.");
     return false;
   }
 
-  // Auto-detect headers from the first entry's keys
-  const headers = Object.keys(entries[0]);
+  // Auto-detect headers from the first entry's keys and exclude unwanted headers
+  const headers = Object.keys(entries[0]).filter(
+    (header) => !excludeHeaders.includes(header)
+  );
 
   // Use PapaParse to convert objects to CSV
   const csv = Papa.unparse({
     fields: headers,
-    data: entries.map((entry) => headers.map((header) => entry[header] ?? "")) // Ensure order matches headers
+    data: entries.map((entry) => headers.map((header) => entry[header] ?? ""))
   });
 
   // Trigger download

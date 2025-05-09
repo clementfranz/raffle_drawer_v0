@@ -17,13 +17,27 @@ const ExportWinnerData = () => {
     setLoadingPrimaryWinnersCSV(true);
     setPrimaryWinnersButtonLabel("Processing CSV Data");
     const entries = await getAllWinnerPerType("primary");
-    const timeStamp = new Date()
+    const excludeHeaders = [
+      "is_drawn",
+      "winner_status",
+      "is_archived",
+      "participant_batch_id"
+    ];
+    const timeStamp = new Date(
+      Date.now() + 8 * 60 * 60 * 1000 // Add 8 hours for PH time
+    )
       .toISOString()
       .replace(/[-:]/g, "_")
-      .split(".")[0];
+      .replace("T", "__")
+      .split(".")[0]; // Remove milliseconds if you don’t want them
+
     const fileName = `KBRDS_Primary_Winners_${timeStamp}.csv`;
     if (entries) {
-      const successExport = await exportCSVAuto(entries, fileName);
+      const successExport = await exportCSVAuto(
+        entries,
+        fileName,
+        excludeHeaders
+      );
       if (successExport) {
         setLoadingPrimaryWinnersCSV(false);
         setPrimaryWinnersButtonLabel("Primary Winners");
@@ -35,13 +49,27 @@ const ExportWinnerData = () => {
     setLoadingBackupWinnersCSV(true);
     setBackupWinnersButtonLabel("Processing CSV Data");
     const entries = await getAllWinnerPerType("backup");
-    const timeStamp = new Date()
+    const excludeHeaders = [
+      "is_drawn",
+      "winner_status",
+      "is_archived",
+      "participant_batch_id"
+    ];
+    const timeStamp = new Date(
+      Date.now() + 8 * 60 * 60 * 1000 // Add 8 hours for PH time
+    )
       .toISOString()
       .replace(/[-:]/g, "_")
-      .split(".")[0];
+      .replace("T", "__")
+      .split(".")[0]; // Remove milliseconds if you don’t want them
+
     const fileName = `KBRDS_Backup_Winners_${timeStamp}.csv`;
     if (entries) {
-      const successExport = await exportCSVAuto(entries, fileName);
+      const successExport = await exportCSVAuto(
+        entries,
+        fileName,
+        excludeHeaders
+      );
       if (successExport) {
         setLoadingBackupWinnersCSV(false);
         setBackupWinnersButtonLabel("Backup Winners");
