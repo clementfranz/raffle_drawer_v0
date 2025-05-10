@@ -178,11 +178,9 @@ export async function countEntriesByLocationWithProgress(
 }
 
 export async function getAllParticipantsPerPage(
-  participantBatchId: string,
   pageNth: number,
   rangeSize: number
 ): Promise<any[]> {
-  console.log("Getting data from batch: ", participantBatchId);
   console.log("Page No: ", pageNth);
   console.log("Number of rows per page: ", rangeSize);
 
@@ -190,29 +188,23 @@ export async function getAllParticipantsPerPage(
   const storeName: StoreName = "participant";
 
   const skip = (pageNth - 1) * rangeSize;
-  const limit = rangeSize;
+  const startId = skip + 1; // Assuming id starts from 1
+  const endId = startId + rangeSize - 1;
 
   const participants: any[] = [];
 
   try {
     const tx = db.transaction(storeName, "readonly");
     const store = tx.objectStore(storeName);
-    const index = store.index("participant_batch_id");
 
-    let cursor = await index.openCursor(
-      IDBKeyRange.only(participantBatchId),
-      "next"
-    );
+    // Fast range query using id
+    const range = IDBKeyRange.bound(startId, endId);
+    const cursor = await store.openCursor(range);
 
-    let skipped = 0;
-
-    while (cursor && participants.length < limit) {
-      if (skipped < skip) {
-        skipped++;
-      } else {
-        participants.push(cursor.value);
-      }
-      cursor = await cursor.continue();
+    let currentCursor = cursor;
+    while (currentCursor) {
+      participants.push(currentCursor.value);
+      currentCursor = await currentCursor.continue();
     }
 
     await tx.done; // Ensure transaction completes
