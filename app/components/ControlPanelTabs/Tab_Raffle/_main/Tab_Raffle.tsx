@@ -109,6 +109,12 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     console.log("Attempting: ", type, " ", nth);
     setIsRevealed(false);
 
+    if (type === "primary") {
+      toggleButtonLoading(0, "on");
+    } else {
+      toggleButtonLoading((nth + 1) as 0 | 1 | 2 | 3, "on");
+    }
+
     const participant = await handlePickRandomParticipant(type, favoredRegion);
 
     if (participant) {
@@ -116,13 +122,11 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
         setWinner(participant);
         console.log("Setting Winner");
         startRevealWinner(1);
-        toggleButtonLoading(0, "on");
       } else {
         console.log("Setting Backup Winner");
         if (nth === 0 || nth === 1 || nth === 2) {
           setBackupWinner(nth, participant);
           startRevealWinner(nth + 2);
-          toggleButtonLoading((nth + 1) as 0 | 1 | 2 | 3, "on");
         }
       }
       setStartDraw(true);
