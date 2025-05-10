@@ -108,6 +108,8 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   ) => {
     console.log("Attempting: ", type, " ", nth);
     setIsRevealed(false);
+    setSlotCodeStatus("idle");
+    setRevealWinner(false);
 
     if (type === "primary") {
       toggleButtonLoading(0, "on");
@@ -185,9 +187,6 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   });
 
   const processRevealWinner = (num: number) => {
-    setSlotCodeStatus("idle");
-    setRevealWinner(false);
-    setIsRevealed(false);
     const startRollingTimer = setTimeout(() => {
       setShowWinnerNth(num - 1);
       setSlotCodeStatus("roll");
