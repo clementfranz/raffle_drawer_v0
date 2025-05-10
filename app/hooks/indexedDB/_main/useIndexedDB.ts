@@ -195,10 +195,10 @@ export async function getAllParticipantsPerPage(
   const participants: any[] = [];
 
   try {
-    const transaction = db.transaction(storeName, "readonly");
-    const store = transaction.objectStore(storeName);
-
+    const tx = db.transaction(storeName, "readonly");
+    const store = tx.objectStore(storeName);
     const index = store.index("participant_batch_id");
+
     let cursor = await index.openCursor(
       IDBKeyRange.only(participantBatchId),
       "next"
@@ -206,25 +206,16 @@ export async function getAllParticipantsPerPage(
 
     let skipped = 0;
 
-    while (cursor) {
-      // Skip until we reach the start of the page
+    while (cursor && participants.length < limit) {
       if (skipped < skip) {
         skipped++;
-        cursor = await cursor.continue();
-        continue;
+      } else {
+        participants.push(cursor.value);
       }
-
-      // If we've collected enough, break
-      if (participants.length >= limit) {
-        break;
-      }
-
-      // Collect participant
-      participants.push(cursor.value);
-
       cursor = await cursor.continue();
     }
 
+    await tx.done; // Ensure transaction completes
     return participants;
   } catch (error) {
     console.error("Error fetching participants for page:", error);
