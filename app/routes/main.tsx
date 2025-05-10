@@ -148,10 +148,7 @@ export default function Main() {
               </li> */}
             </ul>
           </div>
-          <ParticipantsTable
-            tableData={participantsData}
-            loadingTable={loadingParticipantsData}
-          />
+          <ParticipantsTable />
           <div className="status-bar flex justify-between items-center text-sm">
             <div className="week-selector flex gap-1 bg-orange-200 h-[40px]  items-center justify-center rounded-full overflow-hidden">
               <div className="prev-week hover:bg-orange-300 h-full  px-4 content-center cursor-pointer">
