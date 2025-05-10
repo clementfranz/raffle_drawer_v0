@@ -26,6 +26,7 @@ interface RaffleDBSchema extends DBSchema {
     key: string;
     value: Types.ParticipantTypes.Participant;
     indexes: {
+      id: number;
       participant_batch_id: string;
       regional_location: string;
       id_entry: string;
@@ -178,6 +179,7 @@ export async function countEntriesByLocationWithProgress(
 }
 
 export async function getAllParticipantsPerPage(
+  batchCode: string,
   pageNth: number,
   rangeSize: number
 ): Promise<any[]> {
@@ -185,32 +187,24 @@ export async function getAllParticipantsPerPage(
   console.log("Number of rows per page: ", rangeSize);
 
   const db = await initDB();
-  const storeName: StoreName = "participant";
+  const store = db
+    .transaction("participant", "readonly")
+    .objectStore("participant");
 
   const skip = (pageNth - 1) * rangeSize;
-  const startId = skip + 1; // Assuming id starts from 1
-  const endId = startId + rangeSize - 1;
-
-  const participants: any[] = [];
-
+  const startId = Number(skip + 1); // Ensure it's a number
+  const endId = Number(skip + rangeSize); // Ensure it's a number
   try {
-    const tx = db.transaction(storeName, "readonly");
-    const store = tx.objectStore(storeName);
+    // Use getAll with range 🚀
+    const participants = await store.getAll(IDBKeyRange.bound(startId, endId));
 
-    // Fast range query using id
-    const range = IDBKeyRange.bound(startId, endId);
-    const cursor = await store.openCursor(range);
-
-    let currentCursor = cursor;
-    while (currentCursor) {
-      participants.push(currentCursor.value);
-      currentCursor = await currentCursor.continue();
+    if (!participants) {
+      console.log("Nor jlksjfa;slkd");
     }
-
-    await tx.done; // Ensure transaction completes
     return participants;
   } catch (error) {
     console.error("Error fetching participants for page:", error);
+    console.log("PAGE: ", pageNth, " RANGE: ", rangeSize);
     throw new Error("Failed to retrieve participants for page.");
   }
 }
