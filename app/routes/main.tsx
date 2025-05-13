@@ -33,7 +33,7 @@ export function meta({}: Route.MetaArgs) {
 const presentWeek = getWeek();
 
 export default function Main() {
-  const [controlPanelOpen, setControlPanelOpen] = useState(false);
+  const [controlPanelOpen, setControlPanelOpen] = useState(true);
 
   interface FileDetails {
     entries: number;

@@ -13,6 +13,7 @@ import useLocalStorageState from "use-local-storage-state";
 import { parseCSV } from "~/hooks/csvParser/parseCSV";
 import { addParticipantByBatch } from "~/hooks/indexedDB/participant/addParticipantByBatch";
 import { countEntriesByLocationWithProgress } from "~/hooks/indexedDB/_main/useIndexedDB";
+import { syncParticipantsToCloud } from "~/hooks/indexedDB/syncCloud/syncParticipantsToCloud";
 
 type FileDetails = any;
 
@@ -24,6 +25,7 @@ type ProcessingProps = {
     React.SetStateAction<"idle" | "attached" | "processing" | "completed">
   >;
   uploadStatus: string;
+  cloudData: any[] | null;
 };
 
 const Phase03_Processing = ({
@@ -31,7 +33,8 @@ const Phase03_Processing = ({
   fileDetails,
   triggerImport,
   setUploadStatus,
-  uploadStatus
+  uploadStatus,
+  cloudData
 }: ProcessingProps) => {
   const [entriesProcessed, setEntriesProcessed] = useState(0);
   const [loadingStats, setLoadingStats] = useState(false);
@@ -45,10 +48,16 @@ const Phase03_Processing = ({
     defaultValue: []
   });
 
-  const handleImport = async (file: File) => {
+  const handleImport = async (file?: File) => {
     try {
       // Await the promise returned by parseCSV to get the CSV data
-      const CSVData = await parseCSV(file);
+      let CSVData;
+
+      if (file) {
+        CSVData = await parseCSV(file);
+      } else {
+        CSVData = cloudData;
+      }
 
       // Log the parsed data
       console.log("Parsed CSV Data: ", CSVData);
@@ -68,6 +77,21 @@ const Phase03_Processing = ({
 
         if (uploadDone) {
           handleGetRegionalStats();
+          if (CSVData) {
+            console.log("Attempting to queue sync of data");
+            const queuedSyncData = await syncParticipantsToCloud(
+              CSVData, // full list
+              "create",
+              "batch-2025-05-13-A",
+              "/participants/per-batch",
+              (progress) => {
+                console.log("Sync Progress:", progress, "%");
+              }
+            );
+            if (queuedSyncData) {
+              console.log("All Data queued for syncing...");
+            }
+          }
         }
 
         console.log("Import completed ✅");
@@ -116,6 +140,8 @@ const Phase03_Processing = ({
         handleImport(fileAttached);
         console.log("FILE ENTRIES COUNT", fileDetails.entries);
       }
+    } else if (triggerImport && cloudData && fileDetails) {
+      handleImport();
     }
   }, [triggerImport, fileDetails]);
 

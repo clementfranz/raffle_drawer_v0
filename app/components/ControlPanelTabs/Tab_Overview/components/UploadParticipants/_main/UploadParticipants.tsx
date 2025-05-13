@@ -22,6 +22,9 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
     "fileDetails",
     { defaultValue: null }
   );
+
+  const [cloudData, setCloudData] = useState<any[] | null>(null);
+
   const [triggerImport, setTriggerImport] = useState<boolean>(false);
 
   // UPLOAD STATES
@@ -68,6 +71,7 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
             setFileDetails={setFileDetails}
             setUploadStatus={setUploadStatus}
             uploadStatus={uploadStatus}
+            setCloudData={setCloudData}
           />
 
           {/* PHASE 02 */}
@@ -79,6 +83,7 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
             uploadStatus={uploadStatus}
             setFileAttached={setFileAttached}
             setFileDetails={setFileDetails}
+            cloudData={cloudData}
           />
 
           {/* PHASE 03 */}
@@ -88,6 +93,7 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
             triggerImport={triggerImport}
             setUploadStatus={setUploadStatus}
             uploadStatus={uploadStatus}
+            cloudData={cloudData}
           />
 
           {/* PHASE 04 */}

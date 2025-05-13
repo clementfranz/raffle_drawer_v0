@@ -6,7 +6,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { latestUpdateData } from "~/data/latestUpdateData";
 
 const SettingsButton = () => {
-  const [settingsModalOpen, setSettingsModalOpen] = useState(true);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   const toggleSettingsModal = () => {
     setSettingsModalOpen((prev) => !prev);

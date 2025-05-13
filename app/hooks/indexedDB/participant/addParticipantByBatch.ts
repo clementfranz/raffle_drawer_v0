@@ -19,10 +19,10 @@ export async function addParticipantByBatch(
 
   const normalizedDataArray = dataArray.map<ParticipantData>((data) => {
     return {
-      is_drawn: "false",
       is_archived: "false",
       participant_batch_id: batchId,
-      ...data
+      ...data,
+      is_drawn: data.is_drawn === 0 || !data.is_drawn ? "false" : "true"
     };
   });
 

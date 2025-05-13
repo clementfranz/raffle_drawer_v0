@@ -5,6 +5,7 @@ import { migrateWinnerParticipant } from "../migrations/migrate_WinnerParticipan
 
 import type * as Types from "../types";
 import { fullNameCleaner } from "~/utils/fullNameCleaner";
+import { migrateSyncCloud } from "../migrations/migrate_SyncCloud";
 
 const DB_NAME = "RaffleDrawDB";
 const DB_VERSION = 15;
@@ -46,6 +47,10 @@ interface RaffleDBSchema extends DBSchema {
       winner_type_draw_date: any;
     };
   };
+  syncCloud: {
+    key: string;
+    value: Types.SyncCloudTypes.SyncCloud;
+  };
 }
 
 export function initDB(): Promise<IDBPDatabase<RaffleDBSchema>> {
@@ -57,13 +62,18 @@ export function initDB(): Promise<IDBPDatabase<RaffleDBSchema>> {
       migrateParticipantBatch(db);
       migrateParticipant(db);
       migrateWinnerParticipant(db);
+      migrateSyncCloud(db);
     }
   });
 
   return dbPromise as Promise<IDBPDatabase<RaffleDBSchema>>;
 }
 
-type StoreName = "participantsBatch" | "participant" | "winnerParticipant";
+type StoreName =
+  | "participantsBatch"
+  | "participant"
+  | "winnerParticipant"
+  | "syncCloud";
 type StoreData = any;
 
 export async function create(storeName: StoreName, data: StoreData) {
@@ -197,10 +207,6 @@ export async function getAllParticipantsPerPage(
   try {
     // Use getAll with range 🚀
     const participants = await store.getAll(IDBKeyRange.bound(startId, endId));
-
-    if (!participants) {
-      console.log("Nor jlksjfa;slkd");
-    }
     return participants;
   } catch (error) {
     console.error("Error fetching participants for page:", error);
