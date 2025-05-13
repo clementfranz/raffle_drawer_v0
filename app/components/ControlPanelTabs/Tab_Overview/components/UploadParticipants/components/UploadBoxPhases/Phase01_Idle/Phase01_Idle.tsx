@@ -33,6 +33,8 @@ const Phase01_Idle = ({
     inputRef.current?.click(); // Trigger the hidden file input click
   };
 
+  const [isServerActive] = useLocalStorageState<boolean>("isServerActive");
+
   // DRAG STATES
   const [isDragging, setIsDragging] = useState(false);
   const [downloadedData, setDownloadedData] = useState<any[]>([]);
@@ -162,10 +164,14 @@ const Phase01_Idle = ({
   };
 
   const checkCloudData = async () => {
-    const { total } = await getParticipantsTotalCount();
-    if (total > 0) {
-      setWithCloudData(true);
-      console.log("With Cloud Data? ", total > 0);
+    if (isServerActive) {
+      const { total } = await getParticipantsTotalCount();
+      if (total > 0) {
+        setWithCloudData(true);
+        console.log("With Cloud Data? ", total > 0);
+      } else {
+        setWithCloudData(false);
+      }
     } else {
       setWithCloudData(false);
     }
@@ -173,55 +179,66 @@ const Phase01_Idle = ({
 
   useEffect(() => {
     checkCloudData();
-  }, []);
+  }, [isServerActive]);
 
   return (
     <div className={`upload-phase ${uploadStatus !== "idle" && "hidden"}`}>
       {!withCloudData ? (
-        <UploadBox
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`${
-            isDragging && "bg-gray-300 text-gray-800 animate-pulse"
-          }`}
-        >
-          {isDragging ? (
-            <p className="text-xl">Drop CSV File Here</p>
-          ) : (
-            <>
-              <UploadBox.Body className="flex justify-center items-center flex-col gap-4">
-                <h2 className="text-base">
-                  Drag and drop a CSV file here or <br /> click button below to
-                  upload{" "}
-                </h2>
-                <p>
-                  Upload a CSV file with the participants data. The file should
-                  contain the following columns: Entry ID, Full Name, Raffle
-                  Code, Region/Location.
-                </p>
-              </UploadBox.Body>
-              <UploadBox.Footer>
-                <UploadButton onClick={handleFileUpload}>
-                  Select & Attach File
-                </UploadButton>
-                <label htmlFor="file-upload" className="sr-only hidden">
-                  Upload File
-                </label>
-                <input
-                  type="file"
-                  name="file-upload"
-                  id="file-upload"
-                  title="Upload a CSV file"
-                  className="hidden"
-                  ref={fileInputRef}
-                  accept=".csv"
-                  onChange={handleFileChange}
-                />
-              </UploadBox.Footer>
-            </>
+        <>
+          <UploadBox
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`${
+              isDragging && "bg-gray-300 text-gray-800 animate-pulse"
+            }`}
+          >
+            {isDragging ? (
+              <p className="text-xl">Drop CSV File Here</p>
+            ) : (
+              <>
+                <UploadBox.Body className="flex justify-center items-center flex-col gap-4">
+                  <h2 className="text-base">
+                    Drag and drop a CSV file here or <br /> click button below
+                    to upload{" "}
+                  </h2>
+                  <p>
+                    Upload a CSV file with the participants data. The file
+                    should contain the following columns: Entry ID, Full Name,
+                    Raffle Code, Region/Location.
+                  </p>
+                </UploadBox.Body>
+                <UploadBox.Footer>
+                  <UploadButton onClick={handleFileUpload}>
+                    Select & Attach File
+                  </UploadButton>
+                  <label htmlFor="file-upload" className="sr-only hidden">
+                    Upload File
+                  </label>
+                  <input
+                    type="file"
+                    name="file-upload"
+                    id="file-upload"
+                    title="Upload a CSV file"
+                    className="hidden"
+                    ref={fileInputRef}
+                    accept=".csv"
+                    onChange={handleFileChange}
+                  />
+                </UploadBox.Footer>
+              </>
+            )}
+          </UploadBox>
+          {!isServerActive && (
+            <div className="text-red-400 mt-4">
+              <h2 className="text-xl">Server is Offline:</h2>
+              <p>
+                Turn on or connect to the server to double check if there is
+                available data on the cloud
+              </p>
+            </div>
           )}
-        </UploadBox>
+        </>
       ) : (
         <UploadBox className={`bg-amber-800`}>
           <>

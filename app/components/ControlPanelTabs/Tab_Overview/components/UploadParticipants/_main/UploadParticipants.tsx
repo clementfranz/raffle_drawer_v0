@@ -31,6 +31,8 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
   type UploadStatusTypes = "idle" | "attached" | "processing" | "completed";
   const [uploadStatus, setUploadStatus] = useState<UploadStatusTypes>("idle");
 
+  const [withCloudData] = useLocalStorageState<boolean>("withCloudData");
+
   interface SelectedWeek {
     weekName: string;
     weekCode: string;
@@ -58,12 +60,14 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
     <>
       <div className="flex flex-col gap-2 text-sm w-full">
         <div className="upload-data w-full">
-          <div className="bg-gray-950 text-white h-[40px] flex justify-center items-center rounded-full">
+          <div className="bg-gray-950 text-white h-[40px] flex justify-center items-center rounded-full  mb-2">
             Selected Week: {selectedWeek ? selectedWeek.weekName : "Loading"}
           </div>
-          <p className="text-gray-300 text-sm my-2 text-center italic">
-            No participants data found.
-          </p>
+          {!withCloudData && (
+            <p className="text-gray-300 text-sm mb-2 text-center italic">
+              No participants data found.
+            </p>
+          )}
 
           {/* PHASE 01 */}
           <Phase01_Idle

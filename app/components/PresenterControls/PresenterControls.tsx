@@ -15,6 +15,8 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
 }) => {
   type PresentingStatus = "presenting" | "not-presenting";
 
+  const [isServerActive] = useLocalStorageState<boolean>("isServerActive");
+
   const [presentingStatus, setIsPresentingStatus] =
     useLocalStorageState<PresentingStatus>("presentingStatus");
 
@@ -50,12 +52,22 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
         >
           {isPresenting ? "Stop Presentation" : "Start Presentation"}
         </button>
-        <button
+        {/* <button
           className="pause-presentation bg-red-950 h-[40px] aspect-square rounded-2xl text-gray-300 text-base flex items-center justify-center hover:bg-red-800 cursor-pointer"
           aria-label="Pause Presentation"
         >
           <FontAwesomeIcon icon={faPause} className="" />
-        </button>
+        </button> */}
+        <div
+          className={`pause-presentation h-[40px] text-sm px-3 rounded-2xl  flex items-center justify-center ${
+            isServerActive
+              ? "bg-emerald-400 animate-pulse text-emerald-800 font-bold"
+              : "bg-red-800 text-red-200"
+          }`}
+          aria-label="Pause Presentation"
+        >
+          {isServerActive ? "Server Online" : "Server Offline"}
+        </div>
       </div>
     </>
   );

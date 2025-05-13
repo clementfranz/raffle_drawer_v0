@@ -22,7 +22,8 @@ export async function addParticipantByBatch(
       is_archived: "false",
       participant_batch_id: batchId,
       ...data,
-      is_drawn: data.is_drawn === 0 || !data.is_drawn ? "false" : "true"
+      is_drawn: data.is_drawn === 0 || !data.is_drawn ? "false" : "true",
+      id_entry: data.id_entry?.toString()
     };
   });
 
