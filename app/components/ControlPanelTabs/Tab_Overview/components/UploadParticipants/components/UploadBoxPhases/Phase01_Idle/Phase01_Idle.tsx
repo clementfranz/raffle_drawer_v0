@@ -105,41 +105,53 @@ const Phase01_Idle = ({
   };
 
   const handleDownloadData = async () => {
-    if (isDownloadingData) {
-      return;
-    }
+    if (isDownloadingData) return;
+
     setIsDownloadingData(true);
     try {
       const { total } = await getParticipantsTotalCount();
-      let allData: any[] = []; // to store all fetched participants
+      let allData: any[] = [];
 
       if (total && total > 0) {
         const batchSize = 2500;
         const totalBatches = Math.ceil(total / batchSize);
+        const concurrencyLimit = 20;
 
-        for (let indexBatch = 1; indexBatch <= totalBatches; indexBatch++) {
+        const fetchBatch = async (indexBatch: number) => {
           const response = await getPaginatedParticipants(
             indexBatch,
             batchSize
           );
-          const participants = response.data; // assuming .data is the actual array
-          allData = [...allData, ...participants];
+          return response.data || [];
+        };
+
+        for (let i = 1; i <= totalBatches; i += concurrencyLimit) {
+          const batchPromises = [];
+
+          for (let j = i; j < i + concurrencyLimit && j <= totalBatches; j++) {
+            batchPromises.push(fetchBatch(j));
+          }
+
+          const batchResults = await Promise.all(batchPromises);
+          for (const participants of batchResults) {
+            allData.push(...participants);
+          }
         }
 
-        // Now allData contains the complete participant list
         console.log("✅ All participant data fetched:", allData);
         setFileDetails({ entries: total });
         setDownloadedData(allData);
         setUploadStatus("attached");
         setIsDownloadingData(false);
-        return allData; // return as an object (array of data)
+        return allData;
       } else {
         console.warn("⚠️ No participants found.");
-        return []; // return empty array
+        return [];
       }
     } catch (error) {
       console.error("❌ Error downloading participant data:", error);
-      return []; // return empty array on failure too
+      setIsDownloadingData(false);
+      return [];
     }
   };
 
