@@ -23,10 +23,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   isActiveTab
 }) => {
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
-    "withParticipantsData",
-    {
-      defaultValue: false
-    }
+    "withParticipantsData"
   );
 
   return (

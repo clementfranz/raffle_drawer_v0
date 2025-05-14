@@ -26,6 +26,7 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
   const [cloudData, setCloudData] = useState<any[] | null>(null);
 
   const [triggerImport, setTriggerImport] = useState<boolean>(false);
+  const [uploadElapsedTime, setUploadElapsedTime] = useState<number>(0);
 
   // UPLOAD STATES
   type UploadStatusTypes = "idle" | "attached" | "processing" | "completed";
@@ -98,12 +99,14 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
             setUploadStatus={setUploadStatus}
             uploadStatus={uploadStatus}
             cloudData={cloudData}
+            setUploadElapsedTime={setUploadElapsedTime}
           />
 
           {/* PHASE 04 */}
           <Phase04_Completed
             selectedWeek={selectedWeek}
             uploadStatus={uploadStatus}
+            uploadElapsedTime={uploadElapsedTime}
           />
 
           {/* <UploadBox

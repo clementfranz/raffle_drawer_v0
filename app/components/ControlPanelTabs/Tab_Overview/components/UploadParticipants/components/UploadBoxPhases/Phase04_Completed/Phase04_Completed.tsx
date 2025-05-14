@@ -16,9 +16,14 @@ type SelectedWeek = {
 type CompletedProps = {
   selectedWeek: SelectedWeek | null;
   uploadStatus: string;
+  uploadElapsedTime: number;
 };
 
-const Phase04_Completed = ({ selectedWeek, uploadStatus }: CompletedProps) => {
+const Phase04_Completed = ({
+  selectedWeek,
+  uploadStatus,
+  uploadElapsedTime
+}: CompletedProps) => {
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
     "withParticipantsData"
   );
@@ -26,6 +31,20 @@ const Phase04_Completed = ({ selectedWeek, uploadStatus }: CompletedProps) => {
   const handleConfirmDone = () => {
     setWithParticipantsData(true);
   };
+
+  function formatShortTime(seconds: number): string {
+    const units = [
+      { label: "d", value: Math.floor(seconds / 86400) },
+      { label: "h", value: Math.floor((seconds % 86400) / 3600) },
+      { label: "m", value: Math.floor((seconds % 3600) / 60) },
+      { label: "s", value: seconds % 60 }
+    ];
+
+    const result = units.filter((u) => u.value > 0).slice(0, 2);
+    return result.length > 0
+      ? result.map((u) => `${u.value}${u.label}`).join(" ")
+      : "0s";
+  }
 
   return (
     <div className={`upload-phase ${uploadStatus !== "completed" && "hidden"}`}>
@@ -50,6 +69,9 @@ const Phase04_Completed = ({ selectedWeek, uploadStatus }: CompletedProps) => {
           </div>
         </UploadBox.Body>
         <UploadBox.Footer className=" z-10">
+          <div className="elapsed-time">
+            Upload Process Time: {formatShortTime(uploadElapsedTime)}
+          </div>
           <UploadButton
             className="bg-[#0000008c]! hover:bg-[#00000052]! "
             onClick={handleConfirmDone}

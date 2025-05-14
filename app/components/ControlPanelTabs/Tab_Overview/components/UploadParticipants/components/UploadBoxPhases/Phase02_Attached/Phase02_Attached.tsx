@@ -74,24 +74,23 @@ const Phase02_Attached = ({
           <UploadBox.Header className="text-left">
             File Attached:
           </UploadBox.Header>
-          <UploadBox.Body className="flex justify-center items-start gap-5">
+          <UploadBox.Body className="flex justify-center items-start gap-5 w-full">
             <div className="file-icon ">
               <FontAwesomeIcon
                 icon={faFileCsv}
                 className="text-white text-[80px]"
               />
             </div>
-            <div className="file-details flex flex-col justify-between items-start h-[80px]">
-              <div className="file-name text-lg font-bold w-[200px] overflow-hidden ">
+            <div className="file-details flex flex-col justify-between items-start h-[80px] grow w-0">
+              <div className="file-name text-lg font-bold mb-2">
                 {fileAttached ? (
-                  <span className="line-clamp-2 block">
+                  <span className="break-all line-clamp-2 w-full">
                     {fileAttached.name}
                   </span>
                 ) : (
                   <span className="italic">Unknown File</span>
                 )}
               </div>
-
               <div className="file-subdetails text-sm flex flex-col items-start">
                 <span>
                   Size:{" "}

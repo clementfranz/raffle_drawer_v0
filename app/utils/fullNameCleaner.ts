@@ -57,15 +57,6 @@ export function fullNameCleaner(paragraph: string): string {
   // Remove lone dots surrounded by spaces
   cleanedName = cleanedName.replace(/\s\.\s/g, " ");
 
-  // Capitalize words
-  cleanedName = cleanedName
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-
-  // Revert enye characters
-  cleanedName = cleanedName.replace(/6/g, "Ñ").replace(/9/g, "ñ");
-
   // Append suffixes (with dot if missing)
   if (suffix) {
     suffix = suffix
@@ -79,6 +70,15 @@ export function fullNameCleaner(paragraph: string): string {
       .join(" ");
     cleanedName += " " + suffix;
   }
+
+  // Capitalize words
+  cleanedName = cleanedName
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+
+  // Revert enye characters
+  cleanedName = cleanedName.replace(/6/g, "Ñ").replace(/9/g, "ñ");
 
   return cleanedName.trim();
 }

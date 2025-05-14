@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 // Components
 import UploadBox from "../../UploadBox/_main/UploadBox";
@@ -26,6 +26,7 @@ type ProcessingProps = {
   >;
   uploadStatus: string;
   cloudData: any[] | null;
+  setUploadElapsedTime: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const Phase03_Processing = ({
@@ -34,7 +35,8 @@ const Phase03_Processing = ({
   triggerImport,
   setUploadStatus,
   uploadStatus,
-  cloudData
+  cloudData,
+  setUploadElapsedTime
 }: ProcessingProps) => {
   const [entriesProcessed, setEntriesProcessed] = useState(0);
   const [loadingStats, setLoadingStats] = useState(false);
@@ -42,11 +44,70 @@ const Phase03_Processing = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [preUploadLoading, setPreUploadLoading] = useState(false);
 
+  const [timeElapsed, setTimeElapsed] = useState(0); // in seconds
+  const [timeRemaining, setTimeRemaining] = useState(0); // in seconds
+
+  const startTimeRef = useRef<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const [regionalStats, setRegionalStats] = useLocalStorageState<
     { location: string; count: number }[]
   >("regionalStats", {
     defaultValue: []
   });
+
+  // Start the timer when upload begins
+  useEffect(() => {
+    if (uploadProgress > 0 && startTimeRef.current === null) {
+      startTimeRef.current = Date.now();
+
+      timerRef.current = setInterval(() => {
+        if (startTimeRef.current) {
+          const elapsedSec = Math.floor(
+            (Date.now() - startTimeRef.current) / 1000
+          );
+          setTimeElapsed(elapsedSec);
+        }
+      }, 1000);
+    }
+
+    // Stop the timer when upload completes
+    if (uploadProgress >= 100 && timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, [uploadProgress]);
+
+  // Estimate time remaining whenever progress or timeElapsed changes
+  useEffect(() => {
+    if (uploadProgress > 0 && uploadProgress < 100 && timeElapsed > 0) {
+      const estimatedTotalTime = (timeElapsed / uploadProgress) * 100;
+      const remainingTime = estimatedTotalTime - timeElapsed;
+      setTimeRemaining(Math.ceil(remainingTime));
+    }
+
+    if (uploadProgress === 100) {
+      setTimeRemaining(0); // done
+    }
+
+    if (uploadProgress >= 100) {
+      setUploadElapsedTime(timeElapsed);
+    }
+  }, [uploadProgress, timeElapsed]);
+
+  function formatShortTime(seconds: number): string {
+    const units = [
+      { label: "d", value: Math.floor(seconds / 86400) },
+      { label: "h", value: Math.floor((seconds % 86400) / 3600) },
+      { label: "m", value: Math.floor((seconds % 3600) / 60) },
+      { label: "s", value: seconds % 60 }
+    ];
+
+    const result = units.filter((u) => u.value > 0).slice(0, 2);
+    return result.length > 0
+      ? result.map((u) => `${u.value}${u.label}`).join(" ")
+      : "0s";
+  }
 
   const handleImport = async (file?: File) => {
     try {
@@ -153,18 +214,20 @@ const Phase03_Processing = ({
         <UploadBox.Header className="text-left z-10">
           Uploading File...
         </UploadBox.Header>
-        <UploadBox.Body className="flex flex-col justify-between z-10">
-          <div className="flex justify-center items-center gap-5">
-            <div className="file-icon ">
+        <UploadBox.Body className="flex flex-col justify-between z-10 w-full">
+          <div className="flex justify-center items-center gap-5 w-full">
+            <div className="file-icon w-[80px]">
               <FontAwesomeIcon
                 icon={faFileCsv}
                 className="text-white text-[80px]"
               />
             </div>
-            <div className="file-details flex flex-col justify-between items-start h-[80px]">
-              <div className="file-name text-lg font-bold">
+            <div className="file-details flex flex-col justify-between items-start h-[80px] grow w-0">
+              <div className="file-name text-lg font-bold mb-2">
                 {fileAttached ? (
-                  fileAttached.name
+                  <span className="break-all line-clamp-2 w-full">
+                    {fileAttached.name}
+                  </span>
                 ) : (
                   <span className="italic">Unknown File</span>
                 )}
@@ -197,6 +260,14 @@ const Phase03_Processing = ({
           </div> */}
         </UploadBox.Body>
         <UploadBox.Footer className=" z-10">
+          <div className="clock flex text-sm justify-between">
+            <div className="time-detail bg-[#00000056] p-1 px-2.5 rounded-2xl">
+              ⏱️ ELT: {formatShortTime(timeElapsed)}{" "}
+            </div>
+            <div className="time-detail bg-[#00000056] p-1 px-2.5 rounded-2xl">
+              ⌛ ETR: {formatShortTime(timeRemaining)}{" "}
+            </div>
+          </div>
           <UploadButton clickable={false} className="bg-[#0000008c]! ">
             {preUploadLoading ? (
               <span className="pulse text-red-600 font-bold">

@@ -19,6 +19,7 @@ import ParticipantsTable from "~/components/DashboardComponents/ParticipantsTabl
 import useLocalStorageState from "use-local-storage-state";
 import { NavLink, useLocation } from "react-router";
 import ShowingEntriesCounter from "~/components/DashboardComponents/ShowingEntriesCounter/ShowingEntriesCounter";
+import { hasAnyParticipants } from "~/hooks/indexedDB/_main/useIndexedDB";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -65,6 +66,10 @@ export default function Main() {
     }
   );
 
+  const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
+    "withParticipantsData"
+  );
+
   type PresentingStatus = "presenting" | "not-presenting";
 
   const [presentingStatus, setPresentingStatus] =
@@ -80,6 +85,18 @@ export default function Main() {
     return new URLSearchParams(location.search).get("filter") === filterValue;
   };
 
+  const checkForParticipants = async () => {
+    console.log("Checking for Participants data FE");
+    const check = await hasAnyParticipants();
+    if (check) {
+      console.log("Participants Data Found!");
+      setWithParticipantsData(true);
+    } else {
+      console.log("NO Participants Data Found!");
+      setWithParticipantsData(false);
+    }
+  };
+
   useEffect(() => {
     if (presentingStatus === "presenting") {
       setIsPresenting(true);
@@ -90,6 +107,7 @@ export default function Main() {
 
   useEffect(() => {
     setSelectedWeek(presentWeek);
+    checkForParticipants();
   }, []);
 
   return (
