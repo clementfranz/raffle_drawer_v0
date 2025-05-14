@@ -9,7 +9,7 @@ type Participant = {
   full_name: string;
   raffle_code: string;
   regional_location: string;
-  time_registered: string;
+  registered_at: string;
 };
 
 export const formatFileSize = (bytes: number): string => {
@@ -40,7 +40,7 @@ export const savePerBatch = async (
       row.full_name &&
       row.raffle_code &&
       row.regional_location &&
-      row.time_registered
+      row.registered_at
     ) {
       store.put(row);
     }

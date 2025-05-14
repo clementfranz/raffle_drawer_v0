@@ -24,7 +24,7 @@ interface RaffleEntry {
   isCancelled: boolean;
   raffle_code: string;
   regional_location: string;
-  time_registered: string;
+  registered_at: string;
 }
 
 const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {

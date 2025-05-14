@@ -3,7 +3,7 @@ export interface Entry {
   full_name: string; // The full name of the person
   raffle_code: string; // The unique raffle code for the entry
   region: string; // Region where the person is located (e.g., Luzon, Visayas, Mindanao)
-  time_registered: string; // The time the person registered (in ISO 8601 format)
+  registered_at: string; // The time the person registered (in ISO 8601 format)
 }
 
 export interface EntryBatch {

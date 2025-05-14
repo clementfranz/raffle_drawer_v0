@@ -13,14 +13,14 @@ export async function addParticipantByBatch(
     raffle_code?: string;
     is_archived?: boolean;
     regional_location?: string;
-    participant_batch_id: string;
+    participant_batch_id: number;
     is_drawn: boolean;
   }
 
   const normalizedDataArray = dataArray.map<ParticipantData>((data) => {
     return {
       is_archived: "false",
-      participant_batch_id: batchId,
+      participant_batch_id: 1,
       ...data,
       is_drawn: data.is_drawn === 0 || !data.is_drawn ? "false" : "true",
       id_entry: data.id_entry?.toString()

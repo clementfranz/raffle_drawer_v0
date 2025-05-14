@@ -55,8 +55,8 @@ export async function syncParticipantsToCloudPerBatch(
     headers: {}, // or any custom headers
     response_body: null,
     duration: null,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
 
   try {

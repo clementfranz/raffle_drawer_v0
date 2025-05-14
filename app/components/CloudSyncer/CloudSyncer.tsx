@@ -1,67 +1,119 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import useLocalStorageState from "use-local-storage-state";
 import api from "~/api/client/axios";
+import { upSyncer } from "~/api/client/syncCloud/upSyncer";
+import { getOldestSyncQueueItem } from "~/hooks/indexedDB/syncCloud/getOldestSyncQueueItem";
 
 const CloudSyncer: React.FC = () => {
   const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
     "isServerActive",
-    {
-      defaultValue: false
-    }
+    { defaultValue: true }
+  );
+  const [hasSyncQueueList, setHasSyncQueueList] = useLocalStorageState<boolean>(
+    "hasSyncQueueList",
+    { defaultValue: true }
   );
 
+  const isServerActiveRef = useRef<boolean>(isServerActive);
+  const hasSyncQueueListRef = useRef<boolean>(hasSyncQueueList);
   const failureCount = useRef(0);
-  const timerId = useRef<NodeJS.Timeout | null>(null);
+  const isSyncingRef = useRef(false);
+  const stopPingLoop = useRef(false);
+  const stopSyncLoop = useRef(false);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    isServerActiveRef.current = isServerActive;
+  }, [isServerActive]);
+
+  useEffect(() => {
+    hasSyncQueueListRef.current = hasSyncQueueList;
+  }, [hasSyncQueueList]);
 
   const checkServer = async () => {
     try {
       const response = await api.get("/ping");
 
       if (response.status === 200) {
-        if (!isServerActive) {
-          console.log("✅ Server is back online.");
-        }
+        console.log("✅ Server is back online.");
         setIsServerActive(true);
         failureCount.current = 0;
-
-        // Recheck soon again (back to 5s if we were in long wait)
-        startPolling(5000);
+        await checkQueue();
+        return true;
       } else {
-        handleFailure();
+        console.log("🚫 Server response not 200.");
       }
-    } catch {
-      handleFailure();
+    } catch (error) {
+      console.error("❌ Error checking server:", error);
     }
-  };
 
-  const handleFailure = () => {
     setIsServerActive(false);
     failureCount.current += 1;
+    console.log(`🔌 Attempt #${failureCount.current} to reconnect...`);
+    return false;
+  };
 
-    const retries = failureCount.current;
-    console.log(`🚫 Server offline. Attempt #${retries}`);
-
-    if (retries === 10) {
-      console.log("🕒 Switching to 1-minute retry...");
-      startPolling(60000); // 1 minute
+  const checkQueue = async () => {
+    try {
+      const item = await getOldestSyncQueueItem();
+      setHasSyncQueueList(!!item);
+    } catch (error) {
+      console.error("❌ Error checking sync queue:", error);
+      setHasSyncQueueList(false);
     }
   };
 
-  const startPolling = (delay: number) => {
-    if (timerId.current) clearInterval(timerId.current);
-    timerId.current = setInterval(checkServer, delay);
+  const trySync = async () => {
+    if (isSyncingRef.current) {
+      console.log("🔄 A sync is already in progress. Skipping...");
+      return;
+    }
+
+    isSyncingRef.current = true;
+    try {
+      await upSyncer();
+      console.log("✅ Sync completed.");
+    } catch (error) {
+      console.error("❌ Sync failed:", error);
+    } finally {
+      isSyncingRef.current = false;
+    }
+  };
+
+  const loopPing = async () => {
+    while (!stopPingLoop.current) {
+      await checkServer();
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Ping every 2s
+    }
+  };
+
+  const loopSync = async () => {
+    console.log("🔁 Starting sync loop");
+    while (!stopSyncLoop.current) {
+      if (isServerActiveRef.current && hasSyncQueueListRef.current) {
+        await trySync();
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Sync every 1s
+    }
   };
 
   useEffect(() => {
-    checkServer();
-    startPolling(5000); // Initial poll every 5s
+    stopPingLoop.current = false;
+    stopSyncLoop.current = false;
+
+    const startLoops = async () => {
+      await Promise.all([loopPing(), loopSync()]);
+    };
+
+    startLoops();
 
     return () => {
-      if (timerId.current) clearInterval(timerId.current);
+      stopPingLoop.current = true;
+      stopSyncLoop.current = true;
     };
   }, []);
 
-  return null; // 🔒 Hidden
+  return null;
 };
 
 export default CloudSyncer;

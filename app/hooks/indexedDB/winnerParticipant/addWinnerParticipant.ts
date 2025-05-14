@@ -1,4 +1,5 @@
 import { initDB } from "../_main/useIndexedDB";
+import { upSyncWinnerParticipant } from "../syncCloud/upSyncs/upSyncWinnerParticipant";
 import * as Types from "../types";
 
 // Define a model for the winner entry, which will fill in empty keys.
@@ -29,6 +30,12 @@ export async function addWinnerParticipant(
 
     // Add the winner data to the winnerParticipant store
     await store.add(winnerEntry);
+
+    const addToSyncQueue = await upSyncWinnerParticipant(winnerEntry);
+
+    if (addToSyncQueue) {
+      console.log("Winner participant added to cloud sync queue...");
+    }
 
     console.log(
       `Winner participant added: ${participantData.full_name} with type ${winnerType}`

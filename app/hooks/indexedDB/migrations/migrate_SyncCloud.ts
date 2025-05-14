@@ -7,8 +7,12 @@ export function migrateSyncCloud(db: IDBPDatabase<any>) {
       autoIncrement: true
     });
 
-    store.createIndex("action", "action", { unique: false });
+    store.createIndex("status", "status", { unique: false });
     store.createIndex("createdAt", "createdAt", { unique: false });
+
+    store.createIndex("status_createdAt", ["status", "createdAt"], {
+      unique: false
+    });
 
     console.log("syncCloud store created ✅");
   }

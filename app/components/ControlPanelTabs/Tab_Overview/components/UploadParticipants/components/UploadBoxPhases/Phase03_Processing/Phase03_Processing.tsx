@@ -50,6 +50,8 @@ const Phase03_Processing = ({
   const startTimeRef = useRef<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [withCloudData] = useLocalStorageState<boolean>("withCloudData");
+
   const [regionalStats, setRegionalStats] = useLocalStorageState<
     { location: string; count: number }[]
   >("regionalStats", {
@@ -138,19 +140,20 @@ const Phase03_Processing = ({
 
         if (uploadDone) {
           handleGetRegionalStats();
-          if (CSVData) {
-            console.log("Attempting to queue sync of data");
-            const queuedSyncData = await syncParticipantsToCloud(
-              CSVData,
-              "batch-2025-05-13-A",
-              "/participants/per-batch",
-              (progress) => {
-                console.log("Sync Progress:", progress, "%");
-              }
-            );
-            if (queuedSyncData) {
-              console.log("All Data queued for syncing...");
+        }
+
+        if (!withCloudData) {
+          console.log("Attempting to queue sync of data");
+          const queuedSyncData = await syncParticipantsToCloud(
+            CSVData,
+            "batch-2025-05-13-A",
+            "/participants/per-batch",
+            (progress) => {
+              console.log("Sync Progress:", progress, "%");
             }
+          );
+          if (queuedSyncData) {
+            console.log("All Data queued for syncing...");
           }
         }
 

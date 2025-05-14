@@ -8,7 +8,7 @@ import { fullNameCleaner } from "~/utils/fullNameCleaner";
 import { migrateSyncCloud } from "../migrations/migrate_SyncCloud";
 
 const DB_NAME = "RaffleDrawDB";
-const DB_VERSION = 16;
+const DB_VERSION = 17;
 
 let dbPromise: Promise<IDBPDatabase<RaffleDBSchema>> | null = null;
 
@@ -48,10 +48,12 @@ interface RaffleDBSchema extends DBSchema {
     };
   };
   syncCloud: {
-    key: string;
+    key: string | number;
     value: Types.SyncCloudTypes.SyncCloud;
     indexes: {
       createdAt: string | Date;
+      id: number;
+      status_createdAt: any;
     };
   };
 }
