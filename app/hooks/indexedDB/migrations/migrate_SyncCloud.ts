@@ -7,8 +7,6 @@ export function migrateSyncCloud(db: IDBPDatabase<any>) {
       autoIncrement: true
     });
 
-    // 🟢 You can index based on status
-    store.createIndex("status", "status", { unique: false });
     store.createIndex("action", "action", { unique: false });
     store.createIndex("createdAt", "createdAt", { unique: false });
 

@@ -2,7 +2,6 @@ import { syncParticipantsToCloudPerBatch } from "./syncParticipantsToCloudPerBat
 
 export async function syncParticipantsToCloud(
   dataArray: any[],
-  action: string,
   batchId: string,
   apiURL: string,
   updateProgress: (progress: number) => void
@@ -15,7 +14,6 @@ export async function syncParticipantsToCloud(
   console.log(`📦 Batch size: ${batchSize}`);
   console.log(`🆔 Batch ID: ${batchId}`);
   console.log(`🌐 API URL: ${apiURL}`);
-  console.log(`🔧 Action: ${action}`);
 
   for (let i = 0; i < dataArray.length; i += batchSize) {
     const currentBatch = dataArray.slice(i, i + batchSize);
@@ -27,7 +25,6 @@ export async function syncParticipantsToCloud(
     try {
       const batchResults = await syncParticipantsToCloudPerBatch(
         currentBatch,
-        action,
         batchId,
         apiURL
       );

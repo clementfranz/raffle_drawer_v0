@@ -141,8 +141,7 @@ const Phase03_Processing = ({
           if (CSVData) {
             console.log("Attempting to queue sync of data");
             const queuedSyncData = await syncParticipantsToCloud(
-              CSVData, // full list
-              "create",
+              CSVData,
               "batch-2025-05-13-A",
               "/participants/per-batch",
               (progress) => {

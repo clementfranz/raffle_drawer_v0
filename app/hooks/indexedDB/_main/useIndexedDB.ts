@@ -8,7 +8,7 @@ import { fullNameCleaner } from "~/utils/fullNameCleaner";
 import { migrateSyncCloud } from "../migrations/migrate_SyncCloud";
 
 const DB_NAME = "RaffleDrawDB";
-const DB_VERSION = 15;
+const DB_VERSION = 16;
 
 let dbPromise: Promise<IDBPDatabase<RaffleDBSchema>> | null = null;
 

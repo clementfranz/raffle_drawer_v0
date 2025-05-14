@@ -2,34 +2,61 @@ import { create } from "../_main/useIndexedDB";
 
 export async function syncParticipantsToCloudPerBatch(
   dataBatch: any[],
-  action: string,
   batchId: string,
   apiURL: string
 ): Promise<any[]> {
   const results: any[] = [];
 
   interface SyncQueueEntry {
-    queueNth: string;
-    payload: any[]; // entire batch as payload
-    action: string;
-    method: "POST" | "GET" | "DELETE" | "PUT" | "PATCH";
-    isSynced: string;
-    dateSynced: string | null;
-    apiURL: string;
-    batchId: string;
-    handleResponse: string;
+    api_url: string;
+    source: string;
+    destination: string;
+    type: string;
+    payload: any;
+    method_type: "POST" | "GET" | "DELETE" | "PUT" | "PATCH";
+    status:
+      | "pending"
+      | "in-progress"
+      | "completed"
+      | "failed"
+      | "retrying"
+      | "cancelled";
+    retry_count: number;
+    error_message?: string | null;
+    priority: "low" | "medium" | "high";
+    reference_id?: string | null;
+    content_type?: string | null;
+    triggered_by?: string | null;
+    is_test: boolean;
+    next_retry_at?: string | Date | null;
+    headers?: any;
+    response_body?: any;
+    duration?: number | null;
+    createdAt: string | Date;
+    updatedAt: string | Date;
   }
 
   const queueEntry: SyncQueueEntry = {
-    queueNth: Date.now().toString() + Math.floor(Math.random() * 1000), // collision-safe unique ID
-    payload: dataBatch, // entire batch as payload
-    action,
-    method: "POST",
-    isSynced: "false",
-    dateSynced: null,
-    apiURL,
-    batchId,
-    handleResponse: "update-sync-status"
+    api_url: apiURL,
+    source: "client-app", // 🧩 your actual source
+    destination: "cloud-server", // 🧩 your actual destination
+    type: "sync-batch",
+    payload: dataBatch,
+    method_type: "POST",
+    status: "pending",
+    retry_count: 0,
+    error_message: null,
+    priority: "medium",
+    reference_id: batchId,
+    content_type: "application/json",
+    triggered_by: "system", // or username
+    is_test: false,
+    next_retry_at: null,
+    headers: {}, // or any custom headers
+    response_body: null,
+    duration: null,
+    createdAt: new Date(),
+    updatedAt: new Date()
   };
 
   try {
