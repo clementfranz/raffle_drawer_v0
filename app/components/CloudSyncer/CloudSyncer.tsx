@@ -53,6 +53,7 @@ const CloudSyncer: React.FC = () => {
   };
 
   useEffect(() => {
+    checkServer();
     startPolling(5000); // Initial poll every 5s
 
     return () => {

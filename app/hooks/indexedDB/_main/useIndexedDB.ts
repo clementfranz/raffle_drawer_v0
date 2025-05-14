@@ -50,6 +50,9 @@ interface RaffleDBSchema extends DBSchema {
   syncCloud: {
     key: string;
     value: Types.SyncCloudTypes.SyncCloud;
+    indexes: {
+      createdAt: string | Date;
+    };
   };
 }
 
