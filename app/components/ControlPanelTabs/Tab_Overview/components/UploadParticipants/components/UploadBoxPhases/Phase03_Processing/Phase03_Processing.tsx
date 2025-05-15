@@ -52,10 +52,10 @@ const Phase03_Processing = ({
 
   const [withCloudData] = useLocalStorageState<boolean>("withCloudData");
 
-  const [regionalStats, setRegionalStats] = useLocalStorageState<
-    { location: string; count: number }[]
-  >("regionalStats", {
-    defaultValue: []
+  const [regionalStats, setRegionalStats] = useLocalStorageState<{
+    regions: { location: string; count: number }[];
+  } | null>("regionalStats", {
+    defaultValue: null
   });
 
   // Start the timer when upload begins

@@ -134,17 +134,23 @@ export async function deleteAllItems(storeName: StoreName): Promise<boolean> {
 
 export async function countEntriesByLocationWithProgress(
   setCountProgress: (progress: number) => void
-): Promise<{ location: string; count: number }[]> {
+): Promise<{
+  totalParticipants: number;
+  dailyAverage: number;
+  regions: { location: string; count: number }[];
+}> {
   const db = await initDB();
   const storeName: StoreName = "participant";
   const batchSize = 1000;
 
-  // 1st pass: Count total entries
   const totalEntries = await db.count(storeName);
 
-  // 2nd pass: Count entries by location in batches
   const locationMap = new Map<string, number>();
   let processed = 0;
+
+  // Date range tracking using `registered_at`
+  let earliestDate: number | null = null;
+  let latestDate: number | null = null;
 
   return new Promise(async (resolve, reject) => {
     try {
@@ -154,14 +160,24 @@ export async function countEntriesByLocationWithProgress(
         .openCursor();
 
       while (cursor) {
-        const location = cursor.value.regional_location;
+        const entry = cursor.value;
+        const location = entry.regional_location;
+
         if (location) {
           locationMap.set(location, (locationMap.get(location) || 0) + 1);
         }
 
+        // Use registered_at for date range
+        if (entry.registered_at) {
+          const registeredAt = new Date(entry.registered_at).getTime();
+          if (!earliestDate || registeredAt < earliestDate)
+            earliestDate = registeredAt;
+          if (!latestDate || registeredAt > latestDate)
+            latestDate = registeredAt;
+        }
+
         processed++;
 
-        // Only update progress per batch
         if (processed % batchSize === 0) {
           const progress = Math.min(
             parseFloat(((processed / totalEntries) * 100).toFixed(2)),
@@ -173,12 +189,18 @@ export async function countEntriesByLocationWithProgress(
         cursor = await cursor.continue();
       }
 
-      // Final batch update
-      const finalProgress = Math.min(
-        parseFloat(((processed / totalEntries) * 100).toFixed(2)),
-        100
+      setCountProgress(
+        Math.min(parseFloat(((processed / totalEntries) * 100).toFixed(2)), 100)
       );
-      setCountProgress(finalProgress);
+
+      let dailyAverage = 0;
+      if (earliestDate && latestDate && latestDate > earliestDate) {
+        const days = Math.max(
+          1,
+          Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24))
+        );
+        dailyAverage = parseFloat((totalEntries / days).toFixed(2));
+      }
 
       const result = Array.from(locationMap.entries()).map(
         ([location, count]) => ({
@@ -186,7 +208,12 @@ export async function countEntriesByLocationWithProgress(
           count
         })
       );
-      resolve(result);
+
+      resolve({
+        totalParticipants: totalEntries,
+        dailyAverage,
+        regions: result
+      });
     } catch (error) {
       reject("Failed during location counting.");
     }
