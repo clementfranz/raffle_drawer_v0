@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { upSyncer } from "~/api/client/syncCloud/upSyncer";
 import { getSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/getSyncQueueItemById";
 
@@ -22,15 +22,12 @@ const RowComponent = ({
   const [syncingActive, setSyncingActive] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [statusCaption, setStatusCaption] = useState("Loading Data");
-
   const [isExiting, setIsExiting] = useState(false);
 
-  type ItemDataType = {
-    id: number;
-    [key: string]: any; // Add other properties as needed
-  };
+  const [itemData, setItemData] = useState<any>(null);
 
-  const [itemData, setItemData] = useState<ItemDataType | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadData = async () => {
     const rawData = await getSyncQueueItemById(itemId);
@@ -42,9 +39,7 @@ const RowComponent = ({
   const attemptSync = async () => {
     setIsSyncing(true);
     try {
-      const sync = await upSyncer(itemId);
-      if (sync) {
-      }
+      await upSyncer(itemId);
     } catch {
       handleSkipSync(itemId);
     } finally {
@@ -59,9 +54,8 @@ const RowComponent = ({
         setIsExiting(true);
         setStatusCaption("Removing Item...");
         handleNextSync(itemId);
-        const selfRemoveTimeout = setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
           onRemove(itemId);
-          clearTimeout(selfRemoveTimeout);
         }, 1000);
       } else if (syncingActive) {
         attemptSync();
@@ -69,44 +63,41 @@ const RowComponent = ({
     }
   }, [itemData]);
 
-  const startSync = (on: boolean) => {
-    let checkStatusInterval;
-    if (on) {
-      checkStatusInterval = setInterval(() => {
-        loadData();
-      }, 2500);
-    } else {
-      clearInterval(checkStatusInterval);
-    }
-  };
-
-  const getInitialData = async () => {
-    const initialData = await getSyncQueueItemById(itemId);
-    if (initialData) {
-      setItemData(initialData);
-    }
-  };
-
   useEffect(() => {
     if (syncingActive) {
-      startSync(true);
+      intervalRef.current = setInterval(() => {
+        loadData();
+      }, 2500);
       setStatusCaption("Syncing...");
     } else {
-      startSync(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       setStatusCaption("Paused");
     }
+
+    return () => {
+      // Clear interval when syncingActive changes or component unmounts
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [syncingActive]);
 
   useEffect(() => {
-    if (activeNth === itemId) {
-      setSyncingActive(true);
-    } else {
-      setSyncingActive(false);
-    }
+    setSyncingActive(activeNth === itemId);
   }, [activeNth]);
 
   useEffect(() => {
-    getInitialData();
+    loadData();
+
+    return () => {
+      // Cleanup on component unmount
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   return (

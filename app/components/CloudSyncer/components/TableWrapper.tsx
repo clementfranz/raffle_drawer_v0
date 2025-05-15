@@ -8,6 +8,7 @@ const TableWrapper = () => {
   const [rows, setRows] = useState<any[]>([]);
   const [activeNth, setActiveNth] = useState<number>(0);
   const [itemIdsArray, setItemIdsArray] = useState<any[]>([]);
+  const [isCheckingNewData, setIsCheckingNewData] = useState<boolean>(false);
 
   const [withItems, setWithItems] = useState(true);
 
@@ -27,8 +28,10 @@ const TableWrapper = () => {
   };
 
   const handleAddRow = (id: number) => {
-    setRows((prev) => [...prev, { id: id }]);
-    setItemIdsArray((prev) => [...prev, id]);
+    setRows((prev) =>
+      prev.some((row) => row.id === id) ? prev : [...prev, { id }]
+    );
+    setItemIdsArray((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
   const handleSkipSync = (prevId: number) => {
@@ -55,39 +58,44 @@ const TableWrapper = () => {
 
   const checkNewData = async () => {
     console.log("Checking for new queue items...");
-    if (itemIdsArray.length === 10) {
-      console.log("Sync Slots of 10 to 11 is still full. Will try again later");
+    if (itemIdsArray.length >= 6) {
+      console.log("Sync Slots of 5 to 6 is still full. Will try again later");
       return;
     }
-
-    const currentRowsCount = itemIdsArray.length;
-    const itemsToGet = 20 - currentRowsCount;
-    console.log("Attempting to get new data with total of ", itemsToGet);
-    const newData = await getAllPendingSyncQueueItems(itemsToGet);
-
-    if (newData) {
-      console.log("Returned data with total of ", newData.length);
-      const newDataIds = newData.map((data) => data.id);
-
-      const filteredNewDataIds = newDataIds.filter(
-        (id) => !itemIdsArray.includes(id)
+    if (!isCheckingNewData) {
+      setIsCheckingNewData(true);
+      const currentRowsCount = itemIdsArray.length;
+      const itemsToGet = 6 - currentRowsCount;
+      console.log("Attempting to get new data with total of ", itemsToGet);
+      const newData = await getAllPendingSyncQueueItems(
+        itemsToGet,
+        itemIdsArray
       );
 
-      console.log("Filtered new IDs:", filteredNewDataIds);
-      // Do something with filteredNewDataIds...
+      if (newData) {
+        console.log("Returned data with total of ", newData.length);
+        const newDataIds = newData.map((data) => data.id);
 
-      filteredNewDataIds.forEach((data) => {
-        handleAddRow(data);
-      });
-    } else {
+        const filteredNewDataIds = newDataIds.filter(
+          (id) => !itemIdsArray.includes(id)
+        );
+
+        console.log("Filtered new IDs:", filteredNewDataIds);
+        // Do something with filteredNewDataIds...
+
+        filteredNewDataIds.forEach((data) => {
+          handleAddRow(data);
+        });
+        setIsCheckingNewData(false);
+      }
     }
   };
 
   const initializeData = async () => {
     console.log("Initializing data...");
-    const initialData = await getAllPendingSyncQueueItems();
+    const initialData = await getAllPendingSyncQueueItems(5);
     if (initialData) {
-      const sortedData = initialData.sort((a, b) => a.id - b.id).slice(0, 10);
+      const sortedData = initialData.sort((a, b) => a.id - b.id);
       const ids = sortedData.map((data) => data.id);
       setItemIdsArray(ids);
       if (isServerActive) {
@@ -117,7 +125,7 @@ const TableWrapper = () => {
   }, [itemIdsArray]);
 
   useEffect(() => {
-    if (!withItems) {
+    if (!withItems && itemIdsArray.length < 5) {
       checkNewDataInterval.current = setInterval(() => {
         checkNewData();
       }, 2000);

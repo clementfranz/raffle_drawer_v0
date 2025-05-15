@@ -6,8 +6,17 @@ export async function syncParticipantsToCloud(
   apiURL: string,
   updateProgress: (progress: number) => void
 ): Promise<any[]> {
-  const batchSize = 2500;
+  let batchSize: number;
   const results: any[] = [];
+  const entriesLength = dataArray.length;
+
+  if (entriesLength >= 500000) {
+    batchSize = 10000;
+  } else if (entriesLength >= 300000) {
+    batchSize = 5000;
+  } else {
+    batchSize = 2500;
+  }
 
   console.log("🔄 Starting sync to cloud...");
   console.log(`🧾 Total entries: ${dataArray.length}`);

@@ -2,8 +2,9 @@ import type { SyncCloudItem } from "~/api/types/syncCloudItem";
 import { initDB } from "../_main/useIndexedDB";
 
 export async function getAllPendingSyncQueueItems(
-  number?: number
-): Promise<SyncCloudItem[] | null> {
+  returnTotal?: number,
+  exceptions?: number[]
+): Promise<Array<{ id: number }> | null> {
   try {
     const db = await initDB();
     const tx = db.transaction("syncCloud", "readonly");
@@ -18,23 +19,28 @@ export async function getAllPendingSyncQueueItems(
       "cancelled"
     ];
 
-    const items: SyncCloudItem[] = [];
+    const items: Array<{ id: number }> = [];
 
     for (const status of validStatuses) {
       const range = IDBKeyRange.bound([status, ""], [status, "\uffff"]);
       let cursor = await index.openCursor(range, "next");
 
       while (cursor) {
-        items.push(cursor.value as SyncCloudItem);
+        const value = cursor.value as SyncCloudItem;
 
-        if (number && items.length >= number) {
+        // Skip if in exceptions
+        if (value?.id && (!exceptions || !exceptions.includes(value.id))) {
+          items.push({ id: value.id });
+        }
+
+        if (returnTotal && items.length >= returnTotal) {
           return items;
         }
 
         cursor = await cursor.continue();
       }
 
-      if (number && items.length >= number) {
+      if (returnTotal && items.length >= returnTotal) {
         return items;
       }
     }
