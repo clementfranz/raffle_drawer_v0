@@ -5,7 +5,7 @@ import RegionalStats from "../components/RegionalStats/RegionalStats";
 const PresView_Overview = () => {
   return (
     <div className="bg-emerald-800 w-full h-screen overflow-hidden flex justify-center items-center flex-col">
-      <div className="big-title text-white text-7xl font-[Montserrat] font-bold pt-8">
+      <div className="big-title text-amber-300 text-shadow-lg text-shadow-black text-7xl font-[Montserrat] font-bold pt-8">
         Participants Overview
       </div>
       <div className="table-shell h-0 grow p-10 w-full">

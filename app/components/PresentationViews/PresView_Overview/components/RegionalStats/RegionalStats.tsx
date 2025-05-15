@@ -28,7 +28,7 @@ const RegionalStats = () => {
                 <div className="region text-2xl capitalize text-center grow flex justify-center items-center">
                   {region.location}
                 </div>
-                <div className="count text-2xl font-bold bg-white text-black rounded-xl h-[50px] mb-4 w-full flex justify-center items-center">
+                <div className="count text-2xl font-bold bg-amber-200 text-black rounded-xl h-[50px] mb-4 w-full flex justify-center items-center">
                   {region.count.toLocaleString()}
                 </div>
               </div>
@@ -48,13 +48,13 @@ const RegionalStats = () => {
       <div className="mt-8 h-[10vh] flex w-full text-5xl items-center gap-8">
         <div className="total h-full bg-emerald-950 flex items-center font-[Montserrat] px-8 gap-4 w-full justify-center">
           <span className="text-emerald-300">Total Participants: </span>
-          <span className="text-white text-6xl font-bold">
+          <span className="text-amber-300 text-shadow-lg text-shadow-black text-6xl font-bold">
             {regionalStats?.totalParticipants.toLocaleString()}
           </span>
         </div>
         <div className="total h-full bg-emerald-950 flex items-center font-[Montserrat] px-8 gap-4 w-full justify-center">
           <span className="text-emerald-300">Daily Average: </span>
-          <span className="text-white text-6xl font-bold">
+          <span className="text-amber-300 text-shadow-lg text-shadow-black text-6xl font-bold">
             {regionalStats?.dailyAverage.toLocaleString()}
           </span>
         </div>
