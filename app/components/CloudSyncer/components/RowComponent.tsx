@@ -80,6 +80,13 @@ const RowComponent = ({
     }
   };
 
+  const getInitialData = async () => {
+    const initialData = await getSyncQueueItemById(itemId);
+    if (initialData) {
+      setItemData(initialData);
+    }
+  };
+
   useEffect(() => {
     if (syncingActive) {
       startSync(true);
@@ -97,6 +104,10 @@ const RowComponent = ({
       setSyncingActive(false);
     }
   }, [activeNth]);
+
+  useEffect(() => {
+    getInitialData();
+  }, []);
 
   return (
     <tr

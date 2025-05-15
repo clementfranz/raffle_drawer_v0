@@ -50,6 +50,8 @@ export async function upSyncer(id?: number): Promise<boolean> {
           ? "completed"
           : "failed",
       response_body: responseBody,
+      payload:
+        response.status >= 200 && response.status < 300 ? null : item.payload,
       error_message: null
     });
 
