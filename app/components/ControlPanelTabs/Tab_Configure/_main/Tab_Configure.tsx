@@ -15,13 +15,15 @@ interface Tab_ConfigureProps {
 }
 
 type RegionalStat = {
-  location: string;
+  regions: {
+    location: string;
+  }[];
 };
 
 const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
   const [randomParticipant, setRandomParticipant] = useState<any>(null);
 
-  const [regionalStats] = useLocalStorageState<RegionalStat[]>("regionalStats");
+  const [regionalStats] = useLocalStorageState<RegionalStat>("regionalStats");
   const [favoredRegion, setFavoredRegion] = useLocalStorageState<
     string | undefined
   >("favoredRegion", { defaultValue: undefined });
@@ -67,7 +69,7 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
       <TabShell position="top">
         <TabSubPanel title={"Regional Picking Parameter"}>
           <p className="text-sm">Choose Region to choose winner from</p>
-          {regionalStats && regionalStats?.length > 0 ? (
+          {regionalStats && regionalStats?.regions.length > 0 ? (
             <>
               <label
                 htmlFor="region-select"
@@ -83,7 +85,7 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
                 onChange={(e) => handleApplyFavoredRegion(e, setFavoredRegion)}
               >
                 <option value="undefined">WHOLE PHILIPPINES</option>
-                {regionalStats?.map((stat, index) => (
+                {regionalStats?.regions.map((stat, index) => (
                   <option
                     key={index}
                     value={stat.location}
