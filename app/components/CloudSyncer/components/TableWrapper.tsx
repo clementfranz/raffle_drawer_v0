@@ -55,9 +55,18 @@ const TableWrapper = () => {
 
   const checkNewData = async () => {
     console.log("Checking for new queue items...");
-    const newData = await getAllPendingSyncQueueItems();
+    if (itemIdsArray.length === 10) {
+      console.log("Sync Slots of 10 to 11 is still full. Will try again later");
+      return;
+    }
+
+    const currentRowsCount = itemIdsArray.length;
+    const itemsToGet = 20 - currentRowsCount;
+    console.log("Attempting to get new data with total of ", itemsToGet);
+    const newData = await getAllPendingSyncQueueItems(itemsToGet);
 
     if (newData) {
+      console.log("Returned data with total of ", newData.length);
       const newDataIds = newData.map((data) => data.id);
 
       const filteredNewDataIds = newDataIds.filter(
@@ -78,7 +87,7 @@ const TableWrapper = () => {
     console.log("Initializing data...");
     const initialData = await getAllPendingSyncQueueItems();
     if (initialData) {
-      const sortedData = initialData.sort((a, b) => a.id - b.id);
+      const sortedData = initialData.sort((a, b) => a.id - b.id).slice(0, 10);
       const ids = sortedData.map((data) => data.id);
       setItemIdsArray(ids);
       if (isServerActive) {
