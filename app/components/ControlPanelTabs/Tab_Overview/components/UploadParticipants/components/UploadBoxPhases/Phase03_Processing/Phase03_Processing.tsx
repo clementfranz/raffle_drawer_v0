@@ -139,21 +139,21 @@ const Phase03_Processing = ({
         );
 
         if (uploadDone) {
-          handleGetRegionalStats();
-        }
+          const getRegionalStats = await handleGetRegionalStats();
 
-        if (!withCloudData) {
-          console.log("Attempting to queue sync of data");
-          const queuedSyncData = await syncParticipantsToCloud(
-            CSVData,
-            "batch-2025-05-13-A",
-            "/participants/per-batch",
-            (progress) => {
-              console.log("Sync Progress:", progress, "%");
+          if (!withCloudData && getRegionalStats) {
+            console.log("Attempting to queue sync of data");
+            const queuedSyncData = await syncParticipantsToCloud(
+              uploadDone,
+              "batch-2025-05-13-A",
+              "/participants/per-batch",
+              (progress) => {
+                console.log("Sync Progress:", progress, "%");
+              }
+            );
+            if (queuedSyncData) {
+              console.log("All Data queued for syncing...");
             }
-          );
-          if (queuedSyncData) {
-            console.log("All Data queued for syncing...");
           }
         }
 
@@ -164,7 +164,7 @@ const Phase03_Processing = ({
     }
   };
 
-  const handleGetRegionalStats = async () => {
+  const handleGetRegionalStats = async (): Promise<boolean> => {
     console.log("Getting regional stats.");
     const regionalStatistics = await countEntriesByLocationWithProgress(
       setCountingProgress
@@ -172,6 +172,9 @@ const Phase03_Processing = ({
     if (regionalStatistics) {
       setRegionalStats(regionalStatistics);
       console.log("Done getting regional stats.");
+      return true;
+    } else {
+      return false;
     }
   };
 

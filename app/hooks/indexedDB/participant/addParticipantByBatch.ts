@@ -1,12 +1,15 @@
 import { create } from "../_main/useIndexedDB";
 
+function pad(n: number): string {
+  return n < 10 ? "0" + n : "" + n;
+}
+
 export async function addParticipantByBatch(
   dataArray: any[],
   batchId: string,
   updateProgress: (progress: number) => void
 ): Promise<any[]> {
-  const batchSize = 1500; // Adjust the batch size based on performance testing
-  const results: any[] = [];
+  const batchSize = 1500;
   interface ParticipantData {
     id?: number;
     id_entry?: string;
@@ -15,15 +18,43 @@ export async function addParticipantByBatch(
     regional_location?: string;
     participant_batch_id: number;
     is_drawn: boolean;
+    registered_at: Date | string;
   }
 
   const normalizedDataArray = dataArray.map<ParticipantData>((data) => {
+    let registeredAtValue = data.registered_at;
+
+    if (
+      typeof registeredAtValue === "string" ||
+      registeredAtValue instanceof Date
+    ) {
+      const date = new Date(registeredAtValue);
+
+      if (!isNaN(date.getTime())) {
+        registeredAtValue = formatDateToMySQL(date);
+      } else {
+        throw new Error("Invalid date format for registered_at");
+      }
+    }
+
+    function formatDateToMySQL(date: Date): string {
+      return (
+        `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+          date.getDate()
+        )} ` +
+        `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+          date.getSeconds()
+        )}`
+      );
+    }
+
     return {
-      is_archived: "false",
+      is_archived: false, // ← Fix type mismatch (use boolean, not string)
       participant_batch_id: 1,
       ...data,
       is_drawn: data.is_drawn === 0 || !data.is_drawn ? "false" : "true",
-      id_entry: data.id_entry?.toString()
+      id_entry: data.id_entry?.toString(),
+      registered_at: registeredAtValue
     };
   });
 
@@ -32,18 +63,16 @@ export async function addParticipantByBatch(
     const batchPromises = batch.map((data) => create("participant", data));
 
     try {
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
+      await Promise.all(batchPromises);
 
-      // Calculate and update progress
       const progress = parseFloat(
         (((i + batchSize) / normalizedDataArray.length) * 100).toFixed(2)
       );
-      updateProgress(progress); // Update the progress state
+      updateProgress(progress);
     } catch (error) {
       console.error("Error adding participants in batch:", error);
     }
   }
 
-  return results;
+  return normalizedDataArray;
 }

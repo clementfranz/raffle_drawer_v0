@@ -5,7 +5,7 @@ import { getSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/getSyncQueueIt
 type RowComponentPropTypes = {
   itemId: number;
   onRemove: (id: number) => void;
-  activeNth: number;
+  activeNth: number[];
   handleSkipSync: (prevId: number) => void;
   handleNextSync: (prevId: number) => void;
   initialData: any;
@@ -87,7 +87,7 @@ const RowComponent = ({
   }, [syncingActive]);
 
   useEffect(() => {
-    setSyncingActive(activeNth === itemId);
+    setSyncingActive(activeNth.includes(itemId));
   }, [activeNth]);
 
   useEffect(() => {

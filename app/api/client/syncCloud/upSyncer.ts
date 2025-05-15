@@ -41,19 +41,25 @@ export async function upSyncer(id?: number): Promise<boolean> {
       ...config
     });
 
+    item.payload = null;
+
     const responseBody = response.data;
     console.log("RESPONSE FROM SERVER: ", responseBody);
 
-    await updateSyncQueueItemById(item.id, {
-      status:
-        response.status >= 200 && response.status < 300
-          ? "completed"
-          : "failed",
-      response_body: responseBody,
-      payload:
-        response.status >= 200 && response.status < 300 ? null : item.payload,
-      error_message: null
-    });
+    if (response.status >= 200 && response.status < 300) {
+      await updateSyncQueueItemById(item.id, {
+        status: "completed",
+        response_body: responseBody,
+        payload: null,
+        error_message: null
+      });
+    } else {
+      await updateSyncQueueItemById(item.id, {
+        status: "failed",
+        response_body: responseBody,
+        error_message: null
+      });
+    }
 
     if (response.status >= 200 && response.status < 300) {
       console.log(`✅ Sync completed for ID: ${item.id}`);

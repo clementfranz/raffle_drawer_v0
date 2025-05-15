@@ -11,11 +11,11 @@ export async function syncParticipantsToCloud(
   const entriesLength = dataArray.length;
 
   if (entriesLength >= 500000) {
-    batchSize = 10000;
+    batchSize = 60000;
   } else if (entriesLength >= 300000) {
-    batchSize = 5000;
+    batchSize = 25000;
   } else {
-    batchSize = 2500;
+    batchSize = 10000;
   }
 
   console.log("🔄 Starting sync to cloud...");

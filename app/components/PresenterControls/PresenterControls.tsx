@@ -29,6 +29,11 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
       defaultValue: false
     });
 
+  const [activeSyncsTotal, setActiveSyncsTotal] = useLocalStorageState<number>(
+    "activeSyncsTotal",
+    { defaultValue: 0 }
+  );
+
   const handleToggleSyncModal = () => {
     setCloudSyncModalOpen((prev) => {
       return !prev;
@@ -70,7 +75,7 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
           <FontAwesomeIcon icon={faPause} className="" />
         </button> */}
         <button
-          className={`pause-presentation h-[40px] text-sm px-3 rounded-2xl  flex items-center justify-center cursor-pointer ${
+          className={`pause-presentation h-[40px] text-sm px-3 rounded-2xl  flex items-center justify-center cursor-pointer relative ${
             isServerActive
               ? "bg-emerald-400 hover:bg-emerald-500 animate-pulse text-emerald-800 font-bold"
               : "bg-red-800 hover:bg-red-700 text-red-200"
@@ -79,6 +84,11 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
           onClick={handleToggleSyncModal}
         >
           {isServerActive ? "Server Online" : "Server Offline"}
+          {isServerActive && activeSyncsTotal > 0 && (
+            <div className="number-ball absolute bg-amber-100 text-black text-[12px] font-bold h-[18px] flex justify-center items-center aspect-square rounded-full top-0 right-0 -translate-y-1/4 translate-x-1/4">
+              {activeSyncsTotal}
+            </div>
+          )}
         </button>
       </div>
     </>
