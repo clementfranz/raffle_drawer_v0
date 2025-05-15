@@ -13,14 +13,16 @@ const TableWrapper = () => {
 
   const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
     "isServerActive",
-    { defaultValue: true }
+    { defaultValue: false }
   );
 
   const checkNewDataInterval = useRef<NodeJS.Timeout | null>(null);
 
   const triggerStartSync = () => {
-    if (itemIdsArray.length > 0) {
+    if (itemIdsArray.length > 0 && isServerActive) {
       setActiveNth(itemIdsArray[0]);
+    } else {
+      setActiveNth(0);
     }
   };
 
@@ -78,7 +80,11 @@ const TableWrapper = () => {
     if (initialData) {
       const ids = initialData.map((data) => data.id).sort((a, b) => a - b);
       setItemIdsArray(ids);
-      setActiveNth(ids[0]);
+      if (isServerActive) {
+        setActiveNth(ids[0]);
+      } else {
+        setActiveNth(0);
+      }
       console.log("Item IDS Array: ", ids);
       setRows(initialData);
     }
@@ -114,6 +120,14 @@ const TableWrapper = () => {
   }, [withItems]);
 
   useEffect(() => {
+    if (isServerActive) {
+      triggerStartSync();
+    } else {
+      setActiveNth(0);
+    }
+  }, [isServerActive]);
+
+  useEffect(() => {
     console.log("Cloud syncing activated");
     initializeData();
   }, []);
@@ -132,12 +146,14 @@ const TableWrapper = () => {
           <span className="bg-green-800 text-white p-1 px-2 rounded-2xl min-w-[50px] text-center">
             {itemIdsArray.length}
           </span>
-          <button
-            onClick={triggerStartSync}
-            className="cursor-pointer bg-amber-500 hover:bg-amber-600 p-1 px-2 rounded-2xl"
-          >
-            Trigger Sync
-          </button>
+          {activeNth < 1 && itemIdsArray.length > 0 && isServerActive && (
+            <button
+              onClick={triggerStartSync}
+              className="cursor-pointer bg-amber-500 hover:bg-amber-600 p-1 px-2 rounded-2xl"
+            >
+              Trigger Sync
+            </button>
+          )}
         </div>
       </div>
       <table className="mt-4 w-full table-auto">

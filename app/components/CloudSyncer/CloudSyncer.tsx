@@ -100,7 +100,19 @@ const CloudSyncer: React.FC = () => {
           <TableWrapper />
         </div>
         <div className="footer px-4 text-sm">
-          Syncing everything to cloud...
+          {isServerActive ? (
+            <>
+              <span className="text-emerald-600 animate-pulse">
+                Syncing everything to cloud...
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-red-600">
+                Server is offline. Syncing is paused.
+              </span>
+            </>
+          )}
         </div>
       </div>
     </div>
