@@ -127,10 +127,10 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
           </div>
         </TabSubPanel>
       </TabShell>
-      <TabShell position="bottom">
+      {/* <TabShell position="bottom">
         <TabActionButton>Present Summary</TabActionButton>
         <TabActionButton>Prepare Raffle</TabActionButton>
-      </TabShell>
+      </TabShell> */}
     </TabMainBody>
   );
 };
