@@ -24,6 +24,17 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
     defaultValue: false
   });
 
+  const [cloudSyncModalOpen, setCloudSyncModalOpen] =
+    useLocalStorageState<boolean>("cloudSyncModalOpen", {
+      defaultValue: false
+    });
+
+  const handleToggleSyncModal = () => {
+    setCloudSyncModalOpen((prev) => {
+      return !prev;
+    });
+  };
+
   const togglePresentation = () => {
     if (presentingStatus === "presenting") {
       setIsPresentingStatus("not-presenting");
@@ -58,16 +69,17 @@ const PresenterControls: React.FC<PresenterControlsProps> = ({
         >
           <FontAwesomeIcon icon={faPause} className="" />
         </button> */}
-        <div
-          className={`pause-presentation h-[40px] text-sm px-3 rounded-2xl  flex items-center justify-center ${
+        <button
+          className={`pause-presentation h-[40px] text-sm px-3 rounded-2xl  flex items-center justify-center cursor-pointer ${
             isServerActive
-              ? "bg-emerald-400 animate-pulse text-emerald-800 font-bold"
-              : "bg-red-800 text-red-200"
+              ? "bg-emerald-400 hover:bg-emerald-500 animate-pulse text-emerald-800 font-bold"
+              : "bg-red-800 hover:bg-red-700 text-red-200"
           }`}
-          aria-label="Pause Presentation"
+          aria-label="Server Control"
+          onClick={handleToggleSyncModal}
         >
           {isServerActive ? "Server Online" : "Server Offline"}
-        </div>
+        </button>
       </div>
     </>
   );

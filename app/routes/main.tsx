@@ -20,6 +20,7 @@ import useLocalStorageState from "use-local-storage-state";
 import { NavLink, useLocation } from "react-router";
 import ShowingEntriesCounter from "~/components/DashboardComponents/ShowingEntriesCounter/ShowingEntriesCounter";
 import { hasAnyParticipants } from "~/hooks/indexedDB/_main/useIndexedDB";
+import CloudSyncer from "~/components/CloudSyncer/CloudSyncer";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -112,6 +113,7 @@ export default function Main() {
 
   return (
     <>
+      <CloudSyncer />
       <HeaderNav isPresenting={isPresenting} />
       <div className="dashboard flex w-full h-[calc(100vh-50px)]">
         <main className=" main-panel  grow p-4 gap-4 flex flex-col">
