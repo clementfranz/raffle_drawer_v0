@@ -24,7 +24,7 @@ interface RaffleDBSchema extends DBSchema {
     value: ParticipantBatch;
   };
   participant: {
-    key: string;
+    key: string | number;
     value: Types.ParticipantTypes.Participant;
     indexes: {
       id: number;
@@ -276,9 +276,10 @@ export async function hasAnyWinners(winnerType: string): Promise<boolean> {
 }
 
 // Helper: generate random index number
-function generateRandomIndex(maxNumber: number): number {
+function generateRandomIndex(minNumber: number, maxNumber: number): number {
   console.log("Total Matches for specified region: ", maxNumber);
-  return Math.floor(Math.random() * maxNumber);
+  console.log("Choosing from ", minNumber, " to ", maxNumber);
+  return Math.floor(Math.random() * (maxNumber - minNumber)) + minNumber;
 }
 
 async function getWinnersRaffleCodes(): Promise<string[]> {
@@ -339,6 +340,16 @@ const lastResortWinnerFinderByIdEntry =
     return firstUndrawn ?? null;
   };
 
+async function getFirstParticipant(): Promise<string | null> {
+  const db = await initDB();
+  const tx = db.transaction("participant", "readonly");
+  const store = tx.objectStore("participant");
+
+  const participant = await store.get(1); // direct key lookup
+
+  return participant?.id_entry ?? null;
+}
+
 async function getParticipantByIdEntry(
   id_entry: string
 ): Promise<Types.ParticipantTypes.Participant | null> {
@@ -373,7 +384,9 @@ export async function pickRandomParticipant(
     let randomIndex: number | null = null;
 
     while (!chosenParticipant) {
-      randomIndex = generateRandomIndex(filteredParticipants.length);
+      const randomIndex = Math.floor(
+        Math.random() * filteredParticipants.length
+      );
       chosenParticipant = filteredParticipants[randomIndex] || null;
 
       if (!chosenParticipant) {
@@ -391,9 +404,13 @@ export async function pickRandomParticipant(
 
     let randomId: string | null = null;
     let tries: number = 0;
+    const minIdOfParticipants = await getFirstParticipant();
 
-    while (!chosenParticipant && tries < 5) {
-      randomId = generateRandomIndex(totalParticipants).toString();
+    while (!chosenParticipant && tries < 5 && minIdOfParticipants) {
+      const randomId = generateRandomIndex(
+        Number(minIdOfParticipants),
+        totalParticipants + Number(minIdOfParticipants)
+      ).toString();
       chosenParticipant = await getParticipantByIdEntry(randomId);
 
       if (!chosenParticipant) {

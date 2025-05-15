@@ -1,12 +1,23 @@
 import api from "../axios"; // adjust the path as needed
 import { getOldestSyncQueueItem } from "~/hooks/indexedDB/syncCloud/getOldestSyncQueueItem";
+import { getSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/getSyncQueueItemById";
 import { updateSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/updateSyncQueueItemById";
 
-export async function upSyncer() {
-  const item = await getOldestSyncQueueItem();
-  if (!item) {
-    console.log("🔍 No pending sync items.");
-    return;
+export async function upSyncer(id?: number): Promise<boolean> {
+  let item;
+
+  if (!id) {
+    item = await getOldestSyncQueueItem();
+    if (!item) {
+      console.log("🔍 No pending sync items.");
+      return false;
+    }
+  } else {
+    item = await getSyncQueueItemById(id);
+    if (!item) {
+      console.log(`🔍 Sync Queue Item #${id} not found`);
+      return false;
+    }
   }
 
   try {
@@ -42,7 +53,12 @@ export async function upSyncer() {
       error_message: null
     });
 
-    console.log(`✅ Sync completed for ID: ${item.id}`);
+    if (response.status >= 200 && response.status < 300) {
+      console.log(`✅ Sync completed for ID: ${item.id}`);
+      return true;
+    } else {
+      return false;
+    }
   } catch (err: any) {
     console.error("❌ Sync error:", err);
 
@@ -51,5 +67,6 @@ export async function upSyncer() {
       error_message:
         err?.response?.data?.error || err.message || "Unknown error"
     });
+    return false;
   }
 }

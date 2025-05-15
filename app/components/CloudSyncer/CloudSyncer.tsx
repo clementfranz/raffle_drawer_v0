@@ -1,34 +1,36 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useLocalStorageState from "use-local-storage-state";
 import api from "~/api/client/axios";
-import { upSyncer } from "~/api/client/syncCloud/upSyncer";
-import { getOldestSyncQueueItem } from "~/hooks/indexedDB/syncCloud/getOldestSyncQueueItem";
+import TableWrapper from "./components/TableWrapper";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
 
 const CloudSyncer: React.FC = () => {
   const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
     "isServerActive",
     { defaultValue: true }
   );
+
   const [hasSyncQueueList, setHasSyncQueueList] = useLocalStorageState<boolean>(
     "hasSyncQueueList",
     { defaultValue: true }
   );
 
+  const [cloudSyncModalOpen, setCloudSyncModalOpen] =
+    useLocalStorageState<boolean>("cloudSyncModalOpen", {
+      defaultValue: false
+    });
+
+  const [syncWindowOpen, setSyncWindowOpen] = useState(false);
+
   const isServerActiveRef = useRef<boolean>(isServerActive);
-  const hasSyncQueueListRef = useRef<boolean>(hasSyncQueueList);
   const failureCount = useRef(0);
-  const isSyncingRef = useRef(false);
   const stopPingLoop = useRef(false);
-  const stopSyncLoop = useRef(false);
 
   // Keep refs in sync with state
   useEffect(() => {
     isServerActiveRef.current = isServerActive;
   }, [isServerActive]);
-
-  useEffect(() => {
-    hasSyncQueueListRef.current = hasSyncQueueList;
-  }, [hasSyncQueueList]);
 
   const checkServer = async () => {
     try {
@@ -38,7 +40,6 @@ const CloudSyncer: React.FC = () => {
         console.log("✅ Server is back online.");
         setIsServerActive(true);
         failureCount.current = 0;
-        await checkQueue();
         return true;
       } else {
         console.log("🚫 Server response not 200.");
@@ -53,33 +54,6 @@ const CloudSyncer: React.FC = () => {
     return false;
   };
 
-  const checkQueue = async () => {
-    try {
-      const item = await getOldestSyncQueueItem();
-      setHasSyncQueueList(!!item);
-    } catch (error) {
-      console.error("❌ Error checking sync queue:", error);
-      setHasSyncQueueList(false);
-    }
-  };
-
-  const trySync = async () => {
-    if (isSyncingRef.current) {
-      console.log("🔄 A sync is already in progress. Skipping...");
-      return;
-    }
-
-    isSyncingRef.current = true;
-    try {
-      await upSyncer();
-      console.log("✅ Sync completed.");
-    } catch (error) {
-      console.error("❌ Sync failed:", error);
-    } finally {
-      isSyncingRef.current = false;
-    }
-  };
-
   const loopPing = async () => {
     while (!stopPingLoop.current) {
       await checkServer();
@@ -87,33 +61,50 @@ const CloudSyncer: React.FC = () => {
     }
   };
 
-  const loopSync = async () => {
-    console.log("🔁 Starting sync loop");
-    while (!stopSyncLoop.current) {
-      if (isServerActiveRef.current && hasSyncQueueListRef.current) {
-        await trySync();
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Sync every 1s
-    }
-  };
-
   useEffect(() => {
     stopPingLoop.current = false;
-    stopSyncLoop.current = false;
 
     const startLoops = async () => {
-      await Promise.all([loopPing(), loopSync()]);
+      await Promise.all([loopPing()]);
     };
 
     startLoops();
 
     return () => {
       stopPingLoop.current = true;
-      stopSyncLoop.current = true;
     };
   }, []);
 
-  return null;
+  return (
+    <div
+      className={`bg-[#33333393] z-[100] absolute top-0 left-0 w-screen h-screen justify-center items-center ${
+        cloudSyncModalOpen ? "flex" : "hidden"
+      }`}
+    >
+      <div className="modal bg-white h-[80%] aspect-[3/2] rounded-2xl drop-shadow-2xl drop-shadow-black flex flex-col gap-4 py-4">
+        <div className="header px-4 flex justify-between">
+          <h1 className="text-base font-bold">
+            Cloud Syncronizations (Backgroud Process)
+          </h1>
+          <button
+            aria-label="close-modal"
+            className="bg-gray-700 text-white h-[30px] aspect-square rounded-full hover:bg-gray-500 cursor-pointer"
+            onClick={() => {
+              setCloudSyncModalOpen(false);
+            }}
+          >
+            <FontAwesomeIcon icon={faClose} />
+          </button>
+        </div>
+        <div className="body  grow px-4 text-sm h-0 overflow-y-scroll">
+          <TableWrapper />
+        </div>
+        <div className="footer px-4 text-sm">
+          Syncing everything to cloud...
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default CloudSyncer;
