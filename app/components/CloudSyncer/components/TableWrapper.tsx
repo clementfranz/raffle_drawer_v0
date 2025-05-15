@@ -78,7 +78,8 @@ const TableWrapper = () => {
     console.log("Initializing data...");
     const initialData = await getAllPendingSyncQueueItems();
     if (initialData) {
-      const ids = initialData.map((data) => data.id).sort((a, b) => a - b);
+      const sortedData = initialData.sort((a, b) => a.id - b.id);
+      const ids = sortedData.map((data) => data.id);
       setItemIdsArray(ids);
       if (isServerActive) {
         setActiveNth(ids[0]);
@@ -86,7 +87,7 @@ const TableWrapper = () => {
         setActiveNth(0);
       }
       console.log("Item IDS Array: ", ids);
-      setRows(initialData);
+      setRows(sortedData);
     }
   };
 
