@@ -1,4 +1,5 @@
 import { initDB } from "../_main/useIndexedDB";
+import { upSyncRemoveWinnerParticipant } from "../syncCloud/upSyncs/upSyncRemoveWinnerParticipant";
 
 export async function removeWinnerParticipant(
   id_entry: string,
@@ -35,6 +36,7 @@ export async function removeWinnerParticipant(
     console.log(
       `Winner participant removed with id_entry: ${id_entry} and raffle_code: ${raffle_code}`
     );
+    await upSyncRemoveWinnerParticipant(participant.raffle_code);
     return true;
   } catch (error) {
     console.error("Error removing winner participant:", error);
