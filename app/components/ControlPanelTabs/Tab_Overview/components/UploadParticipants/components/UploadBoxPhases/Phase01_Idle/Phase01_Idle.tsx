@@ -48,6 +48,7 @@ const Phase01_Idle = ({
   };
 
   const [isServerActive] = useLocalStorageState<boolean>("isServerActive");
+  const [isFileValid, setIsFileValid] = useState(true);
 
   // DRAG STATES
   const [isDragging, setIsDragging] = useState(false);
@@ -83,12 +84,31 @@ const Phase01_Idle = ({
     setFormState("default");
   };
 
+  const [fileValidityResetCounter, setFileValidityResetCounter] = useState(5);
+
   const handleFileProcess = async (file: File) => {
     if (file.type === "text/csv") {
       setFileAttached(file);
-      setUploadStatus("attached");
       const rows = await countCsvRows(file);
-      setFileDetails({ entries: rows });
+      if (rows && isFileValid) {
+        setUploadStatus("attached");
+        setFileDetails({ entries: rows });
+      } else {
+        setFileAttached(null);
+
+        let countdown = 4;
+
+        const resetFileValidityCounter = setInterval(() => {
+          setFileValidityResetCounter(countdown);
+          countdown--;
+
+          if (countdown < 0) {
+            clearInterval(resetFileValidityCounter);
+            setIsFileValid(true);
+            setFileValidityResetCounter(5);
+          }
+        }, 1000);
+      }
     } else {
       alert("Please upload a valid CSV file.");
     }
@@ -244,21 +264,50 @@ const Phase01_Idle = ({
     }
   };
 
-  const countCsvRows = (file: File): Promise<number> => {
-    return new Promise((resolve, reject) => {
+  const validRowsHeaders = [
+    "id_entry",
+    "full_name",
+    "raffle_code",
+    "regional_location",
+    "registered_at"
+  ]; // Allowed headers
+
+  const countCsvRows = async (file: File): Promise<number> => {
+    return new Promise((resolve) => {
       let rowCount = 0;
+      let headersChecked = false;
 
       Papa.parse(file, {
-        header: true, // ✅ Skip the header row
+        header: true,
         skipEmptyLines: true,
-        step: () => {
+        step: (results, parser) => {
+          if (!headersChecked) {
+            const headers = results.meta.fields ?? [];
+
+            const hasInvalidHeaders = headers.some(
+              (h) => !validRowsHeaders.includes(h.toLowerCase())
+            );
+            const tooManyColumns = headers.length > validRowsHeaders.length;
+
+            if (hasInvalidHeaders || tooManyColumns) {
+              parser.abort(); // stop parsing
+              setIsFileValid(false);
+              resolve(0);
+              return;
+            }
+
+            setIsFileValid(true);
+            headersChecked = true;
+          }
+
           rowCount++;
         },
         complete: () => {
           resolve(rowCount);
         },
-        error: (error) => {
-          reject(error);
+        error: () => {
+          setIsFileValid(false);
+          resolve(0);
         }
       });
     });
@@ -310,6 +359,14 @@ const Phase01_Idle = ({
                   </p>
                 </UploadBox.Body>
                 <UploadBox.Footer>
+                  <div>
+                    {!isFileValid && (
+                      <span className="text-red-400 animate-pulse">
+                        File is invalid. Try again in {fileValidityResetCounter}{" "}
+                        seconds.
+                      </span>
+                    )}
+                  </div>
                   <UploadButton onClick={handleFileUpload}>
                     Select & Attach File
                   </UploadButton>
