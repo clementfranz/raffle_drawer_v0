@@ -67,7 +67,7 @@ const RowComponent = ({
     if (syncingActive) {
       intervalRef.current = setInterval(() => {
         loadData();
-      }, 2500);
+      }, 1000);
       setStatusCaption("Syncing...");
     } else {
       if (intervalRef.current) {
@@ -110,6 +110,9 @@ const RowComponent = ({
     >
       <td className="px-4 py-2 text-center">
         {itemData?.id || initialData.id}
+      </td>
+      <td className="px-4 py-2 text-center uppercase">
+        {itemData?.method_type || initialData.method_type}
       </td>
       <td className="px-4 py-2 text-center">
         {itemData?.api_url || initialData.api_url}

@@ -1,7 +1,11 @@
-import { deleteAllItems } from "../_main/useIndexedDB";
+import { deleteStoreWithProgress } from "../_main/useIndexedDB";
 
-export async function clearAllParticipants(): Promise<any> {
-  const result = await deleteAllItems("participant");
+export async function clearAllParticipants(updateProgress: any): Promise<any> {
+  const result = await deleteStoreWithProgress(
+    "participant",
+    2000,
+    updateProgress
+  );
 
   return result;
 }

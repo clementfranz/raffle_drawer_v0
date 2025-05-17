@@ -19,9 +19,6 @@ const ClearAllPaticipantsButton = ({
     openModal(true);
   };
 
-  const [clearParticipantsLoading, setClearParticipantsLoading] =
-    useLocalStorageState("clearParticipantsLoading", { defaultValue: false });
-
   return (
     <>
       <TabActionButton onClick={handleOpenModal}>

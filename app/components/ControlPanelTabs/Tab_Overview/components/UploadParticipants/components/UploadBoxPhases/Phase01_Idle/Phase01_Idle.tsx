@@ -10,6 +10,20 @@ import { getParticipantsTotalCount } from "~/api/client/participants/getParticip
 import { getPaginatedParticipants } from "~/api/client/participants/getPaginatedParticipants";
 import useLocalStorageState from "use-local-storage-state";
 
+function formatShortTime(seconds: number): string {
+  const units = [
+    { label: "d", value: Math.floor(seconds / 86400) },
+    { label: "h", value: Math.floor((seconds % 86400) / 3600) },
+    { label: "m", value: Math.floor((seconds % 3600) / 60) },
+    { label: "s", value: seconds % 60 }
+  ];
+
+  const result = units.filter((u) => u.value > 0).slice(0, 2);
+  return result.length > 0
+    ? result.map((u) => `${u.value}${u.label}`).join(" ")
+    : "0s";
+}
+
 type IdleProps = {
   setFileAttached: React.Dispatch<React.SetStateAction<File | null>>;
   setFileDetails: React.Dispatch<React.SetStateAction<Object | null>>;
@@ -43,6 +57,8 @@ const Phase01_Idle = ({
     { defaultValue: false }
   );
   const [isDownloadingData, setIsDownloadingData] = useState(false);
+
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   useEffect(() => {
     if (downloadedData) {
@@ -100,14 +116,75 @@ const Phase01_Idle = ({
     }
   };
 
+  const [ETR, setETR] = useState<number>(60);
+
+  const batchDurationsRef = useRef<number[]>([]);
+  const prevDownloadedRef = useRef<number>(0);
+  const prevTimestampRef = useRef<number>(Date.now());
+  const MAX_SAMPLES = 10; // Keep recent 10 batches for moving average
+  const isActiveRef = useRef(false); // Control countdown activity
+
+  const updateDownloadProgress = (downloaded: number, total: number) => {
+    const progress = (downloaded / total) * 100;
+    setDownloadProgress(progress);
+
+    const now = Date.now();
+    const prevDownloaded = prevDownloadedRef.current;
+    const prevTimestamp = prevTimestampRef.current;
+
+    const deltaItems = downloaded - prevDownloaded;
+    const deltaTime = now - prevTimestamp;
+
+    // Only push if there's progress
+    if (deltaItems > 0) {
+      const perItemTime = deltaTime / deltaItems;
+
+      batchDurationsRef.current.push(perItemTime);
+
+      // Limit to last N samples
+      if (batchDurationsRef.current.length > MAX_SAMPLES) {
+        batchDurationsRef.current.shift();
+      }
+
+      prevDownloadedRef.current = downloaded;
+      prevTimestampRef.current = now;
+    }
+
+    // Average time per item (ms)
+    const avgPerItemTime =
+      batchDurationsRef.current.reduce((sum, val) => sum + val, 0) /
+      batchDurationsRef.current.length;
+
+    const remainingItems = total - downloaded;
+    const estimatedRemainingMs = avgPerItemTime * remainingItems;
+    const remainingSec = Math.ceil(Math.max(0, estimatedRemainingMs / 1000));
+
+    setETR(remainingSec);
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isActiveRef.current) {
+        setETR((prev) => Math.max(0, prev - 1));
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleFileUpload = () => {
     fileInputRef.current?.click();
   };
 
-  const handleDownloadData = async () => {
-    if (isDownloadingData) return;
+  const handleStartDownloadData = () => {
+    handleDownloadData(updateDownloadProgress);
+  };
 
+  const handleDownloadData = async (updateDownloadProgress: any) => {
+    if (isDownloadingData) return;
     setIsDownloadingData(true);
+    isActiveRef.current = true; // Start countdown
+
     try {
       const { total } = await getParticipantsTotalCount();
       let allData: any[] = [];
@@ -125,6 +202,8 @@ const Phase01_Idle = ({
           return response.data || [];
         };
 
+        let downloadedCount = 0;
+
         for (let i = 1; i <= totalBatches; i += concurrencyLimit) {
           const batchPromises = [];
 
@@ -133,25 +212,35 @@ const Phase01_Idle = ({
           }
 
           const batchResults = await Promise.all(batchPromises);
+
+          let entriesThisRound = 0;
           for (const participants of batchResults) {
             allData.push(...participants);
+            entriesThisRound += participants.length;
           }
+
+          downloadedCount += entriesThisRound;
+          updateDownloadProgress(downloadedCount, total);
         }
 
         console.log("✅ All participant data fetched:", allData);
         setFileDetails({ entries: total });
         setDownloadedData(allData);
+        allData = [];
         setUploadStatus("attached");
         setIsDownloadingData(false);
-        return allData;
+        isActiveRef.current = false; // Stop countdown
+        return true;
       } else {
         console.warn("⚠️ No participants found.");
-        return [];
+        isActiveRef.current = false;
+        return false;
       }
     } catch (error) {
       console.error("❌ Error downloading participant data:", error);
       setIsDownloadingData(false);
-      return [];
+      isActiveRef.current = false;
+      return false;
     }
   };
 
@@ -261,9 +350,11 @@ const Phase01_Idle = ({
               <p>
                 Data can be downloaded. Click download button below to start.
               </p>
+              <div>Progress: {downloadProgress}%</div>
+              <div>Time Remaining: {formatShortTime(ETR)}</div>
             </UploadBox.Body>
             <UploadBox.Footer>
-              <UploadButton onClick={handleDownloadData}>
+              <UploadButton onClick={handleStartDownloadData}>
                 {isDownloadingData ? (
                   <span className="animate-pulse">Downloading...</span>
                 ) : (

@@ -28,6 +28,10 @@ const Phase04_Completed = ({
     "withParticipantsData"
   );
 
+  const [fileDetails, setFileDetails] = useLocalStorageState<{
+    entries: number;
+  } | null>("fileDetails", { defaultValue: null });
+
   const handleConfirmDone = () => {
     setWithParticipantsData(true);
   };
@@ -55,7 +59,9 @@ const Phase04_Completed = ({
             <div className="file-details flex flex-col justify-between items-start">
               <div className="file-subdetails text-sm flex flex-col items-center">
                 <span>Total Entries</span>
-                <span className="font-bold">200,000</span>
+                <span className="font-bold">
+                  {fileDetails?.entries.toLocaleString()}
+                </span>
               </div>
             </div>
           </div>

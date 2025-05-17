@@ -122,12 +122,12 @@ export default function Main() {
               <li>
                 <NavLink
                   to="/main"
-                  className={({ isActive }) =>
-                    isActive && location.search === ""
+                  className={() =>
+                    !isFilterActive("winners") &&
+                    !isFilterActive("backupwinners")
                       ? "active bg-orange-300"
                       : undefined
                   }
-                  end
                 >
                   All Participants
                 </NavLink>

@@ -194,6 +194,7 @@ const TableWrapper = () => {
         <thead>
           <tr>
             <th className="bg-gray-300 px-4 py-2 font-bold w-[80px]">ID #</th>
+            <th className="bg-gray-300 px-4 py-2">Method</th>
             <th className="bg-gray-300 px-4 py-2">Data API URL</th>
             <th className="bg-gray-300 px-4 py-2 w-[150px]">Sync Status</th>
             <th className="bg-gray-300 px-4 py-2 w-[150px]">Status</th>
@@ -213,7 +214,7 @@ const TableWrapper = () => {
           ))}
           {rows.length <= 0 && (
             <tr className="w-full grow !h-full">
-              <td colSpan={4}>
+              <td colSpan={5}>
                 No queue items found to sync. Please refresh page to check for
                 new items.{" "}
               </td>

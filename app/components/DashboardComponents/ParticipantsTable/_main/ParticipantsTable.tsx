@@ -56,6 +56,9 @@ const ParticipantsTable = ({}) => {
 
   const [activeTab, setActiveTab] = useState("main");
 
+  const [pageNum, setPageNum] = useState(1);
+  const [pageSize, setPageSize] = useState(250);
+
   const getActiveTab = () => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("filter") || "main";
@@ -68,6 +71,8 @@ const ParticipantsTable = ({}) => {
     const params = new URLSearchParams(location.search);
     const page = parseInt(params.get("page") || "1", 10);
     const size = parseInt(params.get("pageSize") || "250", 10);
+    setPageNum(page);
+    setPageSize(size);
     return { page, size };
   };
 
@@ -155,15 +160,20 @@ const ParticipantsTable = ({}) => {
           <table className="min-w-full table-fixed border-separate border-spacing-0">
             <thead className="bg-[#bf4759] text-white sticky top-0 z-10">
               <tr>
-                <th className="p-2 text-left border-b w-[150px]">No.:</th>
+                <th className="p-2 border-b w-[100px] text-center">#:</th>
+                <th className="p-2 text-center border-b w-[150px]">
+                  Entry No:
+                </th>
                 <th className="p-2 text-left border-b w-[400px]">
                   Participant's Name
                 </th>
-                <th className="p-2 text-left border-b">Code</th>
-                <th className="p-2 text-left border-b">Location</th>
+                <th className="p-2 border-b text-center">Code</th>
+                <th className="p-2 border-b w-[200px] text-center">Location</th>
                 {activeTab !== "main" ? (
                   <>
-                    <th className="p-2 text-left border-b">Draw Date</th>
+                    <th className="p-2 text-left border-b w-[160px]">
+                      Draw Date
+                    </th>
                     <th className="p-2 text-left border-b">Controls</th>
                   </>
                 ) : (
@@ -176,7 +186,10 @@ const ParticipantsTable = ({}) => {
             <tbody className="">
               {tableLocalData?.map((entry: Participant, index: number) => (
                 <tr key={`participant-${entry.id_entry}-${index}`} className="">
-                  <td className="">
+                  <td className="text-center">
+                    {((pageNum - 1) * pageSize + index + 1).toLocaleString()}
+                  </td>
+                  <td className="text-center font-mono">
                     #
                     {entry.id_entry
                       ?.toString()
@@ -194,7 +207,7 @@ const ParticipantsTable = ({}) => {
                     {entry.full_name}
                   </td>
                   <td className="text-base font-bold">{entry.raffle_code}</td>
-                  <td className="">{entry.regional_location}</td>
+                  <td className="text-center">{entry.regional_location}</td>
                   {activeTab !== "main" ? (
                     <>
                       <td>

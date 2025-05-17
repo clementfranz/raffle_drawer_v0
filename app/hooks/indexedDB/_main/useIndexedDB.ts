@@ -132,6 +132,48 @@ export async function deleteAllItems(storeName: StoreName): Promise<boolean> {
   }
 }
 
+export async function emptyStore(storeName: StoreName): Promise<boolean> {
+  try {
+    const db = await initDB();
+    const tx = db.transaction(storeName, "readwrite");
+    await tx.store.clear();
+    await tx.done;
+    return true;
+  } catch (error) {
+    console.error(`❌ Failed to clear store "${storeName}":`, error);
+    return false;
+  }
+}
+
+export async function deleteStoreWithProgress(
+  storeName: StoreName,
+  batchSize: number,
+  onProgress: (deletedCount: number, totalCount: number) => void
+): Promise<void> {
+  const db = await initDB();
+  const tx = db.transaction(storeName, "readwrite");
+  const store = tx.store;
+
+  const totalCount = await store.count();
+  let deletedCount = 0;
+
+  let cursor = await store.openCursor();
+
+  while (cursor) {
+    for (let i = 0; i < batchSize && cursor; i++) {
+      await cursor.delete();
+      deletedCount++;
+      cursor = await cursor.continue();
+    }
+
+    onProgress(deletedCount, totalCount);
+
+    // No timeout here
+  }
+
+  await tx.done;
+}
+
 export async function countEntriesByLocationWithProgress(
   setCountProgress: (progress: number) => void
 ): Promise<{
@@ -233,9 +275,18 @@ export async function getAllParticipantsPerPage(
     .transaction("participant", "readonly")
     .objectStore("participant");
 
+  // Get the lowest key in the store dynamically
+  const cursor = await store.openCursor();
+  if (!cursor) {
+    // Store is empty
+    return [];
+  }
+
+  const lowestId = cursor.key as number;
+
   const skip = (pageNth - 1) * rangeSize;
-  const startId = Number(skip + 1); // Ensure it's a number
-  const endId = Number(skip + rangeSize); // Ensure it's a number
+  const startId = lowestId + skip;
+  const endId = lowestId + skip + rangeSize - 1;
   try {
     // Use getAll with range 🚀
     const participants = await store.getAll(IDBKeyRange.bound(startId, endId));
@@ -372,9 +423,13 @@ async function getFirstParticipant(): Promise<string | null> {
   const tx = db.transaction("participant", "readonly");
   const store = tx.objectStore("participant");
 
-  const participant = await store.get(1); // direct key lookup
+  const cursor = await store.openCursor(); // gets the first row automatically
+  if (cursor) {
+    console.log("Getting first participant as starting point:", cursor.value);
+    return cursor.value.id_entry ?? null;
+  }
 
-  return participant?.id_entry ?? null;
+  return null; // if the store is empty
 }
 
 async function getParticipantByIdEntry(
