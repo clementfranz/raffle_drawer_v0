@@ -6,7 +6,7 @@ import UploadButton from "../../UploadButton/_main/UploadButton";
 
 // Custom Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileCsv } from "@fortawesome/free-solid-svg-icons";
+import { faCloudArrowDown, faFileCsv } from "@fortawesome/free-solid-svg-icons";
 
 import { formatFileSize } from "./utils/necessaryOnly";
 import useLocalStorageState from "use-local-storage-state";
@@ -16,6 +16,17 @@ import { countEntriesByLocationWithProgress } from "~/hooks/indexedDB/_main/useI
 import { syncParticipantsToCloud } from "~/hooks/indexedDB/syncCloud/syncParticipantsToCloud";
 
 type FileDetails = any;
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const k = 1024;
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const size = bytes / Math.pow(k, i);
+
+  return `${size % 1 === 0 ? size : size.toFixed(2)} ${units[i]}`;
+}
 
 type ProcessingProps = {
   fileAttached: File | null;
@@ -206,10 +217,10 @@ const Phase03_Processing = ({
         handleImport(fileAttached);
         console.log("FILE ENTRIES COUNT", fileDetails.entries);
       }
-    } else if (triggerImport && cloudData && fileDetails) {
+    } else if (triggerImport && cloudData) {
       handleImport();
     }
-  }, [triggerImport, fileDetails]);
+  }, [triggerImport, fileDetails, cloudData]);
 
   return (
     <div
@@ -217,15 +228,22 @@ const Phase03_Processing = ({
     >
       <UploadBox className="bg-green-800 relative overflow-hidden">
         <UploadBox.Header className="text-left z-10">
-          Uploading File...
+          {cloudData ? "Processing Downloaded Data..." : "Uploading File..."}
         </UploadBox.Header>
         <UploadBox.Body className="flex flex-col justify-between z-10 w-full">
           <div className="flex justify-center items-center gap-5 w-full">
-            <div className="file-icon w-[80px]">
-              <FontAwesomeIcon
-                icon={faFileCsv}
-                className="text-white text-[80px]"
-              />
+            <div className="file-icon w-[80px] mr-4">
+              {cloudData ? (
+                <FontAwesomeIcon
+                  icon={faCloudArrowDown}
+                  className="text-white text-[80px] "
+                />
+              ) : (
+                <FontAwesomeIcon
+                  icon={faFileCsv}
+                  className="text-white text-[80px]"
+                />
+              )}
             </div>
             <div className="file-details flex flex-col justify-between items-start h-[80px] grow w-0">
               <div className="file-name text-lg font-bold mb-2">
@@ -233,6 +251,8 @@ const Phase03_Processing = ({
                   <span className="break-all line-clamp-2 w-full">
                     {fileAttached.name}
                   </span>
+                ) : cloudData ? (
+                  <>Data from Cloud</>
                 ) : (
                   <span className="italic">Unknown File</span>
                 )}
@@ -241,8 +261,10 @@ const Phase03_Processing = ({
                 <span>
                   Size:{" "}
                   <b>
-                    {fileAttached ? (
+                    {fileAttached && fileDetails ? (
                       formatFileSize(fileAttached.size)
+                    ) : cloudData ? (
+                      <>{formatBytes(fileDetails?.entries * 70)}</>
                     ) : (
                       <span className="italic">--</span>
                     )}

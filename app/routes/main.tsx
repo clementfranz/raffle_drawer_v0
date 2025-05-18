@@ -68,7 +68,10 @@ export default function Main() {
   );
 
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
-    "withParticipantsData"
+    "withParticipantsData",
+    {
+      defaultValue: false
+    }
   );
 
   type PresentingStatus = "presenting" | "not-presenting";
@@ -159,10 +162,12 @@ export default function Main() {
             </ul>
             <ShowingEntriesCounter />
             <ul className="flex space-x-4 text-sm">
-              <li className="flex items-center justify-center h-full">
-                Total Participants for this week:&nbsp;
-                <b>{fileDetails?.entries.toLocaleString()}</b>
-              </li>
+              {withParticipantsData && (
+                <li className="flex items-center justify-center h-full">
+                  Total Participants for this week:&nbsp;
+                  <b>{fileDetails?.entries.toLocaleString()}</b>
+                </li>
+              )}
               {/* <li>
                 Weekly Increase:&nbsp;<b>10% </b>
               </li> */}

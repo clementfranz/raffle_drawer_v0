@@ -43,6 +43,8 @@ type IdleProps = {
   >;
   uploadStatus: string;
   setCloudData: React.Dispatch<React.SetStateAction<any[] | null>>;
+  setTriggerImport: React.Dispatch<React.SetStateAction<boolean>>;
+  setDownloadElapsedTime: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const Phase01_Idle = ({
@@ -50,7 +52,9 @@ const Phase01_Idle = ({
   setFileDetails,
   setUploadStatus,
   uploadStatus,
-  setCloudData
+  setCloudData,
+  setTriggerImport,
+  setDownloadElapsedTime
 }: IdleProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -219,12 +223,12 @@ const Phase01_Idle = ({
     isActiveRef.current = true;
     downloadStartTimeRef.current = Date.now();
 
-    // Start ELT ticking independently
     elapsedIntervalRef.current = setInterval(() => {
       if (downloadStartTimeRef.current) {
         const elapsedMs = Date.now() - downloadStartTimeRef.current;
         const elapsedSec = Math.floor(elapsedMs / 1000);
         setELT(elapsedSec);
+        setDownloadElapsedTime(elapsedSec);
       }
     }, 1000);
 
@@ -239,6 +243,7 @@ const Phase01_Idle = ({
 
         let downloadedCount = 0;
         let currentBatchIndex = 1;
+        const allBatchResults: any[][] | null[] = new Array(totalBatches); // Track by index
 
         const fetchBatch = async (indexBatch: number) => {
           const response = await getPaginatedParticipants(
@@ -255,26 +260,55 @@ const Phase01_Idle = ({
 
             try {
               const participants = await fetchBatch(batchIndex);
-              allData.push(...participants);
+              allBatchResults[batchIndex - 1] = participants;
+
               downloadedCount += participants.length;
               updateDownloadProgress(downloadedCount, total);
             } catch (err) {
               console.error(`❌ Failed batch ${batchIndex}:`, err);
+              // Ensure empty array for failed batch to retry later if needed
+              allBatchResults[batchIndex - 1] = null;
             }
           }
         };
 
-        // Start workers with concurrency limit
+        // Run concurrent workers
         const workers = Array.from({ length: concurrencyLimit }, () =>
           worker()
         );
         await Promise.all(workers);
 
-        console.log("✅ All participant data fetched:", allData);
-        setFileDetails({ entries: total });
+        // Retry any failed batches once
+        for (let i = 0; i < allBatchResults.length; i++) {
+          if (allBatchResults[i] === null) {
+            try {
+              const retryData = await fetchBatch(i + 1);
+              allBatchResults[i] = retryData;
+              downloadedCount += retryData.length;
+              updateDownloadProgress(downloadedCount, total);
+            } catch (err) {
+              console.error(`❌ Retry failed for batch ${i + 1}`, err);
+              allBatchResults[i] = []; // Prevent undefined
+            }
+          }
+        }
+
+        // Combine final data
+        allData = allBatchResults.flat();
+
+        if (allData.length !== total) {
+          console.warn(
+            `⚠️ Mismatch in expected vs actual data count. Expected: ${total}, Got: ${allData.length}`
+          );
+        }
+
+        console.log("✅ All participant data fetched:", allData.length);
+        setFileDetails({ entries: allData.length });
         setDownloadedData(allData);
         allData = [];
-        setUploadStatus("attached");
+
+        setUploadStatus("processing");
+        setTriggerImport(true);
         setIsDownloadingData(false);
         isActiveRef.current = false;
         if (elapsedIntervalRef.current) {
@@ -297,6 +331,11 @@ const Phase01_Idle = ({
       }
       return false;
     }
+  };
+
+  const handleProcessCloudData = () => {
+    setTriggerImport(true);
+    setUploadStatus("processing");
   };
 
   const validRowsHeaders = [
