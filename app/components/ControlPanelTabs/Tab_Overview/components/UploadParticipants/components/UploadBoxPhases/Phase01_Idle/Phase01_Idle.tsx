@@ -263,7 +263,7 @@ const Phase01_Idle = ({
             batchSize
           );
 
-          return (response.data || []).map(({ id, ...rest }) => rest);
+          return response.data;
         };
 
         const worker = async () => {

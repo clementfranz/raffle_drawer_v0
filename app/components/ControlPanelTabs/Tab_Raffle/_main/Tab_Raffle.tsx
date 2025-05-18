@@ -12,6 +12,8 @@ import type { WinnerRecords, Winner } from "~/types/WinnerTypes";
 import { addWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipant";
 import { pickRandomParticipant } from "~/hooks/indexedDB/_main/useIndexedDB";
 import { updateWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/updateWinnerParticipant";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLock } from "@fortawesome/free-solid-svg-icons";
 
 interface Tab_RaffleProps {
   isActiveTab?: boolean;
@@ -77,6 +79,11 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   const [loadingButton1, setLoadingButton1] = useState(false);
   const [loadingButton2, setLoadingButton2] = useState(false);
   const [loadingButton3, setLoadingButton3] = useState(false);
+
+  // const [isButtonLocked0, setIsButtonLocked0] = useState(true);
+  const [isButtonLocked1, setIsButtonLocked1] = useState(true);
+  const [isButtonLocked2, setIsButtonLocked2] = useState(true);
+  const [isButtonLocked3, setIsButtonLocked3] = useState(true);
 
   const toggleButtonLoading = (
     which: 0 | 1 | 2 | 3,
@@ -216,6 +223,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               ? `Primary Winner Picked from ${favoredRegion}`
               : `Primary Winner Picked`
           );
+          setIsButtonLocked1(false);
           break;
         case 2:
           setRevealWinner02(true);
@@ -225,6 +233,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               ? `1st Backup Winner Picked from ${favoredRegion}`
               : `1st Backup Winner Picked`
           );
+          setIsButtonLocked2(false);
           break;
         case 3:
           setRevealWinner03(true);
@@ -234,6 +243,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
               ? `2nd Backup Winner Picked from ${favoredRegion}`
               : `2nd Backup Winner Picked`
           );
+          setIsButtonLocked3(false);
           break;
         case 4:
           setRevealWinner04(true);
@@ -339,6 +349,9 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
       setRevealWinner02(false);
       setRevealWinner03(false);
       setRevealWinner04(false);
+      setIsButtonLocked1(true);
+      setIsButtonLocked2(true);
+      setIsButtonLocked3(true);
       clearTimeout(clearWinnersTimeout);
     }, 1000);
   };
@@ -425,7 +438,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                 className="gap-3 flex flex-col"
               >
                 <div className="grid w-full gap-3">
-                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
+                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl relative overflow-hidden">
                     {!loadingButton1 ? (
                       <>
                         {revealWinner02 ? (
@@ -446,15 +459,28 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                             </div>
                           </>
                         ) : (
-                          <button
-                            className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                            onClick={() => {
-                              console.log("Raffling backup winner #1");
-                              triggerStartDraw("backup", 0);
-                            }}
-                          >
-                            Raffle First Backup Winner
-                          </button>
+                          <>
+                            <button
+                              className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                              onClick={() => {
+                                console.log("Raffling backup winner #1");
+                                triggerStartDraw("backup", 0);
+                              }}
+                            >
+                              Raffle First Backup Winner
+                            </button>
+                            {isButtonLocked1 && (
+                              <div className="button-locker bg-[#6e0c0cce] absolute top-0 w-full h-full left-0 flex justify-center items-center gap-2">
+                                <FontAwesomeIcon
+                                  icon={faLock}
+                                  className="text-lg"
+                                />
+                                <span className="font-bold">
+                                  Unlock with Previous Button
+                                </span>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
                     ) : (
@@ -467,7 +493,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                   </div>
                 </div>
                 <div className="grid w-full gap-3">
-                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
+                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl relative">
                     {!loadingButton2 ? (
                       <>
                         {revealWinner03 ? (
@@ -488,15 +514,28 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                             </div>
                           </>
                         ) : (
-                          <button
-                            className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                            onClick={() => {
-                              console.log("Raffling backup winner #2");
-                              triggerStartDraw("backup", 1);
-                            }}
-                          >
-                            Raffle Second Backup Winner
-                          </button>
+                          <>
+                            <button
+                              className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                              onClick={() => {
+                                console.log("Raffling backup winner #2");
+                                triggerStartDraw("backup", 1);
+                              }}
+                            >
+                              Raffle Second Backup Winner
+                            </button>
+                            {isButtonLocked2 && (
+                              <div className="button-locker bg-[#6e0c0cce] absolute top-0 w-full h-full left-0 flex justify-center items-center gap-2">
+                                <FontAwesomeIcon
+                                  icon={faLock}
+                                  className="text-lg"
+                                />
+                                <span className="font-bold">
+                                  Unlock with Previous Button
+                                </span>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
                     ) : (
@@ -507,7 +546,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                   </div>
                 </div>
                 <div className="grid w-full gap-3">
-                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl ">
+                  <div className="participant-card text-sm w-full bg-gray-700 p-3 rounded-xl relative">
                     {!loadingButton3 ? (
                       <>
                         {revealWinner04 ? (
@@ -528,15 +567,28 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                             </div>
                           </>
                         ) : (
-                          <button
-                            className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
-                            onClick={() => {
-                              console.log("Raffling backup winner #3");
-                              triggerStartDraw("backup", 2);
-                            }}
-                          >
-                            Raffle Third Backup Winner
-                          </button>
+                          <>
+                            <button
+                              className="cursor-pointer hover:bg-amber-300 rounded-2xl text-black w-full p-3 bg-amber-400"
+                              onClick={() => {
+                                console.log("Raffling backup winner #3");
+                                triggerStartDraw("backup", 2);
+                              }}
+                            >
+                              Raffle Third Backup Winner
+                            </button>
+                            {isButtonLocked3 && (
+                              <div className="button-locker bg-[#6e0c0cce] absolute top-0 w-full h-full left-0 flex justify-center items-center gap-2">
+                                <FontAwesomeIcon
+                                  icon={faLock}
+                                  className="text-lg"
+                                />
+                                <span className="font-bold">
+                                  Unlock with Previous Button
+                                </span>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
                     ) : (
