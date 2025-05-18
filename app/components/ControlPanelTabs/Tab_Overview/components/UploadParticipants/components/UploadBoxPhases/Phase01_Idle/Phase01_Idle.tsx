@@ -10,6 +10,17 @@ import { getParticipantsTotalCount } from "~/api/client/participants/getParticip
 import { getPaginatedParticipants } from "~/api/client/participants/getPaginatedParticipants";
 import useLocalStorageState from "use-local-storage-state";
 
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const k = 1024;
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  const size = bytes / Math.pow(k, i);
+
+  return `${size % 1 === 0 ? size : size.toFixed(2)} ${units[i]}`;
+}
+
 function formatShortTime(seconds: number): string {
   const units = [
     { label: "d", value: Math.floor(seconds / 86400) },
@@ -42,10 +53,6 @@ const Phase01_Idle = ({
   setCloudData
 }: IdleProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleButtonClick = () => {
-    inputRef.current?.click(); // Trigger the hidden file input click
-  };
 
   const [isServerActive] = useLocalStorageState<boolean>("isServerActive");
   const [isFileValid, setIsFileValid] = useState(true);
@@ -137,6 +144,9 @@ const Phase01_Idle = ({
   };
 
   const [ETR, setETR] = useState<number>(60);
+  const [ELT, setELT] = useState(0);
+
+  const [totalCloudData, setTotalCloudData] = useState(0);
 
   const batchDurationsRef = useRef<number[]>([]);
   const prevDownloadedRef = useRef<number>(0);
@@ -144,8 +154,11 @@ const Phase01_Idle = ({
   const MAX_SAMPLES = 10; // Keep recent 10 batches for moving average
   const isActiveRef = useRef(false); // Control countdown activity
 
+  const downloadStartTimeRef = useRef<number | null>(null);
+  const elapsedIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const updateDownloadProgress = (downloaded: number, total: number) => {
-    const progress = (downloaded / total) * 100;
+    const progress: number = (downloaded / total) * 100;
     setDownloadProgress(progress);
 
     const now = Date.now();
@@ -203,7 +216,17 @@ const Phase01_Idle = ({
   const handleDownloadData = async (updateDownloadProgress: any) => {
     if (isDownloadingData) return;
     setIsDownloadingData(true);
-    isActiveRef.current = true; // Start countdown
+    isActiveRef.current = true;
+    downloadStartTimeRef.current = Date.now();
+
+    // Start ELT ticking independently
+    elapsedIntervalRef.current = setInterval(() => {
+      if (downloadStartTimeRef.current) {
+        const elapsedMs = Date.now() - downloadStartTimeRef.current;
+        const elapsedSec = Math.floor(elapsedMs / 1000);
+        setELT(elapsedSec);
+      }
+    }, 1000);
 
     try {
       const { total } = await getParticipantsTotalCount();
@@ -212,7 +235,10 @@ const Phase01_Idle = ({
       if (total && total > 0) {
         const batchSize = 2500;
         const totalBatches = Math.ceil(total / batchSize);
-        const concurrencyLimit = 20;
+        const concurrencyLimit = 10;
+
+        let downloadedCount = 0;
+        let currentBatchIndex = 1;
 
         const fetchBatch = async (indexBatch: number) => {
           const response = await getPaginatedParticipants(
@@ -222,26 +248,27 @@ const Phase01_Idle = ({
           return response.data || [];
         };
 
-        let downloadedCount = 0;
+        const worker = async () => {
+          while (true) {
+            const batchIndex = currentBatchIndex++;
+            if (batchIndex > totalBatches) return;
 
-        for (let i = 1; i <= totalBatches; i += concurrencyLimit) {
-          const batchPromises = [];
-
-          for (let j = i; j < i + concurrencyLimit && j <= totalBatches; j++) {
-            batchPromises.push(fetchBatch(j));
+            try {
+              const participants = await fetchBatch(batchIndex);
+              allData.push(...participants);
+              downloadedCount += participants.length;
+              updateDownloadProgress(downloadedCount, total);
+            } catch (err) {
+              console.error(`❌ Failed batch ${batchIndex}:`, err);
+            }
           }
+        };
 
-          const batchResults = await Promise.all(batchPromises);
-
-          let entriesThisRound = 0;
-          for (const participants of batchResults) {
-            allData.push(...participants);
-            entriesThisRound += participants.length;
-          }
-
-          downloadedCount += entriesThisRound;
-          updateDownloadProgress(downloadedCount, total);
-        }
+        // Start workers with concurrency limit
+        const workers = Array.from({ length: concurrencyLimit }, () =>
+          worker()
+        );
+        await Promise.all(workers);
 
         console.log("✅ All participant data fetched:", allData);
         setFileDetails({ entries: total });
@@ -249,7 +276,11 @@ const Phase01_Idle = ({
         allData = [];
         setUploadStatus("attached");
         setIsDownloadingData(false);
-        isActiveRef.current = false; // Stop countdown
+        isActiveRef.current = false;
+        if (elapsedIntervalRef.current) {
+          clearInterval(elapsedIntervalRef.current);
+          elapsedIntervalRef.current = null;
+        }
         return true;
       } else {
         console.warn("⚠️ No participants found.");
@@ -260,6 +291,10 @@ const Phase01_Idle = ({
       console.error("❌ Error downloading participant data:", error);
       setIsDownloadingData(false);
       isActiveRef.current = false;
+      if (elapsedIntervalRef.current) {
+        clearInterval(elapsedIntervalRef.current);
+        elapsedIntervalRef.current = null;
+      }
       return false;
     }
   };
@@ -319,6 +354,7 @@ const Phase01_Idle = ({
       if (total > 0) {
         setWithCloudData(true);
         console.log("With Cloud Data? ", total > 0);
+        setTotalCloudData(total);
       } else {
         setWithCloudData(false);
       }
@@ -330,6 +366,14 @@ const Phase01_Idle = ({
   useEffect(() => {
     checkCloudData();
   }, [isServerActive]);
+
+  useEffect(() => {
+    return () => {
+      if (elapsedIntervalRef.current) {
+        clearInterval(elapsedIntervalRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className={`upload-phase ${uploadStatus !== "idle" && "hidden"}`}>
@@ -398,28 +442,65 @@ const Phase01_Idle = ({
           )}
         </>
       ) : (
-        <UploadBox className={`bg-amber-800`}>
-          <>
-            <UploadBox.Body className="flex justify-center items-center flex-col gap-4">
-              <h2 className="text-base">
-                Participants Data found in Database{" "}
-              </h2>
+        <UploadBox className={`bg-amber-600 overflow-hidden`}>
+          <UploadBox.Body className="flex justify-center items-center flex-col gap-4 z-10">
+            <h2 className="text-base">Participants Data found in Database </h2>
+            {totalCloudData > 0 ? (
+              <div>
+                <p>
+                  Total Participants from cloud:{" "}
+                  <span className="font-bold">
+                    {totalCloudData.toLocaleString()}
+                  </span>
+                </p>
+                <p title="This estimate is not an accurate computation of exact size. ">
+                  Estimated Size:{" "}
+                  <span className="font-bold">
+                    {formatBytes(totalCloudData * 70)}
+                  </span>
+                </p>
+              </div>
+            ) : (
+              <p className="animate-pulse">
+                Loading Total Count of Participants...
+              </p>
+            )}
+            {!isDownloadingData && (
               <p>
                 Data can be downloaded. Click download button below to start.
               </p>
-              <div>Progress: {downloadProgress}%</div>
-              <div>Time Remaining: {formatShortTime(ETR)}</div>
-            </UploadBox.Body>
-            <UploadBox.Footer>
-              <UploadButton onClick={handleStartDownloadData}>
-                {isDownloadingData ? (
-                  <span className="animate-pulse">Downloading...</span>
-                ) : (
-                  `Download Data to this app`
-                )}
-              </UploadButton>
-            </UploadBox.Footer>
-          </>
+            )}
+          </UploadBox.Body>
+          <UploadBox.Footer className="z-10">
+            {isDownloadingData && (
+              <div className="clock justify-between flex">
+                <div className="bg-[#000000b0] p-1 px-2 text-sm rounded-2xl">
+                  ⏱️ ELT: {formatShortTime(ELT)}
+                </div>
+                <div className="bg-[#000000b0] p-1 px-2 text-sm rounded-2xl">
+                  ⏳ ETR: {formatShortTime(ETR)}
+                </div>
+              </div>
+            )}
+            <UploadButton
+              onClick={handleStartDownloadData}
+              className="!bg-[#0000009d]"
+            >
+              {isDownloadingData ? (
+                <span className="animate-pulse">
+                  Downloading - Progress: {downloadProgress.toFixed(2)}%
+                </span>
+              ) : (
+                `Download Data to this app`
+              )}
+            </UploadButton>
+          </UploadBox.Footer>
+          <div className="progress-bar-shell absolute top-0 w-full h-full z-[0]">
+            <div
+              className="progress-bar bg-[#8d600086] w-full h-full"
+              style={{ transform: `translateX(-${100 - downloadProgress}%)` }}
+            ></div>
+          </div>
         </UploadBox>
       )}
 
