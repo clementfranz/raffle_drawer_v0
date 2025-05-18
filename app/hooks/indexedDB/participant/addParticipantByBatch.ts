@@ -9,7 +9,7 @@ export async function addParticipantByBatch(
   batchId: string,
   updateProgress: (progress: number) => void
 ): Promise<any[]> {
-  const batchSize = 1500;
+  const batchSize = 2500;
   interface ParticipantData {
     id?: number;
     id_entry?: string;
@@ -21,7 +21,9 @@ export async function addParticipantByBatch(
     registered_at: Date | string;
   }
 
-  const normalizedDataArray = dataArray.map<ParticipantData>((data) => {
+  const sortedDataArray = dataArray.sort((a, b) => a.id_entry - b.id_entry);
+
+  const normalizedDataArray = sortedDataArray.map<ParticipantData>((data) => {
     let registeredAtValue = data.registered_at;
 
     if (

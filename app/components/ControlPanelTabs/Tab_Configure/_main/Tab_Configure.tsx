@@ -84,7 +84,7 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
                 value={favoredRegion ?? "undefined"}
                 onChange={(e) => handleApplyFavoredRegion(e, setFavoredRegion)}
               >
-                <option value="undefined">WHOLE PHILIPPINES</option>
+                <option value="undefined">National (Whole Philippines)</option>
                 {regionalStats?.regions.map((stat, index) => (
                   <option
                     key={index}
@@ -101,7 +101,7 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
               <div className="mt-5 p-3 rounded-2xl bg-blue-800 text-white">
                 <div className="text-sm">Confirmed Favored Location: </div>
                 <div className="text-lg">
-                  {favoredRegion ?? "Whole Philippines"}
+                  {favoredRegion ?? "National (Whole Philippines)"}
                 </div>
               </div>
               {/* <div className="button-bar flex justify-end">

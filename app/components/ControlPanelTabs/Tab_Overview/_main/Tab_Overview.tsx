@@ -48,6 +48,8 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
     { defaultValue: null }
   );
 
+  const confirmClearParticipantsInput = useRef<HTMLInputElement>(null);
+
   const [clearParticipantsModalOpen, setClearParticipantsModalOpen] =
     useState(false);
 
@@ -58,6 +60,14 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   const [clearingPasskey, setClearingPasskey] = useState("");
   const [clearingType, setClearingType] = useState("");
   const [enableFinalClear, setEnableFinalClear] = useState(false);
+
+  useEffect(() => {
+    if (showFinalCheckpoint) {
+      confirmClearParticipantsInput.current?.focus();
+    }
+
+    return () => {};
+  }, [showFinalCheckpoint]);
 
   useEffect(() => {
     const validPasskey = "delete-all-participants";
@@ -299,6 +309,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
               name="clearing-passkey"
               autoComplete="off"
               aria-label="clearing-passkey"
+              ref={confirmClearParticipantsInput}
               className={`mt-3 h-[30px] px-4 rounded-2xl text-center text-sm  ${
                 enableFinalClear
                   ? "bg-amber-200 text-red-800"
