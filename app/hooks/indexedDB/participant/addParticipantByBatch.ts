@@ -51,7 +51,7 @@ export async function addParticipantByBatch(
     }
 
     return {
-      is_archived: false, // ← Fix type mismatch (use boolean, not string)
+      is_archived: false,
       participant_batch_id: 1,
       ...data,
       is_drawn: data.is_drawn === 0 || !data.is_drawn ? "false" : "true",

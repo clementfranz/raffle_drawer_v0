@@ -134,12 +134,9 @@ const Phase03_Processing = ({
       }
 
       // Log the parsed data
-      console.log("Parsed CSV Data: ", CSVData);
 
       // Proceed only if the CSV data is successfully parsed
       if (CSVData) {
-        console.log("Attempting to upload...");
-
         // Call addParticipantByBatch and update progress
         const uploadDone = await addParticipantByBatch(
           CSVData,
@@ -153,17 +150,17 @@ const Phase03_Processing = ({
           const getRegionalStats = await handleGetRegionalStats();
 
           if (!withCloudData && getRegionalStats) {
-            console.log("Attempting to queue sync of data");
+            // console.log("Attempting to queue sync of data");
             const queuedSyncData = await syncParticipantsToCloud(
               uploadDone,
               "batch-2025-05-13-A",
               "/participants/per-batch",
               (progress) => {
-                console.log("Sync Progress:", progress, "%");
+                // console.log("Sync Progress:", progress, "%");
               }
             );
             if (queuedSyncData) {
-              console.log("All Data queued for syncing...");
+              // console.log("All Data queued for syncing...");
             }
           }
         }
@@ -176,13 +173,13 @@ const Phase03_Processing = ({
   };
 
   const handleGetRegionalStats = async (): Promise<boolean> => {
-    console.log("Getting regional stats.");
+    // console.log("Getting regional stats.");
     const regionalStatistics = await countEntriesByLocationWithProgress(
       setCountingProgress
     );
     if (regionalStatistics) {
       setRegionalStats(regionalStatistics);
-      console.log("Done getting regional stats.");
+      // console.log("Done getting regional stats.");
       return true;
     } else {
       return false;
@@ -197,8 +194,8 @@ const Phase03_Processing = ({
     if (uploadProgress >= 100 && countingProgress >= 100) {
       setUploadStatus("completed");
     }
-    console.log("UPLOAD PROGRESS: ", uploadProgress);
-    console.log("COUNTING PROGRESS: ", countingProgress);
+    // console.log("UPLOAD PROGRESS: ", uploadProgress);
+    // console.log("COUNTING PROGRESS: ", countingProgress);
   }, [uploadProgress, countingProgress]);
 
   useEffect(() => {
@@ -207,7 +204,7 @@ const Phase03_Processing = ({
         (entriesProcessed / fileDetails.entries) * 100
       );
       // setUploadProgress(progress);
-      console.log("LIVE UPLOAD PROGRESS: ", progress);
+      // console.log("LIVE UPLOAD PROGRESS: ", progress);
     }
   }, [entriesProcessed]);
 
@@ -215,7 +212,7 @@ const Phase03_Processing = ({
     if (triggerImport && fileAttached && fileDetails) {
       if (fileDetails.entries > 0) {
         handleImport(fileAttached);
-        console.log("FILE ENTRIES COUNT", fileDetails.entries);
+        // console.log("FILE ENTRIES COUNT", fileDetails.entries);
       }
     } else if (triggerImport && cloudData) {
       handleImport();
