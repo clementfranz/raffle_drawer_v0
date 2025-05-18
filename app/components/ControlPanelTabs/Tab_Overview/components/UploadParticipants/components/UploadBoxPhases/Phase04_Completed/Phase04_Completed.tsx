@@ -17,12 +17,16 @@ type CompletedProps = {
   selectedWeek: SelectedWeek | null;
   uploadStatus: string;
   uploadElapsedTime: number;
+  cloudData: any[] | null;
+  downloadElapsedTime: number;
 };
 
 const Phase04_Completed = ({
   selectedWeek,
   uploadStatus,
-  uploadElapsedTime
+  uploadElapsedTime,
+  cloudData,
+  downloadElapsedTime
 }: CompletedProps) => {
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
     "withParticipantsData"
@@ -55,6 +59,14 @@ const Phase04_Completed = ({
       <UploadBox className="bg-yellow-800 relative overflow-hidden">
         <UploadBox.Header>Processing Complete!</UploadBox.Header>
         <UploadBox.Body className="flex flex-col justify-around z-10">
+          <div className="time-remaining">
+            <div className="bg-[#000000d8] text-white flex flex-col justify-center items-center rounded-full p-3 px-6">
+              Selected Week: <br />
+              <span className="font-bol">
+                {selectedWeek ? selectedWeek.weekName : "Loading"}
+              </span>
+            </div>
+          </div>
           <div className="flex justify-center items-center">
             <div className="file-details flex flex-col justify-between items-start">
               <div className="file-subdetails text-sm flex flex-col items-center">
@@ -65,18 +77,17 @@ const Phase04_Completed = ({
               </div>
             </div>
           </div>
-          <div className="time-remaining">
-            <div className="bg-[#000000d8] text-white flex flex-col justify-center items-center rounded-full p-3 px-6">
-              Selected Week: <br />
-              <span className="font-bol">
-                {selectedWeek ? selectedWeek.weekName : "Loading"}
-              </span>
-            </div>
-          </div>
         </UploadBox.Body>
         <UploadBox.Footer className=" z-10">
           <div className="elapsed-time">
-            Upload Process Time: {formatShortTime(uploadElapsedTime)}
+            {cloudData ? "Download Process Time:" : "Upload Process Time:"}{" "}
+            <span className="font-bold">
+              {cloudData ? (
+                <> {formatShortTime(uploadElapsedTime + downloadElapsedTime)}</>
+              ) : (
+                <> {formatShortTime(uploadElapsedTime)}</>
+              )}
+            </span>
           </div>
           <UploadButton
             className="bg-[#0000008c]! hover:bg-[#00000052]! "

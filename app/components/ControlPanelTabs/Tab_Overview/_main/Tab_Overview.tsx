@@ -297,6 +297,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
             <input
               type="text"
               name="clearing-passkey"
+              autoComplete="off"
               aria-label="clearing-passkey"
               className={`mt-3 h-[30px] px-4 rounded-2xl text-center text-sm  ${
                 enableFinalClear
