@@ -28,6 +28,10 @@ interface RaffleEntry {
 }
 
 const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
+  const [favoredRegion, setFavoredRegion] = useLocalStorageState<
+    string | undefined
+  >("favoredRegion", { defaultValue: undefined });
+
   const {
     winnerRecords,
     setWinner,
@@ -47,10 +51,6 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
 
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
     "withParticipantsData"
-  );
-
-  const [favoredRegion] = useLocalStorageState<string | undefined>(
-    "favoredRegion"
   );
 
   const [winnerLoading, setWinnerLoading] = useState(false);
@@ -113,8 +113,19 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
 
     if (type === "primary") {
       toggleButtonLoading(0, "on");
+      setRaffleDrawMessage(
+        favoredRegion
+          ? `Picking Primary Winner from ${favoredRegion}...`
+          : "Picking Primary Winner..."
+      );
     } else {
       toggleButtonLoading((nth + 1) as 0 | 1 | 2 | 3, "on");
+      const nthLabel = nth === 0 ? "1st" : nth === 1 ? "2nd" : "3rd";
+      setRaffleDrawMessage(
+        favoredRegion
+          ? `Picking ${nthLabel} Backup Winner from ${favoredRegion}...`
+          : `Picking ${nthLabel} Backup Winner...`
+      );
     }
 
     const participant = await handlePickRandomParticipant(type, favoredRegion);
@@ -160,6 +171,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   );
 
   const [winners, setWinners] = useLocalStorageState<any[] | null>("winners");
+  const [clearedWinners, setClearedWinners] = useState(false);
   const [isRevealed, setIsRevealed] =
     useLocalStorageState<boolean>("isRevealed");
 
@@ -186,6 +198,8 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     defaultValue: "??????????"
   });
 
+  const [raffleDrawMessage, setRaffleDrawMessage] = useState("Not Started Yet");
+
   const processRevealWinner = (num: number) => {
     const startRollingTimer = setTimeout(() => {
       setShowWinnerNth(num - 1);
@@ -197,18 +211,38 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
         case 1:
           setRevealWinner01(true);
           toggleButtonLoading(0, "off");
+          setRaffleDrawMessage(
+            favoredRegion
+              ? `Primary Winner Picked from ${favoredRegion}`
+              : `Primary Winner Picked`
+          );
           break;
         case 2:
           setRevealWinner02(true);
           toggleButtonLoading(1, "off");
+          setRaffleDrawMessage(
+            favoredRegion
+              ? `1st Backup Winner Picked from ${favoredRegion}`
+              : `1st Backup Winner Picked`
+          );
           break;
         case 3:
           setRevealWinner03(true);
           toggleButtonLoading(2, "off");
+          setRaffleDrawMessage(
+            favoredRegion
+              ? `2nd Backup Winner Picked from ${favoredRegion}`
+              : `2nd Backup Winner Picked`
+          );
           break;
         case 4:
           setRevealWinner04(true);
           toggleButtonLoading(3, "off");
+          setRaffleDrawMessage(
+            favoredRegion
+              ? `3rd Backup Winner Picked from ${favoredRegion}`
+              : `3rd Backup Winner Picked`
+          );
           break;
 
         default:
@@ -227,9 +261,15 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   };
 
   const handleResetMachine = () => {
+    const savedPrevMessage = raffleDrawMessage;
+    setRaffleDrawMessage("Resetting Machine...");
     setSlotCodeStatus("idle");
     setRevealWinner(false);
     setIsRevealed(false);
+    const clearedWinnersTO = setTimeout(() => {
+      setRaffleDrawMessage(savedPrevMessage);
+      clearTimeout(clearedWinnersTO);
+    }, 1000);
   };
 
   const saveWinnerParticipant = async (
@@ -288,25 +328,51 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
   };
 
   const handleClearWinners = () => {
+    setClearedWinners(true);
     handleResetMachine();
+    setRaffleDrawMessage("Clearing Winners...");
     const clearWinnersTimeout = setTimeout(() => {
+      setClearedWinners(false);
+      setWinners(null);
       resetWinners();
       setRevealWinner01(false);
       setRevealWinner02(false);
       setRevealWinner03(false);
       setRevealWinner04(false);
-      setWinners(null);
       clearTimeout(clearWinnersTimeout);
-    }, 500);
+    }, 1000);
   };
+
+  useEffect(() => {
+    if (presentingStatus !== "presenting" && presentingView !== "raffle-draw") {
+      setRaffleDrawMessage("Not Started Yet");
+      return;
+    }
+    if (clearedWinners) {
+      return;
+    }
+    if (favoredRegion) {
+      setRaffleDrawMessage(`Picking from ${favoredRegion}`);
+    } else {
+      setRaffleDrawMessage("Picking from All Philippines");
+    }
+  }, [presentingStatus, presentingView, favoredRegion, clearedWinners]);
 
   return (
     <>
-      <TabMainBody isActive={isActiveTab}>
-        <TabShell position="top" className={"relative"}>
-          <TabSubPanel title={"Raffle Draw"}>
-            <div className="raffle-draw-status bg-gray-950 w-full rounded-xl h-[80px] border-gray-600 border-2 flex items-center justify-center text-xl font-[courier] font-bold text-amber-200 text-shadow-amber-500 text-shadow-md ">
-              Not Started Yet
+      <TabMainBody isActive={isActiveTab} className="">
+        <TabShell
+          position="top"
+          className={"relative !px-0 !m-0 !bg-orange-200"}
+        >
+          <TabSubPanel
+            title={"Raffle Draw Status"}
+            className="sticky top-0 bg-linear-to-b from-gray-900 via-[#101828a6] to-[#00000000] py-4 pb-11 !mb-0"
+          >
+            <div className="raffle-draw-status bg-[#030712e8] w-full rounded-xl h-[80px] border-gray-600 border-2 flex items-center justify-center text-lg font-[courier] font-bold text-amber-200 text-shadow-amber-800 text-shadow-sm line-clamp-2 px-4 -mb-4">
+              <span className="animate-pulse text-center break-words">
+                {raffleDrawMessage}
+              </span>
             </div>
           </TabSubPanel>
           <TabSubPanel title={"Winner"} className="gap-3 flex flex-col">

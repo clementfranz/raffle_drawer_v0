@@ -80,6 +80,7 @@ const UploadParticipants: React.FC<UploadParticipantsProps> = ({
             setCloudData={setCloudData}
             setTriggerImport={setTriggerImport}
             setDownloadElapsedTime={setDownloadElapsedTime}
+            fileAttached={fileAttached}
           />
 
           {/* PHASE 02 */}

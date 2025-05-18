@@ -45,6 +45,7 @@ type IdleProps = {
   setCloudData: React.Dispatch<React.SetStateAction<any[] | null>>;
   setTriggerImport: React.Dispatch<React.SetStateAction<boolean>>;
   setDownloadElapsedTime: React.Dispatch<React.SetStateAction<number>>;
+  fileAttached: File | null;
 };
 
 const Phase01_Idle = ({
@@ -54,7 +55,8 @@ const Phase01_Idle = ({
   uploadStatus,
   setCloudData,
   setTriggerImport,
-  setDownloadElapsedTime
+  setDownloadElapsedTime,
+  fileAttached
 }: IdleProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -96,20 +98,30 @@ const Phase01_Idle = ({
   };
 
   const [fileValidityResetCounter, setFileValidityResetCounter] = useState(5);
+  const [isFileReading, setIsFileReading] = useState(false);
+
+  useEffect(() => {
+    if (!fileAttached && fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, [fileAttached]);
 
   const handleFileProcess = async (file: File) => {
+    setIsFileReading(true);
     if (file.type === "text/csv") {
       setFileAttached(file);
       const rows = await countCsvRows(file);
       if (rows && isFileValid) {
         setUploadStatus("attached");
         setFileDetails({ entries: rows });
+        setIsFileReading(false);
       } else {
         setFileAttached(null);
 
         let countdown = 4;
 
         const resetFileValidityCounter = setInterval(() => {
+          setIsFileReading(false);
           setFileValidityResetCounter(countdown);
           countdown--;
 
@@ -250,7 +262,8 @@ const Phase01_Idle = ({
             indexBatch,
             batchSize
           );
-          return response.data || [];
+
+          return (response.data || []).map(({ id, ...rest }) => rest);
         };
 
         const worker = async () => {
@@ -294,7 +307,11 @@ const Phase01_Idle = ({
         }
 
         // Combine final data
-        allData = allBatchResults.flat();
+        allData = allBatchResults
+          .flat()
+          .sort((a, b) => a.id_entry - b.id_entry);
+
+        console.log("😓😓😓😓😓😓 FINAL DATA: ", allData);
 
         if (allData.length !== total) {
           console.warn(
@@ -331,11 +348,6 @@ const Phase01_Idle = ({
       }
       return false;
     }
-  };
-
-  const handleProcessCloudData = () => {
-    setTriggerImport(true);
-    setUploadStatus("processing");
   };
 
   const validRowsHeaders = [
@@ -442,17 +454,30 @@ const Phase01_Idle = ({
                   </p>
                 </UploadBox.Body>
                 <UploadBox.Footer>
-                  <div>
-                    {!isFileValid && (
-                      <span className="text-red-400 animate-pulse">
+                  {isFileReading ? (
+                    <UploadButton className="bg-red-800 hover:bg-red-800 animate-pulse text-white !cursor-not-allowed">
+                      Reading File...
+                    </UploadButton>
+                  ) : !isFileValid ? (
+                    <>
+                      <UploadButton className="bg-red-800 hover:bg-red-800 animate-pulse text-white !cursor-not-allowed">
                         File is invalid. Try again in {fileValidityResetCounter}{" "}
                         seconds.
-                      </span>
-                    )}
-                  </div>
-                  <UploadButton onClick={handleFileUpload}>
-                    Select & Attach File
-                  </UploadButton>
+                      </UploadButton>
+                    </>
+                  ) : (
+                    <UploadButton
+                      onClick={() => {
+                        if (isFileReading) {
+                          return;
+                        } else {
+                          handleFileUpload();
+                        }
+                      }}
+                    >
+                      Select & Attach File
+                    </UploadButton>
+                  )}
                   <label htmlFor="file-upload" className="sr-only hidden">
                     Upload File
                   </label>
