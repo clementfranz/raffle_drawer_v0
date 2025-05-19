@@ -194,6 +194,7 @@ const TableWrapper = () => {
         <thead>
           <tr>
             <th className="bg-gray-300 px-4 py-2 font-bold w-[80px]">ID #</th>
+            <th className="bg-gray-300 px-4 py-2 font-bold w-[80px]">Type</th>
             <th className="bg-gray-300 px-4 py-2">Method</th>
             <th className="bg-gray-300 px-4 py-2">Data API URL</th>
             <th className="bg-gray-300 px-4 py-2 w-[150px]">Sync Status</th>

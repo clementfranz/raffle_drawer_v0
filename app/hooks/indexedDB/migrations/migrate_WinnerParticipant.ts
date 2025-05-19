@@ -10,6 +10,7 @@ export function migrateWinnerParticipant(db: IDBPDatabase<any>) {
     store.createIndex("raffle_code", "raffle_code", { unique: false });
     store.createIndex("id_entry", "id_entry", { unique: false });
     store.createIndex("is_proclaimed", "is_proclaimed", { unique: false });
+    store.createIndex("draw_date", "draw_date", { unique: false });
     store.createIndex("won_at", "won_at", { unique: false });
 
     store.createIndex("winner_type", "winner_type", { unique: false });

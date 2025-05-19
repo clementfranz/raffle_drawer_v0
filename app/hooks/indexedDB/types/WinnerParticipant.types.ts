@@ -5,4 +5,5 @@ export interface WinnerParticipant {
   winner_status: boolean;
   raffle_code: string;
   winner_type: "primary" | "backup";
+  won_at?: any;
 }

@@ -4,6 +4,10 @@ import api from "~/api/client/axios";
 import TableWrapper from "./components/TableWrapper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { downSyncWinnerParticipant } from "~/hooks/indexedDB/syncCloud/downSyncs/downSyncWinnerParticipant";
+import { getWinnerParticipantsRaffleCodes } from "~/api/client/winnerParticipants/getWinnerParticipantsRaffleCodes";
+import { getAllWinnerParticipantsRaffleCodes } from "~/hooks/indexedDB/winnerParticipant/getAllWinnerParticipantsRaffleCodes";
+import { getQueuedDownSyncRaffleCodes } from "~/hooks/indexedDB/syncCloud/queuedSyncs/getQueuedDownSyncRaffleCodes";
 
 const CloudSyncer: React.FC = () => {
   const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
@@ -14,6 +18,14 @@ const CloudSyncer: React.FC = () => {
   const [hasSyncQueueList, setHasSyncQueueList] = useLocalStorageState<boolean>(
     "hasSyncQueueList",
     { defaultValue: true }
+  );
+  const [localParticipantsRaffleCodes, setLocalParticipantsRaffleCodes] =
+    useLocalStorageState<string[]>("localParticipantsRaffleCodes", {
+      defaultValue: []
+    });
+
+  const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
+    "withParticipantsData"
   );
 
   const [cloudSyncModalOpen, setCloudSyncModalOpen] =
@@ -30,7 +42,43 @@ const CloudSyncer: React.FC = () => {
   // Keep refs in sync with state
   useEffect(() => {
     isServerActiveRef.current = isServerActive;
+    if (isServerActive && withParticipantsData) {
+      checkWinnersUpdates();
+    }
   }, [isServerActive]);
+
+  const checkWinnersUpdates = async () => {
+    const cloudRaffleCodes: string[] = await getWinnerParticipantsRaffleCodes();
+
+    let localRaffleCodes: string[];
+
+    const idbRaffleCodes: string[] =
+      await getAllWinnerParticipantsRaffleCodes();
+
+    const queuedSyncDownRaffleCodes: string[] =
+      await getQueuedDownSyncRaffleCodes();
+
+    const combinedLocalRaffleCodes: string[] = [
+      ...idbRaffleCodes,
+      ...queuedSyncDownRaffleCodes
+    ];
+
+    localRaffleCodes = combinedLocalRaffleCodes;
+    setLocalParticipantsRaffleCodes(localRaffleCodes);
+
+    // Find IDs that are in cloud but not in local
+    const differenceRaffleCodes: string[] = cloudRaffleCodes.filter(
+      (code) => !localRaffleCodes.includes(code)
+    );
+
+    // Now do something with those new IDs
+    const downSyncQueued = differenceRaffleCodes.forEach((raffleCode) => {
+      downSyncWinnerParticipant(raffleCode);
+    });
+
+    // Optional: log or handle result
+    console.log("Queued for down-sync:", downSyncQueued);
+  };
 
   const checkServer = async () => {
     try {

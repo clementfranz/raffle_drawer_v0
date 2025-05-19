@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
+import { downSyncer } from "~/api/client/syncCloud/downSyncer";
 import { upSyncer } from "~/api/client/syncCloud/upSyncer";
 import { getSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/getSyncQueueItemById";
+import { addWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipant";
+import { addWinnerParticipantFromCloud } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipantFromCloud";
 
 type RowComponentPropTypes = {
   itemId: number;
@@ -36,10 +39,27 @@ const RowComponent = ({
     }
   };
 
+  const downSyncerLobby = async (itemData: any) => {
+    const syncType = itemData.type;
+    switch (syncType) {
+      case "sync-down-winner":
+        await downSyncer(itemData.id, addWinnerParticipantFromCloud);
+        break;
+
+      default:
+        break;
+    }
+  };
+
   const attemptSync = async () => {
     setIsSyncing(true);
     try {
-      await upSyncer(itemId);
+      if (itemData.destination === "cloud-server") {
+        await upSyncer(itemId);
+      } else {
+        console.log("downsyncing...");
+        await downSyncerLobby(itemData);
+      }
     } catch {
       handleSkipSync(itemId);
     } finally {
@@ -110,6 +130,9 @@ const RowComponent = ({
     >
       <td className="px-4 py-2 text-center">
         {itemData?.id || initialData.id}
+      </td>
+      <td className="px-4 py-2 text-center">
+        {itemData?.source === "cloud-server" ? "DL" : "UL"}
       </td>
       <td className="px-4 py-2 text-center uppercase">
         {itemData?.method_type || initialData.method_type}

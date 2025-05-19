@@ -21,11 +21,11 @@ export async function addWinnerParticipant(
     // Fill in missing keys from the model and the input data
     const { is_drawn, ...filteredParticipantData } = participantData;
     const winnerEntry = {
-      winner_type: winnerType,
       is_drawn: true,
       draw_date: new Date().toISOString(),
       ...winnerModel,
-      ...filteredParticipantData
+      ...filteredParticipantData,
+      winner_type: winnerType
     };
 
     // Add the winner data to the winnerParticipant store
