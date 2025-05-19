@@ -14,6 +14,7 @@ interface Participant {
   id_entry: string;
   full_name: string;
   full_name_raw: string;
+  full_name_cleaned?: string;
   raffle_code: string;
   regional_location: string;
   winner_type: string;
@@ -204,7 +205,7 @@ const ParticipantsTable = ({}) => {
                         : undefined
                     }
                   >
-                    {entry.full_name}
+                    {entry.full_name || entry.full_name_cleaned}
                   </td>
                   <td className="text-base font-bold">{entry.raffle_code}</td>
                   <td className="text-center">{entry.regional_location}</td>

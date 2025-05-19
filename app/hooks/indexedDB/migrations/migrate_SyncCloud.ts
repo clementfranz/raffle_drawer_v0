@@ -8,9 +8,13 @@ export function migrateSyncCloud(db: IDBPDatabase<any>) {
     });
 
     store.createIndex("status", "status", { unique: false });
+    store.createIndex("type", "type", { unique: false });
     store.createIndex("createdAt", "createdAt", { unique: false });
 
     store.createIndex("status_createdAt", ["status", "createdAt"], {
+      unique: false
+    });
+    store.createIndex("type_createdAt", ["type", "createdAt"], {
       unique: false
     });
 
