@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import KopikoBlancaLogoTrimmed from "~/assets/images/KopikoBlancaLogoTrimmed.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import GoogleLoginButton from "../GoogleLoginButton/GoogleLoginButton";
 
 const LoginBox = () => {
   const [userEmail, setUserEmail] = useState("");
@@ -33,7 +34,7 @@ const LoginBox = () => {
             type="password"
             name="passowrd"
             id="passowrd"
-            placeholder="Type Password"
+            placeholder="Password"
             className="bg-white w-[250px] py-2 px-2.5 rounded-xl"
           />
           <button
@@ -45,13 +46,7 @@ const LoginBox = () => {
         </div>
         <div className="form flex flex-col gap-2 items-center justify-center w-full mt-2">
           <div className="or text-white">-- or --</div>
-          <button
-            type="submit"
-            className="bg-[#7e061a] hover:bg-[#7e061acb] text-[white] w-[250px] py-2 px-2.5 rounded-xl cursor-pointer gap-3 flex justify-center items-center"
-          >
-            <FontAwesomeIcon icon={faGoogle} />
-            <span>Login with Google</span>
-          </button>
+          <GoogleLoginButton />
         </div>
       </div>
     </>
