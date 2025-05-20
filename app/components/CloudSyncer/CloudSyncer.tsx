@@ -45,7 +45,7 @@ const CloudSyncer: React.FC = () => {
     if (isServerActive && withParticipantsData) {
       checkWinnersUpdates();
     }
-  }, [isServerActive]);
+  }, [isServerActive, withParticipantsData]);
 
   const checkWinnersUpdates = async () => {
     const cloudRaffleCodes: string[] = await getWinnerParticipantsRaffleCodes();

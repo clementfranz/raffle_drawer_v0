@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import useLocalStorageState from "use-local-storage-state";
 import { downSyncer } from "~/api/client/syncCloud/downSyncer";
 import { upSyncer } from "~/api/client/syncCloud/upSyncer";
 import { getSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/getSyncQueueItemById";
@@ -22,6 +23,10 @@ const RowComponent = ({
   handleNextSync,
   initialData
 }: RowComponentPropTypes) => {
+  const [refreshTable, setRefreshTable] = useLocalStorageState("refreshTable", {
+    defaultValue: 0
+  });
+
   const [syncingActive, setSyncingActive] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [statusCaption, setStatusCaption] = useState("Loading Data");
@@ -43,7 +48,15 @@ const RowComponent = ({
     const syncType = itemData.type;
     switch (syncType) {
       case "sync-down-winner":
-        await downSyncer(itemData.id, addWinnerParticipantFromCloud);
+        const successDownSync = await downSyncer(
+          itemData.id,
+          addWinnerParticipantFromCloud
+        );
+        if (successDownSync) {
+          setRefreshTable((prev) => {
+            return prev + 1;
+          });
+        }
         break;
 
       default:
