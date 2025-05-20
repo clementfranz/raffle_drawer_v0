@@ -24,7 +24,7 @@ import CloudSyncer from "~/components/CloudSyncer/CloudSyncer";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "KBRDS | Dashboard" },
+    { title: "KBNRDS | Dashboard" },
     {
       name: "description",
       content: "Welcome to Kopiko Blanca Raffle Draw System"

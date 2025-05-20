@@ -14,7 +14,7 @@ import PresView_Transition from "~/components/PresentationViews/PresView_Transit
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "KBRDS | Presenter" },
+    { title: "KBNRDS | Presenter" },
     { name: "description", content: "Welcome to React Router!" }
   ];
 }
