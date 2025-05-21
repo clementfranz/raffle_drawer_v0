@@ -215,7 +215,7 @@ const TableWrapper = () => {
           ))}
           {rows.length <= 0 && (
             <tr className="w-full grow !h-full">
-              <td colSpan={5}>
+              <td colSpan={6}>
                 No queue items found to sync. Please refresh page to check for
                 new items.{" "}
               </td>

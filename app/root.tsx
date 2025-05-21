@@ -11,6 +11,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { initDB } from "./hooks/indexedDB/_main/useIndexedDB";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { AuthProvider } from "./auth/AuthContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -47,7 +48,9 @@ export default function App() {
   initDB();
   return (
     <GoogleOAuthProvider clientId="80882870095-cs04lgncq0dqoqu0tep7g6bgvac81tlt.apps.googleusercontent.com">
-      <Outlet />
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
     </GoogleOAuthProvider>
   );
 }

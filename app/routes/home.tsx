@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 import InfoPrint from "./infoprint";
 import Main from "./main";
 import Presenter from "./presenter";
-import { useSearchParams } from "react-router";
+import { Navigate, useLocation, useSearchParams } from "react-router";
+import { useAuth } from "~/auth/AuthContext";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -16,9 +17,16 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return (
-    <>
-      <Welcome />
-    </>
-  );
+  const { user } = useAuth();
+  const location = useLocation();
+
+  console.log("🟢🟢🟢🟢 ACTIVE USER: ", user);
+
+  const isAtRoot = location.pathname === "/";
+
+  if (user && isAtRoot) {
+    return <Navigate to="/main" replace />;
+  }
+
+  return <Welcome />;
 }

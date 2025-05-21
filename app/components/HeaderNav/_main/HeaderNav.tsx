@@ -5,10 +5,21 @@ interface HeaderNavProps {
   isPresenting?: boolean;
 }
 
-import SettingsButton from "~/components/SettingsButton";
+import SettingsButton from "~/components/HeaderNav/components/SettingsButton";
+import LogoutButton from "../components/LogoutButton";
+import { useAuth } from "~/auth/AuthContext";
+import ProfileDropdown from "../components/ProfileDropdown";
+import SettingsModal from "../components/SettingsModal";
 
 const HeaderNav: React.FC<HeaderNavProps> = ({ isPresenting }) => {
+  const { user } = useAuth();
   const [isPresentingMode, setIsPresentingMode] = useState(false);
+
+  const [greetingActive, setGreetingActive] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(true);
+
+  const toggleModal = () => setIsModalOpen((prev) => !prev);
 
   useEffect(() => {
     if (isPresenting) {
@@ -17,6 +28,15 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ isPresenting }) => {
       setIsPresentingMode(false);
     }
   }, [isPresenting]);
+
+  useEffect(() => {
+    setGreetingActive(true);
+
+    const exitGreeting = setTimeout(() => {
+      setGreetingActive(false);
+      clearTimeout(exitGreeting);
+    }, 10000);
+  }, []);
 
   return (
     <>
@@ -33,15 +53,17 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ isPresenting }) => {
           <nav>
             <ul className="flex space-x-1 justify-center items-center">
               <li>
-                <SettingsButton />
+                <SettingsModal isOpen={isModalOpen} onClose={toggleModal} />
+              </li>
+              <li
+                className={`pr-2 transition-all duration-1000 ${
+                  greetingActive ? "translate-y-0" : "-translate-y-[100px]"
+                }`}
+              >
+                {user ? `Welcome Back, ${user.first_name}! 😊` : ""}
               </li>
               <li>
-                <a
-                  href="/logout"
-                  className="px-4 py-2 hover:bg-[#7d0b1c] rounded-full"
-                >
-                  Logout
-                </a>
+                <ProfileDropdown settingsToggleModal={toggleModal} />
               </li>
             </ul>
           </nav>
