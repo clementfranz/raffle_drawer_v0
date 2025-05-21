@@ -25,6 +25,8 @@ function GoogleLoginButton({ setErrorMessage }: GoogleLoginButtonProps) {
         setLoginCaption("Authenticating...");
         const { access_token } = tokenResponse;
 
+        const baseAPIURL = import.meta.env.VITE_API_URL_AUTH;
+
         // Step 1: Get user info from Google
         const userInfo = await axios.get(
           "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -36,16 +38,13 @@ function GoogleLoginButton({ setErrorMessage }: GoogleLoginButtonProps) {
         );
 
         // Step 2: Send to your Laravel backend
-        const res = await axios.post(
-          "http://localhost:8000/api/auth/google/callback",
-          {
-            email: userInfo.data.email,
-            first_name: userInfo.data.given_name,
-            last_name: userInfo.data.family_name,
-            sub: userInfo.data.sub,
-            picture: userInfo.data.picture
-          }
-        );
+        const res = await axios.post(baseAPIURL + "/auth/google/callback", {
+          email: userInfo.data.email,
+          first_name: userInfo.data.given_name,
+          last_name: userInfo.data.family_name,
+          sub: userInfo.data.sub,
+          picture: userInfo.data.picture
+        });
 
         // Step 3: Use AuthContext to set auth
         auth?.login(res.data.user, res.data.token);

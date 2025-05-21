@@ -22,6 +22,8 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
   const navigate = useNavigate();
   const auth = useAuth();
 
+  const baseAPIURL = import.meta.env.VITE_API_URL_AUTH;
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
     setEmail(email);
@@ -48,7 +50,7 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
     setLoginCaption("Logging in...");
 
     try {
-      const res = await axios.post("http://localhost:8000/api/auth/login", {
+      const res = await axios.post(baseAPIURL + "/auth/login", {
         email,
         password
       });
