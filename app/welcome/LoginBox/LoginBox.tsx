@@ -3,15 +3,19 @@ import React, { useState } from "react";
 import KopikoBlancaLogoTrimmed from "~/assets/images/KopikoBlancaLogoTrimmed.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import GoogleLoginButton from "../GoogleLoginButton/GoogleLoginButton";
+import EmailLoginButton from "../EmailLoginButton/EmailLoginButton";
 
 const LoginBox = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
+  const [errorMessage, setErrorMessage] = useState("");
+
   return (
     <>
       {/* Content Layer */}
-      <div className="relative z-10 w-full py-5">
+      <div className="relative z-10 w-full h-full py-5">
         <div className="portal-label font-[Montserrat] text-xl uppercase w-full text-center font-bold text-white bg-[#000000a9] py-2">
           Login Portal
         </div>
@@ -21,38 +25,17 @@ const LoginBox = () => {
         <div className="portal-label font-[Montserrat] text-lg uppercase w-full text-center font-bold text-white">
           National Raffle Draw System
         </div>
-        <div className="form flex flex-col gap-3 items-center justify-center w-full mt-6">
-          <input
-            type="text"
-            name="email"
-            id="email"
-            placeholder="Email"
-            className="bg-white w-[250px] py-2 px-2.5 rounded-xl"
-          />
-          <input
-            type="password"
-            name="passowrd"
-            id="passowrd"
-            placeholder="Type Password"
-            className="bg-white w-[250px] py-2 px-2.5 rounded-xl"
-          />
-          <button
-            type="submit"
-            className="bg-[#df0427] hover:bg-[#df0429c4] text-[white] w-[250px] py-2 px-2.5 rounded-xl cursor-pointer"
-          >
-            Login
-          </button>
-        </div>
+
+        <EmailLoginButton setErrorMessage={setErrorMessage} />
         <div className="form flex flex-col gap-2 items-center justify-center w-full mt-2">
           <div className="or text-white">-- or --</div>
-          <button
-            type="submit"
-            className="bg-[#7e061a] hover:bg-[#7e061acb] text-[white] w-[250px] py-2 px-2.5 rounded-xl cursor-pointer gap-3 flex justify-center items-center"
-          >
-            <FontAwesomeIcon icon={faGoogle} />
-            <span>Login with Google</span>
-          </button>
+          <GoogleLoginButton setErrorMessage={setErrorMessage} />
         </div>
+        {errorMessage && (
+          <div className="error-message absolute bottom-0 bg-[#880202ce] text-white text-sm min-w-[250px] p-4 left-1/2 -translate-y-[10px] -translate-x-1/2 rounded-2xl text-center animate-pulse">
+            {errorMessage}
+          </div>
+        )}
       </div>
     </>
   );

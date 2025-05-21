@@ -2,7 +2,7 @@ import type { Route } from "./+types/home";
 import { sampleData } from "../data/sampleData";
 import { useEffect, useState } from "react";
 
-import HeaderNav from "~/components/HeaderNav/HeaderNav";
+import HeaderNav from "~/components/HeaderNav/_main/HeaderNav";
 
 import ControlPanel from "../components/ControlPanel/_main/ControlPanel";
 import PaginationBar from "~/components/DashboardComponents/PaginationBar/_main/PaginationBar";

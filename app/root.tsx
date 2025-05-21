@@ -10,6 +10,8 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import { initDB } from "./hooks/indexedDB/_main/useIndexedDB";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { AuthProvider } from "./auth/AuthContext";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -44,7 +46,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   initDB();
-  return <Outlet />;
+  return (
+    <GoogleOAuthProvider clientId="80882870095-cs04lgncq0dqoqu0tep7g6bgvac81tlt.apps.googleusercontent.com">
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
+    </GoogleOAuthProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

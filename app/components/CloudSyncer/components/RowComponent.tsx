@@ -1,3 +1,8 @@
+import {
+  faCloudArrowDown,
+  faCloudArrowUp
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import useLocalStorageState from "use-local-storage-state";
 import { downSyncer } from "~/api/client/syncCloud/downSyncer";
@@ -144,8 +149,17 @@ const RowComponent = ({
       <td className="px-4 py-2 text-center">
         {itemData?.id || initialData.id}
       </td>
-      <td className="px-4 py-2 text-center">
-        {itemData?.source === "cloud-server" ? "DL" : "UL"}
+      <td className="px-4 py-2 text-center flex justify-center items-center">
+        {itemData?.source === "cloud-server" ? (
+          <>
+            <FontAwesomeIcon icon={faCloudArrowDown} className="pr-2" />{" "}
+            Downsync
+          </>
+        ) : (
+          <>
+            <FontAwesomeIcon icon={faCloudArrowUp} className="pr-2" /> Upsync
+          </>
+        )}
       </td>
       <td className="px-4 py-2 text-center uppercase">
         {itemData?.method_type || initialData.method_type}
