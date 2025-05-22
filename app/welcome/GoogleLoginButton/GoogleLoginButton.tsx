@@ -76,7 +76,7 @@ function GoogleLoginButton({ setErrorMessage }: GoogleLoginButtonProps) {
 
         const destroyMessage = setTimeout(() => {
           setLoginDisabled(false);
-          setLoginCaption("Login with Email");
+          setLoginCaption("Login with Google");
           setErrorMessage("");
           clearTimeout(destroyMessage);
         }, 10000);

@@ -3,6 +3,7 @@ import { useAuth } from "~/auth/AuthContext";
 import AnonymousSVG from "~/assets/profile-pictures/anonymous.svg";
 import SettingsButton from "~/components/HeaderNav/components/SettingsButton";
 import LogoutButton from "./LogoutButton";
+import { NavLink } from "react-router";
 
 type ProfileDropdownProps = {
   settingsToggleModal: () => void;
