@@ -1,4 +1,12 @@
 import React from "react";
+import type { Route } from "./+types/WrapperLayout";
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "KPC | Privacy Policy" },
+    { name: "description", content: "Welcome to React Router!" }
+  ];
+}
 
 const PrivacyPolicy = () => {
   return (

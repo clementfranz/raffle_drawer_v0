@@ -39,7 +39,7 @@
 
 
   .segment.indented p {
-    @apply pl-8
+    @apply pl-8 text-left
   }
 
   .segment.indented ul {
@@ -47,7 +47,11 @@
   }
 
   .segment.indented ul>li {
-    @apply pl-10 relative mb-2
+    @apply pl-10 relative mb-2 text-left
+  }
+
+  .segment.indented ul>li b {
+    @apply font-semibold
   }
 
   .segment.indented>ul>li::before {

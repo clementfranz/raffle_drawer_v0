@@ -1,0 +1,32 @@
+@reference "tailwindcss";
+
+@keyframes redAlertGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.red-alert-animation {
+  background: linear-gradient(270deg, #ff4268, #ffa846, #ff4268);
+  background-size: 600% 600%;
+  animation: redAlertGradient 3s ease infinite;
+  color: white;
+  /* optional: ensures good contrast */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(255, 89, 67, 0.9), 0 0 20px rgba(255, 152, 83, 0.7);
+}
+
+.expired-buttons-group button {
+  @apply p-2 px-4 cursor-pointer bg-red-900 hover:bg-red-700 rounded-2xl
+}

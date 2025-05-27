@@ -1,6 +1,6 @@
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "~/auth/AuthContext";
 import "./SoftwareLicenseAgreement.css";
 import Sec01_BackgroundAndPurpose from "./data/SLA_Contents/Sec01_BackgroundAndPurpose";
@@ -9,9 +9,36 @@ import Sec03_GrantOfLicense from "./data/SLA_Contents/Sec03_GrantOfLicense";
 import Sec04_OwnershipAndIP from "./data/SLA_Contents/Sec04_OwnershipAndIP";
 import Sec05_LicenseFeeAndRenewal from "./data/SLA_Contents/Sec05_LicenseFeeAndRenewal";
 import Sec06_UsageConditions from "./data/SLA_Contents/Sec06_UsageConditions";
+import Sec07_SupervisedHostingException from "./data/SLA_Contents/Sec07_SupervisedHostingException";
+import Sec08_SystemMonitoringAndLogging from "./data/SLA_Contents/Sec08_SystemMonitoringAndLogging";
+import Sec09_CodeProtection from "./data/SLA_Contents/Sec09_CodeProtection";
+import Sec10_BrandUsageDisclaimer from "./data/SLA_Contents/Sec10_BrandUsageDisclaimer";
+import Sec11_LegalStatusOfDeveloper from "./data/SLA_Contents/Sec11_LegalStatusOfDeveloper";
+import Sec12_DigitalAcceptance from "./data/SLA_Contents/Sec12_DigitalAcceptance";
+import Sec13_SystemExpirationAndUIBehavior from "./data/SLA_Contents/Sec13_SystemExpirationAndUIBehavior";
+import Sec14_BreachAndTermination from "./data/SLA_Contents/Sec14_BreachAndTermination";
+import Sec15_DisputeResolution from "./data/SLA_Contents/Sec15_DisputeResolution";
+import Sec16_MaintenanceDisclaimer from "./data/SLA_Contents/Sec16_MaintenanceDisclaimer";
+import Sec17_Confidentiality from "./data/SLA_Contents/Sec17_Confidentiality";
+import Sec18_NonTransferability from "./data/SLA_Contents/Sec18_NonTransferability";
+import Sec19_LicenseVerification from "./data/SLA_Contents/Sec19_LicenseVerification";
+import Sec20_IncidentReporting from "./data/SLA_Contents/Sec20_IncidentReporting";
+import Sec21_GeneralProvisions from "./data/SLA_Contents/Sec21_GeneralProvisions";
+import Sec22_ContactInformation from "./data/SLA_Contents/Sec22_ContactInformation";
+import Sec23_AcceptanceAndExecution from "./data/SLA_Contents/Sec23_AcceptanceAndExecution";
+import Sec24_SupersessionOfPriorDrafts from "./data/SLA_Contents/Sec24_SupersessionOfPriorDrafts";
+import type { Route } from "./+types/WrapperLayout";
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "KPC | Software License Agreement" },
+    { name: "description", content: "Welcome to React Router!" }
+  ];
+}
 
 const SoftwareLicenseAgreement = () => {
   const { user } = useAuth();
+
   return (
     <>
       {user ? (
@@ -80,24 +107,51 @@ const SoftwareLicenseAgreement = () => {
                 <Sec04_OwnershipAndIP />
                 <Sec05_LicenseFeeAndRenewal />
                 <Sec06_UsageConditions />
+                <Sec07_SupervisedHostingException />
+                <Sec08_SystemMonitoringAndLogging />
+                <Sec09_CodeProtection />
+                <Sec10_BrandUsageDisclaimer />
+                <Sec11_LegalStatusOfDeveloper />
+                <Sec12_DigitalAcceptance />
+                <Sec13_SystemExpirationAndUIBehavior />
+                <Sec14_BreachAndTermination />
+                <Sec15_DisputeResolution />
+                <Sec16_MaintenanceDisclaimer />
+                <Sec17_Confidentiality />
+                <Sec18_NonTransferability />
+                <Sec19_LicenseVerification />
+                <Sec20_IncidentReporting />
+                <Sec21_GeneralProvisions />
+                <Sec22_ContactInformation />
+                <Sec23_AcceptanceAndExecution />
+                <Sec24_SupersessionOfPriorDrafts />
               </article>
 
-              <div className="text-sm text-gray-600">
+              <div className="segment">
                 <p>
-                  <strong>Document ID:</strong> CFZ-KBNRDS-LICENSE-V1.0-20250525
-                </p>
-                <p>
-                  <strong>License Verification URL:</strong>{" "}
+                  <span className="font-semibold">
+                    Official License Record:
+                  </span>
+                  <br />
                   <a
                     href="https://clients.clementfranz.site/licences/CFZ-KBNRDS-LICENSE-V1.0-20250525"
-                    className="text-blue-600 underline"
+                    className="text-blue-600 underline break-all"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
                     https://clients.clementfranz.site/licences/CFZ-KBNRDS-LICENSE-V1.0-20250525
                   </a>
                 </p>
-                <p className="mt-2 italic">
-                  Any tampering or replacement of this license document will not
-                  affect the official record hosted at the link above.
+
+                <p className="mt-2">
+                  <span className="font-semibold">Document ID:</span>{" "}
+                  <span className="font-bold">
+                    CFZ-KBNRDS-LICENSE-V1.0-20250525
+                  </span>
+                </p>
+
+                <p className="mt-2">
+                  QR code for verification is attached with the digital copy.
                 </p>
               </div>
             </div>

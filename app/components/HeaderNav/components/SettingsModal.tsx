@@ -146,9 +146,9 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           <div className="footer-content italic">
             Last System Update: {latestUpdateData}
           </div>
-          <NavLink to="/docs/software-license-agreement">
+          {/* <NavLink to="/docs/software-license-agreement">
             See <span className="hover:underline text-blue-600">SLA</span>
-          </NavLink>
+          </NavLink> */}
         </div>
       </div>
     </div>

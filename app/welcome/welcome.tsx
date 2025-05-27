@@ -4,11 +4,14 @@ import { latestUpdateData } from "~/data/latestUpdateData";
 import { urlFilter } from "~/hooks/spaLinker";
 
 import KopikoWoodenTableBG from "~/assets/images/KopikoWoodenTableBG.jpg";
+import KopikoWelcomeBGBlur from "~/assets/images/KopikoWelcomeBGBlur.jpg";
+import KopikoWelcomeBGHighDef from "~/assets/images/KopikoWelcomeBGHighDef.jpg";
 import KopikoProducts from "~/assets/images/KopikoProducts.png";
 import KopikoCoffeeBeansSack from "~/assets/images/KopikoCoffeeBeansSack.png";
 import KopikoBrownBeans from "~/assets/images/KopikoBrownBeans.jpg";
 import KopikoLogo from "~/assets/images/Kopiko.svg";
 import LoginBox from "./LoginBox/LoginBox";
+import LazyBackground from "~/ui/LazyImage/LazyBackground";
 
 export function Welcome() {
   const [SPA_status, setSPA_status] = useLocalStorageState("spa_status", {
@@ -23,9 +26,10 @@ export function Welcome() {
     }
   };
   return (
-    <main
-      className="flex items-center justify-start w-screen h-screen bg-cover bg-left relative"
-      style={{ backgroundImage: `url(${KopikoWoodenTableBG})` }}
+    <LazyBackground
+      className="flex items-center justify-start w-screen h-screen bg-cover bg-left"
+      blurUrl={KopikoWelcomeBGBlur}
+      hdUrl={KopikoWelcomeBGHighDef}
     >
       <div className="left  h-full flex flex-col justify-center items-center relative w-3/5">
         <div
@@ -61,6 +65,6 @@ export function Welcome() {
           <LoginBox />
         </div>
       </div>
-    </main>
+    </LazyBackground>
   );
 }
