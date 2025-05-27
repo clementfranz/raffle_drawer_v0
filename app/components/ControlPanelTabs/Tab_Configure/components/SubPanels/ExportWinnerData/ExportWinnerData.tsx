@@ -13,6 +13,11 @@ const ExportWinnerData = () => {
   const [primaryWinnersButtonLabel, setPrimaryWinnersButtonLabel] =
     useState("Primary Winners");
 
+  const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
+    "isServerActive",
+    { defaultValue: true }
+  );
+
   const [loadingBackupWinnersCSV, setLoadingBackupWinnersCSV] = useState(false);
   const [backupWinnersButtonLabel, setBackupWinnersButtonLabel] =
     useState("Backup Winners");
@@ -129,7 +134,7 @@ const ExportWinnerData = () => {
       className="pt-4 border-t-2 border-solid border-gray-300 mt-4"
     >
       <p className="text-sm">Choose winner type to download:</p>
-      {winnersDataAvailable ? (
+      {winnersDataAvailable && isServerActive ? (
         <>
           <div className="grid grid-cols-2 gap-2 pt-2">
             <div
@@ -166,6 +171,12 @@ const ExportWinnerData = () => {
             </div>
           </div>
           <p className="text-sm italic mt-3">Data are updated in real time.</p>
+        </>
+      ) : !isServerActive ? (
+        <>
+          <div className="mt-6 text-red-400 text-balance">
+            Please turn on server to enable downloading of winners data.
+          </div>
         </>
       ) : (
         <div className="mt-6 text-red-400">

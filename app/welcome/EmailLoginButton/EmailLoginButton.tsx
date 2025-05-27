@@ -109,10 +109,10 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
       <button
         onClick={handleLogin}
         type="button"
-        className={` text-[white] w-[250px] py-2 px-2.5 rounded-xl ${
+        className={`text-[white] w-[250px] py-2 px-2.5 rounded-xl ${
           loginDisabled
-            ? "cursor-not-allowed bg-emerald-600"
-            : "cursor-pointer hover:bg-[#df0429c4] bg-[#df0427] "
+            ? "cursor-wait bg-emerald-600"
+            : "cursor-pointer hover:bg-[#df0429c4] bg-[#df0427]"
         }`}
       >
         <div

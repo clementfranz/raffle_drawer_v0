@@ -34,6 +34,11 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     string | undefined
   >("favoredRegion", { defaultValue: undefined });
 
+  const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
+    "isServerActive",
+    { defaultValue: true }
+  );
+
   const {
     winnerRecords,
     setWinner,
@@ -113,6 +118,15 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     type: "primary" | "backup" = "primary",
     nth: 0 | 1 | 2 = 0
   ) => {
+    if (!isServerActive) {
+      const prevMessage = raffleDrawMessage;
+      setRaffleDrawMessage("Server is not active. Please start the server.");
+      const timeOut = setTimeout(() => {
+        setRaffleDrawMessage(prevMessage);
+        clearTimeout(timeOut);
+      }, 5000);
+      return;
+    }
     console.log("Attempting: ", type, " ", nth);
     setIsRevealed(false);
     setSlotCodeStatus("idle");
@@ -383,7 +397,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
             className="sticky top-0 bg-linear-to-b from-gray-900 via-[#101828a6] to-[#00000000] py-4 pb-11 !mb-0"
           >
             <div className="raffle-draw-status bg-[#030712e8] w-full rounded-xl h-[80px] border-gray-600 border-2 flex items-center justify-center text-lg font-[courier] font-bold text-amber-200 text-shadow-amber-800 text-shadow-sm line-clamp-2 px-4 -mb-4">
-              <span className="animate-pulse text-center break-words">
+              <span className="animate-pulse text-center break-words text-balance">
                 {raffleDrawMessage}
               </span>
             </div>
@@ -658,6 +672,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
             presentingStatus === "presenting" &&
             presentingView === "raffle-draw" &&
             withParticipantsData &&
+            isServerActive &&
             "hidden"
           }`}
         >
@@ -668,6 +683,10 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
                 <>Please start presentation and switch to raffle view</>
               ) : presentingView !== "raffle-draw" ? (
                 <>Please switch view to raffle draw.</>
+              ) : !isServerActive ? (
+                <>
+                  Server is not active. <br /> Please start the server first.
+                </>
               ) : (
                 <>
                   No Data available for raffle. <br /> Please upload data first.{" "}

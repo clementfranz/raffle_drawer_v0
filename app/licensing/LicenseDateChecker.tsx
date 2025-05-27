@@ -79,7 +79,7 @@ const LicenseDateChecker = () => {
   if (pageRoute === "/presenter" && daysBeforeExpiry > 7) return null;
 
   return (
-    <>
+    <div className="z-100">
       {checkedExpiration && (
         <>
           <span className="uppercase hidden">
@@ -88,7 +88,7 @@ const LicenseDateChecker = () => {
           {renderStateUI(licenseStatus)}
         </>
       )}
-    </>
+    </div>
   );
 };
 

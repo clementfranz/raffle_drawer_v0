@@ -10,10 +10,17 @@ import {
 } from "~/licensing/licenseValidator";
 import BGLicenseExpired from "~/licensing/LicenseStatesUI/BGLicenseExpired";
 import { useCountdown } from "~/hooks/useCountdown";
+import DateLegitimator from "~/components/DateLegitimator/_main/DateLegitimator";
+import BGSystemDateAnomaly from "~/components/DateLegitimator/subcomponents/BGSystemDateAnomaly";
 
 export default function Protected() {
   const remainingDays = checkDaysBeforeLicenseExpiration();
   const expiration = getLicenseExpirationDate();
+
+  const [localIllegitimateDate, setLocalIllegitimateDate] =
+    useLocalStorageState("nrds_illegitimate_date", {
+      defaultValue: false
+    });
 
   const { days, hours, minutes, seconds } = useCountdown(expiration);
 
@@ -69,8 +76,15 @@ export default function Protected() {
       )}
 
       {/* Main content appears regardless of loader, but loader blocks view */}
+      <DateLegitimator />
       <LicenseDateChecker />
-      {!isExpired ? <Outlet /> : <BGLicenseExpired />}
+      {isExpired ? (
+        <BGLicenseExpired />
+      ) : localIllegitimateDate ? (
+        <BGSystemDateAnomaly />
+      ) : (
+        <Outlet />
+      )}
     </>
   );
 }

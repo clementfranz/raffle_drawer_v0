@@ -1,0 +1,32 @@
+{
+  "$schema": "https://cdn.statically.io/gh/nguyenngoclongdev/cdn/main/schema/v10/terminal-keeper.json",
+  "theme": "tribe",
+  "active": "default",
+  "activateOnStartup": true,
+  "keepExistingTerminals": false,
+  "sessions": {
+    "default": [
+      {
+        "name": "dev-server",
+        "shell": "C:\\Program Files\\Git\\bin\\bash.exe",
+        "autoExecuteCommands": true,
+        "icon": "terminal",
+        "color": "terminal.ansiGreen",
+        "commands": ["npm run dev"]
+      },
+      {
+        "name": "git-or-npm",
+        "shell": "C:\\Program Files\\Git\\bin\\bash.exe",
+        "icon": "git-branch",
+        "color": "terminal.ansiBlue",
+        "commands": ["# Run your git or npm install commands here"]
+      }
+    ],
+    "saved-session": [
+      {
+        "name": "connect",
+        "commands": [""]
+      }
+    ]
+  }
+}

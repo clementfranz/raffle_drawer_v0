@@ -23,6 +23,11 @@ type RegionalStat = {
 const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
   const [randomParticipant, setRandomParticipant] = useState<any>(null);
 
+  const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
+    "isServerActive",
+    { defaultValue: true }
+  );
+
   const [regionalStats] = useLocalStorageState<RegionalStat>("regionalStats");
   const [favoredRegion, setFavoredRegion] = useLocalStorageState<
     string | undefined
@@ -69,7 +74,9 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
       <TabShell position="top">
         <TabSubPanel title={"Regional Picking Parameter"}>
           <p className="text-sm">Choose Region to choose winner from</p>
-          {regionalStats && regionalStats?.regions.length > 0 ? (
+          {regionalStats &&
+          regionalStats?.regions.length > 0 &&
+          isServerActive ? (
             <>
               <label
                 htmlFor="region-select"
@@ -109,6 +116,12 @@ const Tab_Configure: React.FC<Tab_ConfigureProps> = ({ isActiveTab }) => {
                   Apply
                 </TabActionButton>
               </div> */}
+            </>
+          ) : !isServerActive ? (
+            <>
+              <div className="mt-6 text-red-400 text-balance">
+                Please start server to enable regional picking.
+              </div>
             </>
           ) : (
             <div className="mt-6 text-red-400">

@@ -8,6 +8,7 @@ import Main from "./main";
 import Presenter from "./presenter";
 import { Navigate, useLocation, useSearchParams } from "react-router";
 import { useAuth } from "~/auth/AuthContext";
+import DefaultLoader from "~/components/Loaders/DefaultLoader/DefaultLoader";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -17,16 +18,24 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   console.log("🟢🟢🟢🟢 ACTIVE USER: ", user);
 
   const isAtRoot = location.pathname === "/";
 
-  if (user && isAtRoot) {
-    return <Navigate to="/main" replace />;
-  }
+  return (
+    <div className="overflow-hidden relative h-screen w-screen">
+      <div className={!loading ? "hidden" : ""}>
+        <DefaultLoader />
+      </div>
 
-  return <Welcome />;
+      {user && isAtRoot && !loading ? (
+        <Navigate to="/main" replace />
+      ) : (
+        <Welcome />
+      )}
+    </div>
+  );
 }
