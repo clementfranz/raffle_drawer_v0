@@ -1,0 +1,63 @@
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  10% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  90% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.5;
+  }
+
+  80% {
+    transform: translateY(-150%);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: translateY(-200%);
+    opacity: 0;
+  }
+}
+
+/* Basic fade animation */
+.bg-fade {
+  animation-name: fadeInOut;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: both;
+  animation-iteration-count: infinite;
+}
+
+/* Fade + Scroll combo */
+.scrolling {
+  animation-name: fadeInOut, scrollText;
+  animation-timing-function: ease-in-out, linear;
+  animation-fill-mode: both;
+  animation-iteration-count: infinite, infinite;
+  will-change: transform, opacity;
+}

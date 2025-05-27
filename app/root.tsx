@@ -12,6 +12,9 @@ import "./app.css";
 import { initDB } from "./hooks/indexedDB/_main/useIndexedDB";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./auth/AuthContext";
+import { useIsMobile } from "./hooks/useIsMobile";
+import MobileBlockerUI from "./components/MobileBlockerUI/MobileBlockerUI";
+import { useEffect, useState } from "react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -45,11 +48,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { isMobile, hasChecked } = useIsMobile();
+
+  if (!hasChecked) return null; // wait before rendering anything
+
   initDB();
   return (
     <GoogleOAuthProvider clientId="80882870095-cs04lgncq0dqoqu0tep7g6bgvac81tlt.apps.googleusercontent.com">
       <AuthProvider>
-        <Outlet />
+        <>{isMobile ? <MobileBlockerUI /> : <Outlet />}</>
       </AuthProvider>
     </GoogleOAuthProvider>
   );

@@ -1,0 +1,32 @@
+@reference "tailwindcss";
+
+.warning-banner {
+  background: linear-gradient(-45deg, darkred, orange, darkred, orange);
+  background-size: 400% 400%;
+  animation: gradientMove 6s ease infinite;
+
+  color: white;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.warning-banner.translucent {
+  background: linear-gradient(-45deg, rgba(139, 0, 0, 0.747), rgba(255, 166, 0, 0.705), rgba(139, 0, 0, 0.63), rgba(255, 166, 0, 0.664));
+  background-size: 400% 400%;
+  animation: gradientMove 6s ease infinite;
+}
+
+/* Animation keyframes */
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}

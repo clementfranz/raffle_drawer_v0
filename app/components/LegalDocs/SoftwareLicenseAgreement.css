@@ -1,0 +1,79 @@
+@reference "tailwindcss";
+
+.sections {
+
+
+  h1 {
+    @apply text-xl font-bold mt-8 mb-2 text-gray-900 uppercase
+  }
+
+  section {
+    @apply relative pb-6
+  }
+
+  section:not(:first-child) {
+    @apply pt-5
+  }
+
+  section:not(:first-child)::before {
+    content: "";
+    @apply border-gray-300 h-[2px] w-full absolute bg-gray-400 top-0 opacity-50;
+  }
+
+
+  p b {
+    @apply font-semibold
+  }
+
+  .segment {
+    @apply mb-4
+  }
+
+  .segment h2 {
+    @apply font-semibold
+  }
+
+  .segment.indented {
+    @apply pl-4
+  }
+
+
+  .segment.indented p {
+    @apply pl-8 text-left
+  }
+
+  .segment.indented ul {
+    @apply pl-8
+  }
+
+  .segment.indented ul>li {
+    @apply pl-10 relative mb-2 text-left
+  }
+
+  .segment.indented ul>li b {
+    @apply font-semibold
+  }
+
+  .segment.indented>ul>li::before {
+    content: '';
+
+    @apply absolute left-4 top-2 text-gray-700 h-[8px] aspect-square rounded-full bg-gray-700;
+  }
+
+  .segment.indented>ul>ul>li::before {
+    content: '';
+
+    @apply absolute left-4 top-2 h-[8px] aspect-square rounded-full bg-gray-200 border-2 border-gray-600 border-solid;
+  }
+
+  .segment.bullet-item p {
+    @apply relative pl-10;
+    /* leave space for the bullet */
+  }
+
+  .segment.bullet-item p::before {
+    content: '';
+
+    @apply absolute left-4 top-2 text-gray-700 h-[8px] aspect-square rounded-full bg-gray-700;
+  }
+}
