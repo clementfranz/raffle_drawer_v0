@@ -12,10 +12,16 @@ import BGLicenseExpired from "~/licensing/LicenseStatesUI/BGLicenseExpired";
 import { useCountdown } from "~/hooks/useCountdown";
 import DateLegitimator from "~/components/DateLegitimator/_main/DateLegitimator";
 import BGSystemDateAnomaly from "~/components/DateLegitimator/subcomponents/BGSystemDateAnomaly";
+import BGOfflineServer from "~/components/CloudSyncer/components/BGOfflineServer";
 
 export default function Protected() {
   const remainingDays = checkDaysBeforeLicenseExpiration();
   const expiration = getLicenseExpirationDate();
+
+  const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
+    "isServerActive",
+    { defaultValue: true }
+  );
 
   const [localIllegitimateDate, setLocalIllegitimateDate] =
     useLocalStorageState("nrds_illegitimate_date", {
@@ -82,6 +88,8 @@ export default function Protected() {
         <BGLicenseExpired />
       ) : localIllegitimateDate ? (
         <BGSystemDateAnomaly />
+      ) : !isServerActive ? (
+        <BGOfflineServer />
       ) : (
         <Outlet />
       )}

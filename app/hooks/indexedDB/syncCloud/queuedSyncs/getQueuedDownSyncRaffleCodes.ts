@@ -8,31 +8,35 @@ export async function getQueuedDownSyncRaffleCodes(): Promise<string[]> {
     const store = tx.objectStore("syncCloud");
     const index = store.index("type_createdAt");
 
-    const range = IDBKeyRange.bound(
-      ["sync-down-winner", ""],
-      ["sync-down-winner", "\uffff"]
-    );
-
     const raffleCodes: string[] = [];
 
-    let cursor = await index.openCursor(range, "next");
+    // Function to process one type
+    async function collectRaffleCodes(syncType: string) {
+      const range = IDBKeyRange.bound([syncType, ""], [syncType, "\uffff"]);
 
-    while (cursor) {
-      const item = cursor.value as SyncCloudItem;
+      let cursor = await index.openCursor(range, "next");
 
-      const match = item.api_url.match(
-        /\/winner-participants\/raffle-code\/([^/]+)$/
-      );
-      if (match) {
-        raffleCodes.push(match[1]);
+      while (cursor) {
+        const item = cursor.value as SyncCloudItem;
+
+        const match = item.api_url.match(
+          /\/winner-participants\/raffle-code\/([^/]+)$/
+        );
+
+        if (match) {
+          raffleCodes.push(match[1]);
+        }
+
+        cursor = await cursor.continue();
       }
-
-      cursor = await cursor.continue();
     }
+
+    await collectRaffleCodes("sync-down-winner");
+    await collectRaffleCodes("sync-removal-winner");
 
     return raffleCodes;
   } catch (error) {
-    console.error("❌ Failed to get queued down-sync raffle codes:", error);
+    console.error("❌ Failed to get queued sync raffle codes:", error);
     return [];
   }
 }

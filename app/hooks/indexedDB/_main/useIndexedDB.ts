@@ -45,6 +45,7 @@ interface RaffleDBSchema extends DBSchema {
       id_entry: string;
       raffle_code: string;
       winner_type_draw_date: any;
+      draw_date: string;
     };
   };
   syncCloud: {

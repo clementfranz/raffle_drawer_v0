@@ -17,6 +17,7 @@ import TabActionButton from "~/ui/ControlPanelUI/TabActionButton/_main/TabAction
 import useLocalStorageState from "use-local-storage-state";
 import ClearAllPaticipantsButton from "../components/ClearAllPaticipantsButton/ClearAllPaticipantsButton";
 import { clearAllParticipants } from "~/hooks/indexedDB/participant/clearAllParticipants";
+import { deleteAllDatabaseParticipants } from "~/api/client/participants/deleteAllDatabaseParticipants";
 
 function formatShortTime(seconds: number): string {
   const units = [
@@ -151,9 +152,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   };
 
   const handleClearAllParticipantsBE = async () => {
-    alert(
-      "Attempt to clear participants in backend. Still not working. Will make it work later. This is temporary prompt. Enhancement ongoing."
-    );
+    await deleteAllDatabaseParticipants();
   };
 
   const handlePasskeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {

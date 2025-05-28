@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDateLegitimator } from "../hooks/useDateLegitimator";
 import "./DateLegitimator.css";
 import useLocalStorageState from "use-local-storage-state";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 
 const DateLegitimator = () => {
   const systemDate = new Date().toISOString().split("T")[0];
@@ -9,6 +11,11 @@ const DateLegitimator = () => {
   const showStatus = false; // Set to false to hide status messages
 
   const [tick, setTick] = useState(0);
+
+  const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
+    "isServerActive",
+    { defaultValue: true }
+  );
 
   const [localIllegitimateDate] = useLocalStorageState(
     "nrds_illegitimate_date",
@@ -85,6 +92,33 @@ const DateLegitimator = () => {
         </div>
       ) : (
         <span className="hidden">Date Today: {systemDate} (Valid Date)</span>
+      )}
+      {!isServerActive && (
+        <>
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-lime-300/50 to-yellow-100/50 ">
+            <div className="bg-white/50 max-w-md w-full p-6 rounded-2xl shadow-xl text-center space-y-4 backdrop-blur-sm ">
+              <h1 className="text-2xl font-bold text-lime-800">
+                🚫 Server Offline
+              </h1>
+              <p className="text-gray-700">
+                We kindly ask you to start the server to continue using the
+                system without interruption.
+                <br />
+                <br />
+                Thank you for your understanding!
+              </p>
+
+              {/* Stylish Refresh Button */}
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 cursor-pointer inline-flex items-center gap-2 px-5 py-2 bg-lime-600 text-white font-semibold rounded-full shadow-md hover:bg-lime-700 active:scale-95 transition-transform duration-150"
+              >
+                <FontAwesomeIcon icon={faRefresh} />
+                Refresh
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </>
   );

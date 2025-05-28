@@ -19,7 +19,9 @@
         "shell": "C:\\Program Files\\Git\\bin\\bash.exe",
         "icon": "git-branch",
         "color": "terminal.ansiBlue",
-        "commands": ["# Run your git or npm install commands here"]
+        "commands": [
+          "eval \"$(ssh-agent -s)\" && ssh-add ~/.ssh/id_clementfranz"
+        ]
       }
     ],
     "saved-session": [

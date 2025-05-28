@@ -4,12 +4,18 @@ import axios from "axios";
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth } from "~/auth/AuthContext";
+import useLocalStorageState from "use-local-storage-state";
 
 type EmailLoginButtonProps = {
   setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
 };
 
 function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
+  const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
+    "isServerActive",
+    { defaultValue: true }
+  );
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginCaption, setLoginCaption] = useState("Login with Email");
@@ -34,6 +40,12 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
     const password = e.target.value;
     setPassword(password);
     setIsPasswordFilled(!!password);
+  };
+
+  const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleLogin();
+    }
   };
 
   const handleLogin = async () => {
@@ -63,7 +75,11 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
       const errMessage = error.response?.data?.error;
       const message = "Email or Password don't match any account";
 
-      setErrorMessage(message);
+      if (isServerActive) {
+        setErrorMessage(message);
+      } else {
+        setErrorMessage("Something is wrong with the server");
+      }
 
       let countdown = 10;
 
@@ -97,6 +113,7 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
         placeholder="Email"
         value={email}
         onChange={(e) => handleEmailChange(e)}
+        onKeyDown={(e) => handleEnterKey(e)}
         className={`bg-white w-[250px] py-2 px-2.5 rounded-xl`}
       />
       <input
@@ -104,6 +121,7 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
         placeholder="Password"
         value={password}
         onChange={(e) => handlePasswordChange(e)}
+        onKeyDown={(e) => handleEnterKey(e)}
         className={`bg-white w-[250px] py-2 px-2.5 rounded-xl`}
       />
       <button

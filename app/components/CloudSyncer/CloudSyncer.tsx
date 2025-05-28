@@ -8,6 +8,8 @@ import { downSyncWinnerParticipant } from "~/hooks/indexedDB/syncCloud/downSyncs
 import { getWinnerParticipantsRaffleCodes } from "~/api/client/winnerParticipants/getWinnerParticipantsRaffleCodes";
 import { getAllWinnerParticipantsRaffleCodes } from "~/hooks/indexedDB/winnerParticipant/getAllWinnerParticipantsRaffleCodes";
 import { getQueuedDownSyncRaffleCodes } from "~/hooks/indexedDB/syncCloud/queuedSyncs/getQueuedDownSyncRaffleCodes";
+import { downSyncWinnerParticipantRemoval } from "~/hooks/indexedDB/syncCloud/downSyncs/downSyncWinnerParticipantRemoval";
+import { useLocation } from "react-router";
 
 const CloudSyncer: React.FC = () => {
   const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
@@ -23,6 +25,10 @@ const CloudSyncer: React.FC = () => {
     useLocalStorageState<string[]>("localParticipantsRaffleCodes", {
       defaultValue: []
     });
+  const [localRemovedWinnersRaffleCodes, setLocalRemovedWinnersRaffleCodes] =
+    useLocalStorageState<string[]>("localRemovedWinnersRaffleCodes", {
+      defaultValue: []
+    });
 
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
     "withParticipantsData"
@@ -32,6 +38,8 @@ const CloudSyncer: React.FC = () => {
     useLocalStorageState<boolean>("cloudSyncModalOpen", {
       defaultValue: false
     });
+
+  const [refreshTable] = useLocalStorageState("refreshTable");
 
   const [syncWindowOpen, setSyncWindowOpen] = useState(false);
 
@@ -48,36 +56,74 @@ const CloudSyncer: React.FC = () => {
   }, [isServerActive, withParticipantsData]);
 
   const checkWinnersUpdates = async () => {
-    const cloudRaffleCodes: string[] = await getWinnerParticipantsRaffleCodes();
+    // Fetch codes from all sources (no Set)
+    let cloudRaffleCodes: string[] = [];
+    let idbRaffleCodes: string[] = [];
+    let queuedSyncDownRaffleCodes: string[] = [];
 
-    let localRaffleCodes: string[];
+    try {
+      cloudRaffleCodes = await getWinnerParticipantsRaffleCodes();
+    } catch (err) {
+      console.error("❌ Failed to fetch cloudRaffleCodes", err);
+    }
 
-    const idbRaffleCodes: string[] =
-      await getAllWinnerParticipantsRaffleCodes();
+    try {
+      idbRaffleCodes = await getAllWinnerParticipantsRaffleCodes();
+    } catch (err) {
+      console.error("❌ Failed to fetch idbRaffleCodes", err);
+    }
 
-    const queuedSyncDownRaffleCodes: string[] =
-      await getQueuedDownSyncRaffleCodes();
+    try {
+      queuedSyncDownRaffleCodes = await getQueuedDownSyncRaffleCodes();
+    } catch (err) {
+      console.error("❌ Failed to fetch queuedSyncDownRaffleCodes", err);
+    }
 
-    const combinedLocalRaffleCodes: string[] = [
-      ...idbRaffleCodes,
-      ...queuedSyncDownRaffleCodes
-    ];
+    console.log("☁️ Cloud:", cloudRaffleCodes);
+    console.log("☁️ IndexedDB:", idbRaffleCodes);
+    console.log("☁️ Queued Down Sync:", queuedSyncDownRaffleCodes);
 
-    localRaffleCodes = combinedLocalRaffleCodes;
-    setLocalParticipantsRaffleCodes(localRaffleCodes);
+    // Unified local snapshot (before sync)
+    let localRaffleCodes = Array.from(
+      new Set([...idbRaffleCodes, ...queuedSyncDownRaffleCodes])
+    );
 
-    // Find IDs that are in cloud but not in local
-    const differenceRaffleCodes: string[] = cloudRaffleCodes.filter(
+    // Detect differences
+    const newRaffleCodes = cloudRaffleCodes.filter(
       (code) => !localRaffleCodes.includes(code)
     );
 
-    // Now do something with those new IDs
-    const downSyncQueued = differenceRaffleCodes.forEach((raffleCode) => {
-      downSyncWinnerParticipant(raffleCode);
-    });
+    const missingRaffleCodes = localRaffleCodes.filter(
+      (code) => !cloudRaffleCodes.includes(code)
+    );
 
-    // Optional: log or handle result
-    console.log("Queued for down-sync:", downSyncQueued);
+    console.log("🆕 New Raffle Codes to Sync:", newRaffleCodes);
+    console.log("🗑️ Missing Raffle Codes to Remove:", missingRaffleCodes);
+
+    // Process new codes
+    for (const raffleCode of newRaffleCodes) {
+      await downSyncWinnerParticipant(raffleCode);
+      localRaffleCodes.push(raffleCode); // Add to local snapshot
+    }
+
+    // Process removals
+    for (const raffleCode of missingRaffleCodes) {
+      if (!localRemovedWinnersRaffleCodes.includes(raffleCode)) {
+        await downSyncWinnerParticipantRemoval(raffleCode);
+        localRaffleCodes = localRaffleCodes.filter((c) => c !== raffleCode);
+      }
+    }
+
+    // Final local set after sync
+    const finalLocalCodes = Array.from(new Set(localRaffleCodes));
+
+    console.log("📦 Final Local Raffle Codes (After Update):", finalLocalCodes);
+
+    // Set state
+    setLocalParticipantsRaffleCodes(finalLocalCodes);
+    setLocalRemovedWinnersRaffleCodes(missingRaffleCodes);
+
+    console.log("✅ Done syncing.");
   };
 
   const checkServer = async () => {
@@ -109,6 +155,8 @@ const CloudSyncer: React.FC = () => {
     }
   };
 
+  const location = useLocation();
+
   useEffect(() => {
     stopPingLoop.current = false;
 
@@ -122,6 +170,10 @@ const CloudSyncer: React.FC = () => {
       stopPingLoop.current = true;
     };
   }, []);
+
+  useEffect(() => {
+    checkWinnersUpdates();
+  }, [location.search]);
 
   return (
     <div

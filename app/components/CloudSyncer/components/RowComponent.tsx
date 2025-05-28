@@ -10,6 +10,8 @@ import { upSyncer } from "~/api/client/syncCloud/upSyncer";
 import { getSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/getSyncQueueItemById";
 import { addWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipant";
 import { addWinnerParticipantFromCloud } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipantFromCloud";
+import { removeWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/removeWinnerParticipant";
+import { removeWinnerParticipantFromCloud } from "~/hooks/indexedDB/winnerParticipant/removeWinnerParticipantFromCloud";
 
 type RowComponentPropTypes = {
   itemId: number;
@@ -51,6 +53,7 @@ const RowComponent = ({
 
   const downSyncerLobby = async (itemData: any) => {
     const syncType = itemData.type;
+    setIsSyncing(true);
     switch (syncType) {
       case "sync-down-winner":
         const successDownSync = await downSyncer(
@@ -61,6 +64,23 @@ const RowComponent = ({
           setRefreshTable((prev) => {
             return prev + 1;
           });
+
+          setIsSyncing(false);
+        }
+        break;
+
+      case "sync-removal-winner":
+        const successWinnerRemoval = await removeWinnerParticipantFromCloud(
+          itemData.id,
+          itemData.response_body
+        );
+
+        if (successWinnerRemoval) {
+          setRefreshTable((prev) => {
+            return prev + 1;
+          });
+
+          setIsSyncing(false);
         }
         break;
 

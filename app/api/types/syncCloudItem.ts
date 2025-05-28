@@ -2,6 +2,7 @@ export interface SyncCloudItem {
   id: number;
   api_url: string;
   method_type: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  type: string;
   content_type?: string;
   headers?: Record<string, string>;
   payload?: any;

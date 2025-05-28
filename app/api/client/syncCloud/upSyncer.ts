@@ -53,6 +53,13 @@ export async function upSyncer(id?: number): Promise<boolean> {
         payload: null,
         error_message: null
       });
+    } else if (item.type === "sync-down-winner" && response.status === 404) {
+      await updateSyncQueueItemById(item.id, {
+        status: "completed",
+        response_body: responseBody,
+        payload: null,
+        error_message: null
+      });
     } else {
       await updateSyncQueueItemById(item.id, {
         status: "failed",

@@ -5,10 +5,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import GoogleLoginButton from "../GoogleLoginButton/GoogleLoginButton";
 import EmailLoginButton from "../EmailLoginButton/EmailLoginButton";
+import useLocalStorageState from "use-local-storage-state";
 
 const LoginBox = () => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
+
+  const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
+    "isServerActive",
+    { defaultValue: true }
+  );
 
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -32,7 +38,7 @@ const LoginBox = () => {
           <GoogleLoginButton setErrorMessage={setErrorMessage} />
         </div>
         {errorMessage && (
-          <div className="error-message absolute bottom-0 bg-[#880202ce] text-white text-sm min-w-[250px] p-4 left-1/2 -translate-y-[10px] -translate-x-1/2 rounded-2xl text-center animate-pulse">
+          <div className="error-message absolute bottom-0 bg-[#880202ce] text-white text-sm min-w-[250px] p-4 left-1/2 -translate-y-[10px] -translate-x-1/2 rounded-2xl text-center animate-pulse text-balance">
             {errorMessage}
           </div>
         )}

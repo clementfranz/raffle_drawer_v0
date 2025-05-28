@@ -1,5 +1,5 @@
 function getLicenseExpirationDate(): Date {
-  const baseExpiration = new Date("2026-05-25T00:00:00+08:00"); // Philippine Time
+  const baseExpiration = new Date("2026-05-30T00:00:00+08:00"); // Philippine Time
   const extensionDays = 0;
 
   const testingMode = false;
