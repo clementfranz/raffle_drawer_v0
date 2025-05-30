@@ -8,7 +8,7 @@ import {
   hasAnyParticipants,
   hasAnyWinners
 } from "~/hooks/indexedDB/_main/useIndexedDB";
-import { removeWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/removeWinnerParticipant";
+import { useRemoveWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/useRemoveWinnerParticipant";
 
 interface Participant {
   id_entry: string;
@@ -23,6 +23,7 @@ interface Participant {
 }
 
 const ParticipantsTable = ({}) => {
+  const { removeWinnerParticipant } = useRemoveWinnerParticipant();
   const deleteEntryFromRaffleWinners = async (
     raffle_code: string,
     id_entry: string

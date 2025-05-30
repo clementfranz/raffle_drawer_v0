@@ -37,12 +37,10 @@ const CloudSyncer: React.FC = () => {
     useLocalStorageState<string[]>("localParticipantsRaffleCodes", {
       defaultValue: []
     });
-  const [localRemoved, setLocalRemoved] = useLocalStorageState<string[]>(
-    "localRemovedWinnersRaffleCodes",
-    {
+  const [localRemovedWinnersRaffleCodes, setLocalRemovedWinnersRaffleCodes] =
+    useLocalStorageState<string[]>("localRemovedWinnersRaffleCodes", {
       defaultValue: []
-    }
-  );
+    });
 
   const [withParticipantsData, setWithParticipantsData] = useLocalStorageState(
     "withParticipantsData"
@@ -77,18 +75,21 @@ const CloudSyncer: React.FC = () => {
   const failureCount = useRef(0);
   const stopPingLoop = useRef(false);
 
+  const location = useLocation();
+
   // Keep refs in sync with state
   useEffect(() => {
     isServerActiveRef.current = isServerActive;
-    if (isServerActive && withParticipantsData) {
-      syncWinners();
-    }
     if (withParticipantsData) {
       withParticipantsDataRef.current = true;
     } else {
       withParticipantsDataRef.current = false;
     }
   }, [isServerActive, withParticipantsData]);
+
+  useEffect(() => {
+    syncWinners();
+  }, [refreshTable, location.search]);
 
   const getStableLocalRaffleCodes = async () => {
     const idbWinnersRaffloCodes = await getAllWinnerParticipantsRaffleCodes();
@@ -122,7 +123,10 @@ const CloudSyncer: React.FC = () => {
 
       const localSet = new Set(localCodes);
       const cloudSet = new Set(cloudRaffleCodes);
-      const removalSet = new Set(localQueuedCodesToRemove);
+      const removalSet = new Set([
+        ...localQueuedCodesToRemove,
+        ...localRemovedWinnersRaffleCodes
+      ]);
       const downloadSet = new Set(localQueuedCodesToDownload);
 
       const codesToPull = cloudRaffleCodes.filter(
@@ -219,8 +223,6 @@ const CloudSyncer: React.FC = () => {
     }
   };
 
-  const location = useLocation();
-
   useEffect(() => {
     stopPingLoop.current = false;
 
@@ -234,10 +236,6 @@ const CloudSyncer: React.FC = () => {
       stopPingLoop.current = true;
     };
   }, []);
-
-  useEffect(() => {
-    syncWinners();
-  }, [location.search, syncWinners]);
 
   return (
     <div

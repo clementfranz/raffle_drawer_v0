@@ -8,9 +8,7 @@ import useLocalStorageState from "use-local-storage-state";
 import { downSyncer } from "~/api/asClient/syncCloud/downSyncer";
 import { upSyncer } from "~/api/asClient/syncCloud/upSyncer";
 import { getSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/getSyncQueueItemById";
-import { addWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipant";
 import { addWinnerParticipantFromCloud } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipantFromCloud";
-import { removeWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/removeWinnerParticipant";
 import { removeWinnerParticipantFromCloud } from "~/hooks/indexedDB/winnerParticipant/removeWinnerParticipantFromCloud";
 
 type RowComponentPropTypes = {

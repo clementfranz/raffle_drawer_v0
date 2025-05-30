@@ -113,11 +113,17 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
     }
   };
 
+  const [raffleLoading, setRaffleLoading] = useLocalStorageState(
+    "raffleLoading",
+    { defaultValue: false }
+  );
+
   // ✅ Trigger Draw Start Function (Fixed to be Async)
   const triggerStartDraw = async (
     type: "primary" | "backup" = "primary",
     nth: 0 | 1 | 2 = 0
   ) => {
+    setRaffleLoading(true);
     if (!isServerActive) {
       const prevMessage = raffleDrawMessage;
       setRaffleDrawMessage("Server is not active. Please start the server.");
@@ -166,6 +172,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
       setStartDraw(true);
     } else {
       console.warn("Winner generation failed, draw not started");
+      setRaffleLoading(false);
     }
   };
 
@@ -272,6 +279,7 @@ const Tab_Raffle = ({ isActiveTab }: Tab_RaffleProps) => {
         default:
           break;
       }
+      setRaffleLoading(false);
       setRevealWinner(true);
       setRefreshTable((prev) => {
         return prev + 1;

@@ -9,8 +9,10 @@ import PaginationBar from "~/components/DashboardComponents/PaginationBar/_main/
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
+  faBarsProgress,
   faChevronLeft,
-  faChevronRight
+  faChevronRight,
+  faLock
 } from "@fortawesome/free-solid-svg-icons";
 
 import { getWeek } from "~/utils/dateTime";
@@ -99,6 +101,11 @@ export default function Main() {
       defaultValue: false
     });
 
+  const [raffleLoading, setRaffleLoading] = useLocalStorageState(
+    "raffleLoading",
+    { defaultValue: false }
+  );
+
   const toggleControlPanel = () => {
     setControlPanelOpen((prev) => !prev);
   };
@@ -144,8 +151,21 @@ export default function Main() {
       <HeaderNav isPresenting={isPresenting} />
       <div className="dashboard flex h-[calc(100vh-50px)] w-screen overflow-x-hidden">
         <main className=" main-panel  grow p-4 gap-4 flex flex-col">
-          <div className="tabs flex justify-between items-center">
-            <ul className="flex table-tabs">
+          <div className="tabs flex justify-between items-center ">
+            <ul className="flex table-tabs relative">
+              <div
+                className={`absolute cover-lock bg-gray-800/70 w-full h-full z-[20] cursor-wait text-white justify-center items-center font-semibold text-shadow-sm text-shadow-black gap-4 ${
+                  raffleLoading ? "flex" : "hidden"
+                }`}
+              >
+                <div>
+                  <FontAwesomeIcon
+                    icon={faLock}
+                    className="text-shadow-lg text-shadow-black"
+                  />
+                </div>
+                <span>Loading...</span>
+              </div>
               <li>
                 <NavLink
                   to="/main"

@@ -45,6 +45,7 @@ export async function upSyncer(id?: number): Promise<boolean> {
 
     const responseBody = response.data;
     console.log("RESPONSE FROM SERVER: ", responseBody);
+    const completedTypes = new Set(["sync-down-winner", "sync-remove-winner"]);
 
     if (response.status >= 200 && response.status < 300) {
       await updateSyncQueueItemById(item.id, {
@@ -53,7 +54,7 @@ export async function upSyncer(id?: number): Promise<boolean> {
         payload: null,
         error_message: null
       });
-    } else if (item.type === "sync-down-winner" && response.status === 404) {
+    } else if (completedTypes.has(item.type) && response.status === 404) {
       await updateSyncQueueItemById(item.id, {
         status: "completed",
         response_body: responseBody,
@@ -77,11 +78,22 @@ export async function upSyncer(id?: number): Promise<boolean> {
   } catch (err: any) {
     console.error("❌ Sync error:", err);
 
-    await updateSyncQueueItemById(item.id, {
-      status: "failed",
-      error_message:
-        err?.response?.data?.error || err.message || "Unknown error"
-    });
+    const completedTypes = new Set(["sync-down-winner", "sync-remove-winner"]);
+    if (completedTypes.has(item.type)) {
+      await updateSyncQueueItemById(item.id, {
+        status: "completed",
+        response_body: "",
+        payload: null,
+        error_message: null
+      });
+    } else {
+      await updateSyncQueueItemById(item.id, {
+        status: "failed",
+        error_message:
+          err?.response?.data?.error || err.message || "Unknown error"
+      });
+    }
+
     return false;
   }
 }

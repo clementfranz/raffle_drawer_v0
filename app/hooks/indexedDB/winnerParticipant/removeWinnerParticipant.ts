@@ -1,3 +1,4 @@
+import useLocalStorageState from "use-local-storage-state";
 import { initDB } from "../_main/useIndexedDB";
 import { upSyncRemoveWinnerParticipant } from "../syncCloud/upSyncs/upSyncRemoveWinnerParticipant";
 
@@ -6,6 +7,11 @@ export async function removeWinnerParticipant(
   raffle_code: string
 ): Promise<boolean> {
   const db = await initDB();
+
+  const [localRemovedWinnersRaffleCodes, setLocalRemovedWinnersRaffleCodes] =
+    useLocalStorageState<string[]>("localRemovedWinnersRaffleCodes", {
+      defaultValue: []
+    });
 
   try {
     const tx = db.transaction("winnerParticipant", "readwrite");
@@ -36,6 +42,11 @@ export async function removeWinnerParticipant(
     console.log(
       `Winner participant removed with id_entry: ${id_entry} and raffle_code: ${raffle_code}`
     );
+
+    const oldArray = localRemovedWinnersRaffleCodes;
+    const newArray = [...oldArray, participant.raffle_code];
+    setLocalRemovedWinnersRaffleCodes(newArray);
+
     await upSyncRemoveWinnerParticipant(participant.raffle_code);
     return true;
   } catch (error) {
