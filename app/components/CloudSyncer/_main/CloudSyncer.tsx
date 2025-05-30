@@ -92,12 +92,9 @@ const CloudSyncer: React.FC = () => {
 
   const getStableLocalRaffleCodes = async () => {
     const idbWinnersRaffloCodes = await getAllWinnerParticipantsRaffleCodes();
-    const initialCodeList = [
-      ...idbWinnersRaffloCodes,
-      ...localParticipantsRaffleCodes
-    ];
+    const initialCodeList = [...idbWinnersRaffloCodes];
     const noDuplicatesCodeList = Array.from(new Set(initialCodeList));
-    setLocalParticipantsRaffleCodes(noDuplicatesCodeList);
+    // setLocalParticipantsRaffleCodes(noDuplicatesCodeList);
     return noDuplicatesCodeList;
   };
 
@@ -120,8 +117,7 @@ const CloudSyncer: React.FC = () => {
       //    - must NOT already be queued for download
       //    - must NOT already be queued for removal
       const codesToPull = cloudRaffleCodes.filter(
-        (code) =>
-          !localSet.has(code) && !downloadSet.has(code) && !removalSet.has(code)
+        (code) => !localSet.has(code) && !downloadSet.has(code)
       );
 
       // 2) Codes to remove LOCALLY:
