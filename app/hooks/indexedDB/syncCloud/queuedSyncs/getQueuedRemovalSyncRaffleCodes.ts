@@ -32,6 +32,7 @@ export async function getQueuedRemovalSyncRaffleCodes(): Promise<string[]> {
     }
 
     await collectRaffleCodes("sync-removal-winner");
+    await collectRaffleCodes("sync-remove-winner");
 
     return raffleCodes;
   } catch (error) {
