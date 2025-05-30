@@ -93,37 +93,43 @@ const CloudSyncer: React.FC = () => {
   const getStableLocalRaffleCodes = async () => {
     const idbWinnersRaffloCodes = await getAllWinnerParticipantsRaffleCodes();
     const initialCodeList = [...idbWinnersRaffloCodes];
-    const noDuplicatesCodeList = Array.from(new Set(initialCodeList));
-    // setLocalParticipantsRaffleCodes(noDuplicatesCodeList);
-    return noDuplicatesCodeList;
+    return Array.from(new Set(initialCodeList));
   };
 
-  const syncWinners = async () => {
-    // main async function
-    const processCodes = async () => {
-      const localCodes = await getStableLocalRaffleCodes();
-      const cloudRaffleCodes = await getWinnerParticipantsRaffleCodes();
+  async function getAllInOneDataSet() {
+    const [localCodes, localQueuedCodesToRemove, localQueuedCodesToDownload] =
+      await Promise.all([
+        getStableLocalRaffleCodes(),
+        getQueuedRemovalSyncRaffleCodes(),
+        getQueuedDownSyncRaffleCodes()
+      ]);
 
-      const localQueuedCodesToRemove = await getQueuedRemovalSyncRaffleCodes();
-      const localQueuedCodesToDownload = await getQueuedDownSyncRaffleCodes();
+    return {
+      localCodes,
+      localQueuedCodesToRemove,
+      localQueuedCodesToDownload
+    };
+  }
+
+  const syncWinners = async () => {
+    try {
+      const cloudRaffleCodes = await getWinnerParticipantsRaffleCodes();
+      const {
+        localCodes,
+        localQueuedCodesToRemove,
+        localQueuedCodesToDownload
+      } = await getAllInOneDataSet();
 
       const localSet = new Set(localCodes);
       const cloudSet = new Set(cloudRaffleCodes);
       const removalSet = new Set(localQueuedCodesToRemove);
       const downloadSet = new Set(localQueuedCodesToDownload);
 
-      // 1) Codes to pull FROM cloud:
-      //    - must NOT already exist in local
-      //    - must NOT already be queued for download
-      //    - must NOT already be queued for removal
       const codesToPull = cloudRaffleCodes.filter(
-        (code) => !localSet.has(code) && !downloadSet.has(code)
+        (code) =>
+          !localSet.has(code) && !downloadSet.has(code) && !removalSet.has(code)
       );
 
-      // 2) Codes to remove LOCALLY:
-      //    - must NOT exist in cloud
-      //    - must NOT already be queued for removal
-      //    - must NOT already be queued for download
       const codesToRemoveLocally = localCodes.filter(
         (code) => !cloudSet.has(code) && !removalSet.has(code)
       );
@@ -131,15 +137,17 @@ const CloudSyncer: React.FC = () => {
       console.log("🤖 Codes to pull from cloud:", codesToPull);
       console.log("🤖 Codes to remove locally:", codesToRemoveLocally);
 
-      codesToPull.forEach(async (code) => {
-        const addToPullQueue = await downSyncWinnerParticipant(code);
-      });
-      codesToRemoveLocally.forEach(async (code) => {
-        const addToRemovalQueue = await downSyncWinnerParticipantRemoval(code);
-      });
-    };
+      await Promise.all([
+        ...codesToPull.map((code) => downSyncWinnerParticipant(code)),
+        ...codesToRemoveLocally.map((code) =>
+          downSyncWinnerParticipantRemoval(code)
+        )
+      ]);
 
-    await processCodes();
+      console.log("✅ Sync complete.");
+    } catch (err) {
+      console.error("❌ Sync failed:", err);
+    }
   };
 
   const checkForParticipantsSyncingStatus = async () => {
