@@ -17,7 +17,8 @@ import TabActionButton from "~/ui/ControlPanelUI/TabActionButton/_main/TabAction
 import useLocalStorageState from "use-local-storage-state";
 import ClearAllPaticipantsButton from "../components/ClearAllPaticipantsButton/ClearAllPaticipantsButton";
 import { clearAllParticipants } from "~/hooks/indexedDB/participant/clearAllParticipants";
-import { deleteAllDatabaseParticipants } from "~/api/client/participants/deleteAllDatabaseParticipants";
+import { deleteAllDatabaseParticipants } from "~/api/asClient/participants/deleteAllDatabaseParticipants";
+import type { LocalParticipantsSyncStatus } from "~/api/types/localStorageStates/localParticipantsSyncStatus.types";
 
 function formatShortTime(seconds: number): string {
   const units = [
@@ -49,13 +50,31 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
     { defaultValue: null }
   );
 
-  const confirmClearParticipantsInput = useRef<HTMLInputElement>(null);
+  const confirmClearParticipantsInput = useRef<HTMLInputElement | null>(null);
 
   const [clearParticipantsModalOpen, setClearParticipantsModalOpen] =
     useState(false);
 
   const [showClearParticipantsCheckpoint, setShowClearParticipantsCheckpoint] =
     useState(false);
+
+  const [localParticipantsSyncingStatus, setLocalParticipantsSyncingStatus] =
+    useLocalStorageState<LocalParticipantsSyncStatus>(
+      "localParticipantsSyncingStatus",
+      { defaultValue: "none" }
+    );
+
+  const [localParticipantsSyncingCleared, setLocalParticipantsSyncingCleared] =
+    useLocalStorageState<boolean>("localParticipantsSyncingCleared", {
+      defaultValue: false
+    });
+
+  const [localTotal, setLocalTotal] = useLocalStorageState(
+    "localTotalParticipants",
+    {
+      defaultValue: 0
+    }
+  );
 
   const [showFinalCheckpoint, setShowFinalCheckpoint] = useState(false);
   const [clearingPasskey, setClearingPasskey] = useState("");
@@ -110,6 +129,9 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   };
 
   const startClearing = () => {
+    setLocalParticipantsSyncingStatus("none");
+    setLocalTotal(0);
+    setLocalParticipantsSyncingCleared(false);
     setShowFinalCheckpoint(false);
     if (clearingType === "all") {
       handleClearAllParticipantsEverywhere();
@@ -119,6 +141,9 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
   };
 
   const finalConfirmationToClear = (type: "all" | "app-only") => {
+    if (confirmClearParticipantsInput?.current) {
+      confirmClearParticipantsInput.current.value = "";
+    }
     setClearingType(type);
     setShowFinalCheckpoint(true);
   };
@@ -169,6 +194,10 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
       setFileDetails(null);
       // window.location.reload();
     }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
   };
 
   useEffect(() => {
@@ -318,6 +347,7 @@ const Tab_Overview: React.FC<Tab_OverviewProps> = ({
               onChange={(e) => {
                 handlePasskeyChange(e);
               }}
+              onPaste={handlePaste}
             />
             <span
               className={`italic text-xs mt-1 ${

@@ -1,13 +1,18 @@
 import { useAuth } from "~/auth/AuthContext";
 import { useNavigate } from "react-router";
+import { logUserAction } from "~/api/asClient/system/logUserAction";
 
 function LogoutButton() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate("/"); // Redirect to home or login page
+    logUserAction(user?.email || "user@noemail.com", "logout", {
+      source: "Logout",
+      result: "success"
+    });
   };
 
   return (

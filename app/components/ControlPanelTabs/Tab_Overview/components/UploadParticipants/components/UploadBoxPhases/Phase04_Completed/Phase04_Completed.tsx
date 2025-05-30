@@ -8,6 +8,7 @@ import UploadButton from "../../UploadButton/_main/UploadButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileCsv } from "@fortawesome/free-solid-svg-icons";
 import useLocalStorageState from "use-local-storage-state";
+import type { LocalParticipantsSyncStatus } from "~/api/types/localStorageStates/localParticipantsSyncStatus.types";
 
 type SelectedWeek = {
   weekName: string;
@@ -32,12 +33,28 @@ const Phase04_Completed = ({
     "withParticipantsData"
   );
 
+  const [localParticipantsSyncingStatus, setLocalParticipantsSyncingStatus] =
+    useLocalStorageState<LocalParticipantsSyncStatus>(
+      "localParticipantsSyncingStatus",
+      { defaultValue: "none" }
+    );
+
+  const [localParticipantsSyncingCleared, setLocalParticipantsSyncingCleared] =
+    useLocalStorageState<boolean>("localParticipantsSyncingCleared", {
+      defaultValue: false
+    });
+
+  const [withCloudData] = useLocalStorageState<boolean>("withCloudData");
   const [fileDetails, setFileDetails] = useLocalStorageState<{
     entries: number;
   } | null>("fileDetails", { defaultValue: null });
 
   const handleConfirmDone = () => {
     setWithParticipantsData(true);
+    if (withCloudData) {
+      setLocalParticipantsSyncingCleared(true);
+    }
+    setLocalParticipantsSyncingStatus("stable");
   };
 
   function formatShortTime(seconds: number): string {

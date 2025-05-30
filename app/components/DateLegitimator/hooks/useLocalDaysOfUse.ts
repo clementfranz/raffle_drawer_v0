@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import useLocalStorageState from "use-local-storage-state";
+import { getSystemLatestDate } from "~/api/asClient/system/getSystemLatestDate";
+import { postSystemNewDate } from "~/api/asClient/system/postSystemNewDate";
 
 /** Formats a Date object or string to "YYYY-MM-DD" */
 const formatToYMD = (date: Date | string): string =>
@@ -42,11 +44,26 @@ export function useLocalDaysOfUse(systemDate: string): LocalDaysOfUseResult {
 
   useEffect(() => {
     if (!Array.isArray(daysUsed)) {
+      // ⚠️ Fallback: Try fetching from API instead
       setWarning(true);
       setWarningMessage("Warning: localStorage is inaccessible or corrupted.");
       setError(null);
       setIllegitimateDate(false);
       setIsTodayNewlyAdded(false);
+
+      getSystemLatestDate()
+        .then((response) => {
+          // Example: fallback response handling
+          if (response?.latestDate) {
+            setDaysUsed([response.latestDate]); // or adapt if response is shaped differently
+            setIllegitimateDate(false);
+          }
+        })
+        .catch((err) => {
+          console.error("Fallback failed:", err);
+          setError(err);
+        });
+
       return;
     }
 
@@ -79,7 +96,10 @@ export function useLocalDaysOfUse(systemDate: string): LocalDaysOfUseResult {
     }
 
     const updated = [...daysUsed, today].sort();
-    setDaysUsed(updated);
+    if (Array.isArray(updated)) {
+      postSystemNewDate();
+      setDaysUsed(updated);
+    }
     setIsTodayNewlyAdded(true);
     setError(null);
   }, [today, daysUsed, setDaysUsed]);

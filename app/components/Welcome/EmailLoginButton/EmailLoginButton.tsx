@@ -2,15 +2,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "~/auth/AuthContext";
 import useLocalStorageState from "use-local-storage-state";
+import { logUserAction } from "~/api/asClient/system/logUserAction";
 
 type EmailLoginButtonProps = {
   setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
+  hasConsented: boolean;
 };
 
-function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
+function EmailLoginButton({
+  setErrorMessage,
+  hasConsented
+}: EmailLoginButtonProps) {
   const [isServerActive, setIsServerActive] = useLocalStorageState<boolean>(
     "isServerActive",
     { defaultValue: true }
@@ -29,12 +34,23 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
   const auth = useAuth();
 
   const baseAPIURL = import.meta.env.VITE_API_URL_AUTH;
+  const cfAPIURL = import.meta.env.VITE_CF_API_URL_DATA;
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
     setEmail(email);
     setIsEmailFilled(!!email);
   };
+
+  const [controlPanelOpen, setControlPanelOpen] = useLocalStorageState(
+    "controlPanelOpen",
+    { defaultValue: false }
+  );
+
+  const [localHasConsented, setLocalHasConsented] = useLocalStorageState(
+    "localHasConsented",
+    { defaultValue: false }
+  );
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const password = e.target.value;
@@ -48,7 +64,40 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
     }
   };
 
+  const checkServer = async () => {
+    try {
+      const res = await axios.get(baseAPIURL + "/ping");
+      if (res) {
+        setIsServerActive(true);
+      }
+    } catch (error) {
+      setIsServerActive(false);
+    }
+  };
+
   const handleLogin = async () => {
+    checkServer();
+
+    if (!hasConsented) {
+      setErrorMessage("Please check consent box to continue");
+      setLoginDisabled(true);
+      setLoginCaption("Not Consented");
+
+      const destroyMessage = setTimeout(() => {
+        setLoginDisabled(false);
+        setLoginCaption("Login with Email");
+        setErrorMessage("");
+        clearTimeout(destroyMessage);
+      }, 5000);
+
+      setLocalHasConsented(false);
+      // log consent on the client api
+      return;
+    } else {
+      setLocalHasConsented(true);
+      // log consent on the client api
+    }
+
     if (!isEmailFilled || !isPasswordFilled) {
       return;
     }
@@ -67,13 +116,31 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
         password
       });
 
-      auth?.login(res.data.user, res.data.token);
-      setLoginCaption("Login Successful");
-      navigate("/main");
+      if (res) {
+        auth?.login(res.data.user, res.data.token);
+        setControlPanelOpen(false);
+        setLoginCaption("Login Successful");
+
+        // ✅ Log successful login
+        logUserAction(email, "login", {
+          source: "Login Form",
+          result: "success"
+        });
+
+        navigate("/main");
+      }
     } catch (error: any) {
       console.error("Email login failed:", error);
       const errMessage = error.response?.data?.error;
       const message = "Email or Password don't match any account";
+
+      console.log(errMessage);
+
+      // ✅ Log failed login attempt
+      logUserAction(email, "failed-login", {
+        source: "Login Form",
+        error: errMessage || "No detailed message"
+      });
 
       if (isServerActive) {
         setErrorMessage(message);
@@ -105,6 +172,10 @@ function EmailLoginButton({ setErrorMessage }: EmailLoginButtonProps) {
       setIsLoggingIn(false);
     }
   };
+
+  useEffect(() => {
+    checkServer();
+  }, []);
 
   return (
     <div className="form flex-col flex gap-3 items-center justify-center w-full mt-6">

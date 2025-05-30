@@ -17,7 +17,7 @@ const HeaderNav: React.FC<HeaderNavProps> = ({ isPresenting }) => {
 
   const [greetingActive, setGreetingActive] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const toggleModal = () => setIsModalOpen((prev) => !prev);
 

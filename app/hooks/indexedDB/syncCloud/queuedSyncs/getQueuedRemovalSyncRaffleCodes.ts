@@ -1,7 +1,7 @@
 import type { SyncCloudItem } from "~/api/types/syncCloudItem";
 import { initDB } from "../../_main/useIndexedDB";
 
-export async function getQueuedDownSyncRaffleCodes(): Promise<string[]> {
+export async function getQueuedRemovalSyncRaffleCodes(): Promise<string[]> {
   try {
     const db = await initDB();
     const tx = db.transaction("syncCloud", "readonly");
@@ -31,7 +31,7 @@ export async function getQueuedDownSyncRaffleCodes(): Promise<string[]> {
       }
     }
 
-    await collectRaffleCodes("sync-down-winner");
+    await collectRaffleCodes("sync-removal-winner");
 
     return raffleCodes;
   } catch (error) {

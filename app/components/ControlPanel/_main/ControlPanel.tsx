@@ -24,23 +24,25 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <aside
-      className={`side-panel bg-gray-800 w-[400px]  flex-col text-white relative ${
-        controlPanelOpen ? "flex" : "hidden"
+      className={`side-panel bg-gray-800 flex flex-col text-white relative transition-all duration-300 ${
+        controlPanelOpen ? "translate-x-0  w-[400px]" : "translate-x-full w-0"
       }`}
     >
-      <PresenterControls
-        isPresenting={isPresenting}
-        setIsPresenting={setIsPresenting}
-      />
-      <ControlPanelNav setActiveTab={setActiveTab} activeTab={activeTab} />
-      <Tab_Overview
-        setIsPresenting={setIsPresenting}
-        isPresenting={isPresenting}
-        isActiveTab={activeTab === "overview"}
-      />
-      <Tab_Raffle isActiveTab={activeTab === "raffle"} />
-      <Tab_Presentation isActiveTab={activeTab === "presentation"} />
-      <Tab_Configure isActiveTab={activeTab === "configure"} />
+      <div className="inherit flex flex-col  w-[400px] h-full">
+        <PresenterControls
+          isPresenting={isPresenting}
+          setIsPresenting={setIsPresenting}
+        />
+        <ControlPanelNav setActiveTab={setActiveTab} activeTab={activeTab} />
+        <Tab_Overview
+          setIsPresenting={setIsPresenting}
+          isPresenting={isPresenting}
+          isActiveTab={activeTab === "overview"}
+        />
+        <Tab_Raffle isActiveTab={activeTab === "raffle"} />
+        <Tab_Presentation isActiveTab={activeTab === "presentation"} />
+        <Tab_Configure isActiveTab={activeTab === "configure"} />
+      </div>
     </aside>
   );
 };

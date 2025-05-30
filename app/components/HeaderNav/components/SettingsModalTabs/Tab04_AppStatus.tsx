@@ -1,26 +1,22 @@
 import React, { useEffect, useState } from "react";
 
-const Tab03_SystemUpdates = () => {
+const Tab04_AppStatus = () => {
   const [isOnline, setIsOnline] = useState<boolean | null>(null);
 
-  const clientSystemUpdatesURL =
-    "https://clients.clementfranz.site/iframe/system-updates?c=kopikoblanca&key=aZ9B-q3Xr-MtL2-GVn7-KfWp&bg=%23ffffff";
+  const clientAppStatusURL =
+    "https://clients.clementfranz.site/iframe/appstatus?c=kopikoblanca&key=aZ9B-q3Xr-MtL2-GVn7-KfWp&bg=#ffffff";
 
   useEffect(() => {
     const checkURL = async () => {
       try {
-        const response = await fetch(clientSystemUpdatesURL, {
+        const response = await fetch(clientAppStatusURL, {
           method: "HEAD",
-          mode: "cors" // You MUST have CORS headers on server
+          mode: "no-cors" // or 'cors' depending on CORS config
         });
-
-        if (response.ok) {
-          setIsOnline(true);
-        } else {
-          setIsOnline(false);
-        }
+        // If we get here, server is reachable (even if response is opaque)
+        setIsOnline(true);
       } catch (err) {
-        console.error("Fetch error:", err);
+        console.error("URL unreachable:", err);
         setIsOnline(false);
       }
     };
@@ -50,7 +46,7 @@ const Tab03_SystemUpdates = () => {
   return (
     <div className="w-full h-full">
       <iframe
-        src={clientSystemUpdatesURL}
+        src={clientAppStatusURL}
         className="w-full h-full border-0"
         title="remote-app-status"
       ></iframe>
@@ -58,4 +54,4 @@ const Tab03_SystemUpdates = () => {
   );
 };
 
-export default Tab03_SystemUpdates;
+export default Tab04_AppStatus;

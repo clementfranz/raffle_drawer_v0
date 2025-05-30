@@ -7,7 +7,11 @@ import GoogleLoginButton from "../GoogleLoginButton/GoogleLoginButton";
 import EmailLoginButton from "../EmailLoginButton/EmailLoginButton";
 import useLocalStorageState from "use-local-storage-state";
 
-const LoginBox = () => {
+type LoginBoxProps = {
+  hasConsented: boolean;
+};
+
+const LoginBox = ({ hasConsented }: LoginBoxProps) => {
   const [userEmail, setUserEmail] = useState("");
   const [userPassword, setUserPassword] = useState("");
 
@@ -32,8 +36,11 @@ const LoginBox = () => {
           National Raffle Draw System
         </div>
 
-        <EmailLoginButton setErrorMessage={setErrorMessage} />
-        <div className="form flex flex-col gap-2 items-center justify-center w-full mt-2">
+        <EmailLoginButton
+          setErrorMessage={setErrorMessage}
+          hasConsented={hasConsented}
+        />
+        <div className="form flex flex-col gap-2 items-center justify-center w-full mt-2 hidden">
           <div className="or text-white">-- or --</div>
           <GoogleLoginButton setErrorMessage={setErrorMessage} />
         </div>

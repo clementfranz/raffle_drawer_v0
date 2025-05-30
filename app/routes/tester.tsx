@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 import type { Route } from "./+types/home";
-import { getParticipantById } from "~/api/client/participants/getParticipantById";
-import { getPaginatedParticipants } from "~/api/client/participants/getPaginatedParticipants";
+import { getParticipantById } from "~/api/asClient/participants/getParticipantById";
+import { getPaginatedParticipants } from "~/api/asClient/participants/getPaginatedParticipants";
 
 export function meta({}: Route.MetaArgs) {
   return [

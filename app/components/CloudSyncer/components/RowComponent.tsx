@@ -5,8 +5,8 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import useLocalStorageState from "use-local-storage-state";
-import { downSyncer } from "~/api/client/syncCloud/downSyncer";
-import { upSyncer } from "~/api/client/syncCloud/upSyncer";
+import { downSyncer } from "~/api/asClient/syncCloud/downSyncer";
+import { upSyncer } from "~/api/asClient/syncCloud/upSyncer";
 import { getSyncQueueItemById } from "~/hooks/indexedDB/syncCloud/getSyncQueueItemById";
 import { addWinnerParticipant } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipant";
 import { addWinnerParticipantFromCloud } from "~/hooks/indexedDB/winnerParticipant/addWinnerParticipantFromCloud";

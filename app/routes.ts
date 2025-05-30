@@ -19,8 +19,12 @@ export default [
   ...prefix("docs", [
     layout("components/LegalDocs/WrapperLayout.tsx", [
       route(
-        "software-license-agreement",
-        "components/LegalDocs/SoftwareLicenseAgreement.tsx"
+        "software-license-agreement-v2",
+        "components/LegalDocs/SoftwareLicenseAgreementV2.tsx"
+      ),
+      route(
+        "software-license-agreement-v1",
+        "components/LegalDocs/SoftwareLicenseAgreementV1.tsx"
       ),
       route("privacy-policy", "components/LegalDocs/PrivacyPolicy.tsx"),
       route("terms-and-condition", "components/LegalDocs/TermsAndCondition.tsx")

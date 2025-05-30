@@ -3,14 +3,19 @@ import React from "react";
 import "./State05_Expired.css";
 import { useNavigate } from "react-router";
 import { useAuth } from "~/auth/AuthContext";
+import { logUserAction } from "~/api/asClient/system/logUserAction";
 
 const State05_Expired = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate("/"); // Redirect to home or login page
+    logUserAction(user?.email || "user@noemail.com", "logout", {
+      source: "Logout",
+      result: "success"
+    });
   };
 
   const handleReadLicense = () => {

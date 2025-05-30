@@ -5,7 +5,9 @@ import { NavLink } from "react-router";
 import Tab03_SystemUpdates from "./SettingsModalTabs/Tab03_SystemUpdates";
 import { useEffect, useState } from "react";
 import Tab01_SystemUpdates from "./SettingsModalTabs/Tab03_SystemUpdates";
-import Tab01_MyAccount from "./SettingsModalTabs/Tab01_MyAccount";
+import Tab01_MyAccount from "./SettingsModalTabs/Tab01_MyAccount/main/Tab01_MyAccount";
+import Tab04_AppStatus from "./SettingsModalTabs/Tab04_AppStatus";
+import Tab05_Upgrades from "./SettingsModalTabs/Tab05_Upgrades";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -28,6 +30,19 @@ type tabNames =
 const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [activeTab, setActiveTab] = useState<tabNames>("my-account");
 
+  const today = new Date();
+  const revealNewTabsDate = new Date("2025-08-01T00:00:00");
+
+  const [newTabsAvailable, setNewTabsAvailable] = useState(false);
+
+  useEffect(() => {
+    if (today >= revealNewTabsDate) {
+      setNewTabsAvailable(true);
+    } else {
+      setNewTabsAvailable(false);
+    }
+  }, [revealNewTabsDate]);
+
   const isTabActive = (tabName: tabNames) => {
     if (activeTab === tabName) {
       return true;
@@ -49,20 +64,24 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         return <Tab01_MyAccount />;
       case "system-updates":
         return <Tab03_SystemUpdates />;
+      case "app-status":
+        return <Tab04_AppStatus />;
+      case "upgrades":
+        return <Tab05_Upgrades />;
       default:
         return null;
     }
   };
 
   useEffect(() => {
-    setActiveTab("system-updates");
+    // setActiveTab("system-updates");
   }, [isOpen]);
 
   if (!isOpen) return null; // no rendering when closed
 
   return (
     <div className="fixed inset-0 bg-[rgba(0,0,0,0.4)] z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg h-3/4 min-w-[850px] text-black flex flex-col relative">
+      <div className="bg-white rounded-lg h-3/4 min-w-[850px] max-w-[900px] text-black flex flex-col relative transition-all duration-150">
         <div className="flex justify-between items-center">
           <div className="header-content flex-col flex bg-gradient-to-t from-[#000000a4] to-transparent to-60% w-full h-[80px] relative">
             <h1 className="flex flex-col pt-3 text-gray-800 text-xl uppercase font-bold font-[Montserrat] pl-4">
@@ -105,28 +124,34 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               >
                 System Updates
               </button>
-              <button
-                className={`${baseNavStyling} ${
-                  isTabActive("app-status")
-                    ? activeNavStyling
-                    : defaultNavStyling
-                }`}
-                onClick={() => {
-                  handleChangeTab("app-status");
-                }}
-              >
-                App Status
-              </button>
-              <button
-                className={`${baseNavStyling} ${
-                  isTabActive("upgrades") ? activeNavStyling : defaultNavStyling
-                }`}
-                onClick={() => {
-                  handleChangeTab("upgrades");
-                }}
-              >
-                Upgrades
-              </button>
+              {newTabsAvailable && (
+                <>
+                  <button
+                    className={`${baseNavStyling} ${
+                      isTabActive("app-status")
+                        ? activeNavStyling
+                        : defaultNavStyling
+                    }`}
+                    onClick={() => {
+                      handleChangeTab("app-status");
+                    }}
+                  >
+                    App Status
+                  </button>
+                  <button
+                    className={`${baseNavStyling} ${
+                      isTabActive("upgrades")
+                        ? activeNavStyling
+                        : defaultNavStyling
+                    }`}
+                    onClick={() => {
+                      handleChangeTab("upgrades");
+                    }}
+                  >
+                    Upgrades
+                  </button>
+                </>
+              )}
             </nav>
           </div>
           <button

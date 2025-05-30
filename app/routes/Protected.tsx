@@ -13,6 +13,9 @@ import { useCountdown } from "~/hooks/useCountdown";
 import DateLegitimator from "~/components/DateLegitimator/_main/DateLegitimator";
 import BGSystemDateAnomaly from "~/components/DateLegitimator/subcomponents/BGSystemDateAnomaly";
 import BGOfflineServer from "~/components/CloudSyncer/components/BGOfflineServer";
+import api from "~/api/asClient/axios";
+import DependencyWarning from "~/components/DependencyWarning/_main/DependencyWarning";
+import BGDependencyWarning from "~/components/DependencyWarning/subcomponents/BGDependencyWarning";
 
 export default function Protected() {
   const remainingDays = checkDaysBeforeLicenseExpiration();
@@ -22,6 +25,11 @@ export default function Protected() {
     "isServerActive",
     { defaultValue: true }
   );
+
+  const [dependencyWarningActive, setDependencyWarningActive] =
+    useLocalStorageState<boolean>("dependencyWarningActive", {
+      defaultValue: false
+    });
 
   const [localIllegitimateDate, setLocalIllegitimateDate] =
     useLocalStorageState("nrds_illegitimate_date", {
@@ -37,6 +45,25 @@ export default function Protected() {
   const [isExpired, setIsExpired] = useState(false);
 
   const hasStarted = useRef(false); // ✅ Stable across re-renders
+
+  const checkServer = async () => {
+    try {
+      const response = await api.get("/ping");
+
+      if (response.status === 200) {
+        console.log("✅ Server is back online.");
+        setIsServerActive(true);
+        return true;
+      } else {
+        console.log("🚫 Server response not 200.");
+      }
+    } catch (error) {
+      console.error("❌ Error checking server:", error);
+    }
+
+    setIsServerActive(false);
+    return false;
+  };
 
   useEffect(() => {
     if (!loading && !hasStarted.current && user) {
@@ -63,6 +90,7 @@ export default function Protected() {
 
   useEffect(() => {
     setWaitingDone(false);
+    checkServer();
   }, []);
 
   if (!user && !loading) {
@@ -83,11 +111,14 @@ export default function Protected() {
 
       {/* Main content appears regardless of loader, but loader blocks view */}
       <DateLegitimator />
+      <DependencyWarning />
       <LicenseDateChecker />
       {isExpired ? (
         <BGLicenseExpired />
       ) : localIllegitimateDate ? (
         <BGSystemDateAnomaly />
+      ) : dependencyWarningActive ? (
+        <BGDependencyWarning />
       ) : !isServerActive ? (
         <BGOfflineServer />
       ) : (

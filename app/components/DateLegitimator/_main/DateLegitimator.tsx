@@ -3,7 +3,10 @@ import { useDateLegitimator } from "../hooks/useDateLegitimator";
 import "./DateLegitimator.css";
 import useLocalStorageState from "use-local-storage-state";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faRefresh } from "@fortawesome/free-solid-svg-icons";
+import { faRefresh, faSignOut } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "~/auth/AuthContext";
+import { useNavigate } from "react-router";
+import { logUserAction } from "~/api/asClient/system/logUserAction";
 
 const DateLegitimator = () => {
   const systemDate = new Date().toISOString().split("T")[0];
@@ -16,6 +19,23 @@ const DateLegitimator = () => {
     "isServerActive",
     { defaultValue: true }
   );
+
+  const [dependencyWarningActive, setDependencyWarningActive] =
+    useLocalStorageState<boolean>("dependencyWarningActive", {
+      defaultValue: false
+    });
+
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/"); // Redirect to home or login page
+    logUserAction(user?.email || "user@noemail.com", "logout", {
+      source: "Logout",
+      result: "success"
+    });
+  };
 
   const [localIllegitimateDate] = useLocalStorageState(
     "nrds_illegitimate_date",
@@ -93,7 +113,7 @@ const DateLegitimator = () => {
       ) : (
         <span className="hidden">Date Today: {systemDate} (Valid Date)</span>
       )}
-      {!isServerActive && (
+      {!isServerActive && !dependencyWarningActive && (
         <>
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-lime-300/50 to-yellow-100/50 ">
             <div className="bg-white/50 max-w-md w-full p-6 rounded-2xl shadow-xl text-center space-y-4 backdrop-blur-sm ">
@@ -109,13 +129,22 @@ const DateLegitimator = () => {
               </p>
 
               {/* Stylish Refresh Button */}
-              <button
-                onClick={() => window.location.reload()}
-                className="mt-4 cursor-pointer inline-flex items-center gap-2 px-5 py-2 bg-lime-600 text-white font-semibold rounded-full shadow-md hover:bg-lime-700 active:scale-95 transition-transform duration-150"
-              >
-                <FontAwesomeIcon icon={faRefresh} />
-                Refresh
-              </button>
+              <div className=" flex justify-around">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-4 cursor-pointer inline-flex items-center gap-2 px-5 py-2 bg-lime-600 text-white font-semibold rounded-full shadow-md hover:bg-lime-700 active:scale-95 transition-transform duration-150"
+                >
+                  <FontAwesomeIcon icon={faRefresh} />
+                  Refresh
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="mt-4 cursor-pointer inline-flex items-center gap-2 px-5 py-2 bg-lime-800 text-white font-semibold rounded-full shadow-md hover:bg-lime-900 active:scale-95 transition-transform duration-150"
+                >
+                  <FontAwesomeIcon icon={faSignOut} />
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </>

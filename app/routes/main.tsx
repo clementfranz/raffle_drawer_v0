@@ -20,7 +20,9 @@ import useLocalStorageState from "use-local-storage-state";
 import { NavLink, useLocation } from "react-router";
 import ShowingEntriesCounter from "~/components/DashboardComponents/ShowingEntriesCounter/ShowingEntriesCounter";
 import { hasAnyParticipants } from "~/hooks/indexedDB/_main/useIndexedDB";
-import CloudSyncer from "~/components/CloudSyncer/CloudSyncer";
+import CloudSyncer from "~/components/CloudSyncer/_main/CloudSyncer";
+import ParticipantsSyncer from "~/components/ParticipantsSyncer/_main/ParticipantsSyncer";
+import type { LocalParticipantsSyncStatus } from "~/api/types/localStorageStates/localParticipantsSyncStatus.types";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -35,7 +37,10 @@ export function meta({}: Route.MetaArgs) {
 const presentWeek = getWeek();
 
 export default function Main() {
-  const [controlPanelOpen, setControlPanelOpen] = useState(true);
+  const [controlPanelOpen, setControlPanelOpen] = useLocalStorageState(
+    "controlPanelOpen",
+    { defaultValue: false }
+  );
 
   interface FileDetails {
     entries: number;
@@ -74,11 +79,24 @@ export default function Main() {
     }
   );
 
+  const [localParticipantsSyncingStatus, setLocalParticipantsSyncingStatus] =
+    useLocalStorageState<LocalParticipantsSyncStatus>(
+      "localParticipantsSyncingStatus",
+      { defaultValue: "none" }
+    );
+
   type PresentingStatus = "presenting" | "not-presenting";
 
   const [presentingStatus, setPresentingStatus] =
     useLocalStorageState<PresentingStatus>("presentingStatus", {
       defaultValue: "not-presenting"
+    });
+
+  const [withCloudData] = useLocalStorageState<boolean>("withCloudData");
+
+  const [localParticipantsSyncingCleared, setLocalParticipantsSyncingCleared] =
+    useLocalStorageState<boolean>("localParticipantsSyncingCleared", {
+      defaultValue: false
     });
 
   const toggleControlPanel = () => {
@@ -95,8 +113,13 @@ export default function Main() {
     if (check) {
       console.log("Participants Data Found!");
       setWithParticipantsData(true);
+      if (withCloudData && withParticipantsData) {
+        setLocalParticipantsSyncingStatus("stable");
+        setLocalParticipantsSyncingCleared(true);
+      }
     } else {
       console.log("NO Participants Data Found!");
+      setLocalParticipantsSyncingStatus("none");
       setWithParticipantsData(false);
     }
   };
@@ -115,10 +138,11 @@ export default function Main() {
   }, []);
 
   return (
-    <>
+    <div className="h-screen w-screen overflow-hidden">
       <CloudSyncer />
+      <ParticipantsSyncer />
       <HeaderNav isPresenting={isPresenting} />
-      <div className="dashboard flex w-full h-[calc(100vh-50px)]">
+      <div className="dashboard flex h-[calc(100vh-50px)] w-screen overflow-x-hidden">
         <main className=" main-panel  grow p-4 gap-4 flex flex-col">
           <div className="tabs flex justify-between items-center">
             <ul className="flex table-tabs">
@@ -188,7 +212,7 @@ export default function Main() {
             </div>
             <PaginationBar />
             <button
-              className={`control-panel-button flex gap-4 rounded-s-full cursor-pointer ${
+              className={`control-panel-button flex gap-4 rounded-s-full cursor-pointer transition-all duration-300 ${
                 controlPanelOpen ? "-mr-4" : "rounded-e-full"
               }`}
               onClick={toggleControlPanel}
@@ -204,6 +228,6 @@ export default function Main() {
           isPresenting={isPresenting}
         />
       </div>
-    </>
+    </div>
   );
 }

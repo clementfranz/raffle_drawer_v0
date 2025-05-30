@@ -14,6 +14,7 @@ interface Participant {
 
 import styles from "./ParticipantsTable.module.css";
 import { getAllParticipantsPerPage } from "~/hooks/indexedDB/_main/useIndexedDB";
+import type { LocalParticipantsSyncStatus } from "~/api/types/localStorageStates/localParticipantsSyncStatus.types";
 
 // inside ParticipantsTable component
 const ParticipantsTable = () => {
@@ -26,6 +27,12 @@ const ParticipantsTable = () => {
   const [tableLocalData, setTableLocalData] = useState<Participant[] | null>(
     null
   );
+
+  const [localParticipantsSyncingStatus, setLocalParticipantsSyncingStatus] =
+    useLocalStorageState<LocalParticipantsSyncStatus>(
+      "localParticipantsSyncingStatus",
+      { defaultValue: "none" }
+    );
 
   const [tableIsLoading, setTableIsLoading] = useState<boolean>(false);
   const [pageNumber, setPageNumber] = useState<number>(1);
@@ -78,10 +85,12 @@ const ParticipantsTable = () => {
       );
       setTableLocalData(participantsData);
       setWithParticipantsData(true);
+      setLocalParticipantsSyncingStatus("moving");
     } catch (error) {
       console.error("Error fetching data:", error);
       setTableLocalData([]);
       setWithParticipantsData(false);
+      setLocalParticipantsSyncingStatus("none");
     } finally {
       setTableIsLoading(false);
     }

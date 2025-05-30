@@ -1,5 +1,5 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { Welcome } from "~/components/Welcome/welcome";
 import useLocalStorageState from "use-local-storage-state";
 import { useEffect, useState } from "react";
 

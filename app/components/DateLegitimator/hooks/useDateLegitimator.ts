@@ -65,6 +65,8 @@ export function useDateLegitimator(systemDate: string) {
   useEffect(() => {
     if (illegitimateDate) {
       setLocalIllegitimateDate(true);
+    } else {
+      setLocalIllegitimateDate(false);
     }
   }, [illegitimateDate, error]);
 

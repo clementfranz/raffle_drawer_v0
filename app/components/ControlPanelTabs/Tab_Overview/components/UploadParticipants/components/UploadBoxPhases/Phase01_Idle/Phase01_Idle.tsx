@@ -6,8 +6,8 @@ import Papa from "papaparse";
 // Components
 import UploadBox from "../../UploadBox/_main/UploadBox";
 import UploadButton from "../../UploadButton/_main/UploadButton";
-import { getParticipantsTotalCount } from "~/api/client/participants/getParticipantsTotalCount";
-import { getPaginatedParticipants } from "~/api/client/participants/getPaginatedParticipants";
+import { getParticipantsTotalCount } from "~/api/asClient/participants/getParticipantsTotalCount";
+import { getPaginatedParticipants } from "~/api/asClient/participants/getPaginatedParticipants";
 import useLocalStorageState from "use-local-storage-state";
 
 function formatBytes(bytes: number): string {

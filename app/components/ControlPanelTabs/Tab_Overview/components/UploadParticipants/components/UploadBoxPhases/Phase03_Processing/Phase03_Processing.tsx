@@ -69,6 +69,13 @@ const Phase03_Processing = ({
     defaultValue: null
   });
 
+  const [localTotal, setLocalTotal] = useLocalStorageState(
+    "localTotalParticipants",
+    {
+      defaultValue: 0
+    }
+  );
+
   // Start the timer when upload begins
   useEffect(() => {
     if (uploadProgress > 0 && startTimeRef.current === null) {
@@ -180,6 +187,7 @@ const Phase03_Processing = ({
     if (regionalStatistics) {
       setRegionalStats(regionalStatistics);
       // console.log("Done getting regional stats.");
+      setLocalTotal(regionalStatistics.totalParticipants);
       return true;
     } else {
       return false;
